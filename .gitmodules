@@ -1,0 +1,3 @@
+[submodule "pocketpy"]
+	path = pocketpy
+	url = https://github.com/pocketpy/pocketpy
