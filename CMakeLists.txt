@@ -4,12 +4,16 @@ project(gsoc2024)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_subdirectory(3rd/glm)
+include_directories(pybind11/include)
+include_directories(pocketpy/include)
+include_directories(numpy/include)
 
 add_subdirectory(pocketpy)
 add_subdirectory(numpy)
 
-add_executable(${PROJECT_NAME} main.cpp)
+add_subdirectory(3rd/glm)
+
+add_executable(${PROJECT_NAME} test_numpy.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     glm
