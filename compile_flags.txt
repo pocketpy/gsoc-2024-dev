@@ -1,5 +1,5 @@
 -xc++
 -std=c++17
--Iglm
--Ipybind11/include
+-I3rd/glm
+-I3rd/pybind11/include
 -I/usr/include/python3.8

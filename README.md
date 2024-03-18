@@ -1,3 +1,3 @@
-# pkpy_with_pybind11
+# gsoc-2024-dev
 
-See https://github.com/pocketpy/pocketpy/issues/216 for details.
+
