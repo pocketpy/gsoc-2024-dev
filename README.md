@@ -6,12 +6,12 @@ This is the repository for GSoC'24 projects. [Implement pybind11 for bindings](h
 
 # File structure
 
-### For [@16bit-ykiko](https://github.com/16bit-ykiko)
+### For the pybind11 project
 + Use `pybind11/` directory for development
 + Use `test_pybind11.cpp` for testing (without numpy)
 + Use `test_main.cpp` for testing (with numpy & CMake)
 
-### For [@faze-geek](https://github.com/faze-geek)
+### For the numpy project
 + Use `numpy/` directory for development
 + Use `test_numpy.py` for testing, numpy module adopts only pure python test
 + Use `test_main.cpp` for testing. This file invokes `test_numpy.py`
