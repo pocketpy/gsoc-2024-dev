@@ -1,15 +1,22 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(test)
+project(gsoc2024)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_subdirectory(glm)
-add_subdirectory(pybind11)
+include_directories(pybind11/include)
+include_directories(pocketpy/include)
+include_directories(numpy/include)
 
+add_subdirectory(pocketpy)
+add_subdirectory(numpy)
 
-add_executable(${PROJECT_NAME} pkpy_with_pybind11.cpp)
+add_subdirectory(3rd/glm)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE pybind11::embed)
-target_link_libraries(${PROJECT_NAME} PRIVATE glm)
+add_executable(${PROJECT_NAME} test_main.cpp)
 
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    glm
+    pocketpy
+    numpy
+)
