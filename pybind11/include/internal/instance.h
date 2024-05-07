@@ -206,7 +206,7 @@ namespace pybind11
             }
         }
 
-        void _gc_mark() const
+        void _gc_mark() const noexcept
         {
             if(father && (flag & Flag::Ref))
             {
@@ -215,7 +215,7 @@ namespace pybind11
         }
 
         template <typename T>
-        T& cast()
+        T& cast() noexcept
         {
             return *static_cast<T*>(data);
         }
