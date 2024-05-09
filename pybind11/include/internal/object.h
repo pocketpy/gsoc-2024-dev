@@ -12,12 +12,19 @@ namespace pybind11
     class str;
     class bytes;
     class args_proxy;
-    inline bool hasattr(handle obj, handle name);
-    inline bool hasattr(handle obj, const char* name);
-    inline object getattr(handle obj, handle name);
-    inline object getattr(handle obj, const char* name);
-    inline void setattr(handle obj, handle name, handle value);
-    inline void setattr(handle obj, const char* name, handle value);
+
+    bool hasattr(handle obj, handle name);
+    bool hasattr(handle obj, const char* name);
+    object getattr(handle obj, handle name);
+    object getattr(handle obj, const char* name);
+    void setattr(handle obj, handle name, handle value);
+    void setattr(handle obj, const char* name, handle value);
+    
+    template <typename T>
+    bool isinstance(handle obj);
+
+    template <typename T>
+    T& _builtin_cast(handle obj);
 
     template <typename Policy>
     class accessor;
@@ -267,7 +274,6 @@ namespace pybind11
     template <typename Derived>
     object object_api<Derived>::operator+= (const object_api& other)
     {
-        
     }
 
     template <typename Policy>

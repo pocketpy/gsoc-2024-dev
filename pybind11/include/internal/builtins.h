@@ -1,6 +1,6 @@
 #pragma once
 
-#include "pytypes.h"
+#include "cast.h"
 
 namespace pybind11
 {
@@ -14,14 +14,8 @@ namespace pybind11
     template <typename T>
     inline bool isinstance(handle obj)
     {
-        if constexpr(std::is_base_of_v<object, T>)
-        {
-            // TODO: Implement this
-        }
-        else
-        {
-            return type::of(obj) == type::of<T>();
-        }
+        pkpy::Type cls = vm->_tp(type::handle_of<T>().ptr());
+        return vm->isinstance(type::handle_of(obj).ptr(), cls);
     }
 
     template <>
@@ -48,14 +42,14 @@ namespace pybind11
     inline object getattr(handle obj, handle name)
     {
         // TODO: get not existed attribute
-        handle attr = obj.ptr()->attr().try_get(_builtin_cast<pkpy::Str>(name));
+        handle attr = vm->getattr(obj.ptr(), _builtin_cast<pkpy::Str>(name));
         return reinterpret_borrow<object>(attr);
     }
 
     inline object getattr(handle obj, const char* name)
     {
         // TODO: get not existed attribute
-        handle result = obj.ptr()->attr().try_get(name);
+        handle result = vm->getattr(obj.ptr(), name);
         return reinterpret_borrow<object>(result);
     }
 
@@ -66,22 +60,21 @@ namespace pybind11
     inline void setattr(handle obj, handle name, handle value)
     {
         // TODO: set not existed attribute
-        obj.ptr()->attr().set(_builtin_cast<pkpy::Str>(name), value.ptr());
+        vm->setattr(obj.ptr(), _builtin_cast<pkpy::Str>(name), value.ptr());
     }
 
     inline void setattr(handle obj, const char* name, handle value)
     {
         // TODO: set not existed attribute
-        obj.ptr()->attr().set(name, value.ptr());
+        vm->setattr(obj.ptr(), name, value.ptr());
     }
 
     inline int64_t hash(handle obj) { return vm->py_hash(obj.ptr()); }
 
     template <typename T>
-    object cast(T&& value)
+    object cast(T&& value, return_value_policy policy = return_value_policy::automatic, handle parent = handle())
     {
         using U = std::remove_cv_t<std::remove_reference_t<T>>;
-        // handle obj = type_caster<U>::cast(std::forward<T>(value), return_value_policy::automatic, handle());
-        // return reinterpret_steal<object>(obj);
+        return reinterpret_borrow<object>(type_caster<U>::cast(std::forward<T>(value), policy, parent));
     }
 }  // namespace pybind11

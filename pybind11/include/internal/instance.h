@@ -108,32 +108,32 @@ namespace pybind11
         {
             None = 0,
             Own = 1 << 0,  // if the instance is owned by C++ side.
-            Ref = 1 << 1,  // need to mark the father object.
+            Ref = 1 << 1,  // need to mark the parent object.
         };
 
         Flag flag;
         void* data;
         const type_info* type;
-        pkpy::PyObject* father;
+        pkpy::PyObject* parent;
 
     public:
-        instance() noexcept : flag(Flag::None), data(nullptr), type(nullptr), father(nullptr) {}
+        instance() noexcept : flag(Flag::None), data(nullptr), type(nullptr), parent(nullptr) {}
 
         instance(const instance&) = delete;
 
-        instance(instance&& other) noexcept : flag(other.flag), data(other.data), type(other.type), father(other.father)
+        instance(instance&& other) noexcept : flag(other.flag), data(other.data), type(other.type), parent(other.parent)
         {
             other.flag = Flag::None;
             other.data = nullptr;
             other.type = nullptr;
-            other.father = nullptr;
+            other.parent = nullptr;
         }
 
         template <typename T>
         static pkpy::PyObject* create(T&& value,
                                       pkpy::Type type,
                                       return_value_policy policy = return_value_policy::automatic_reference,
-                                      pkpy::PyObject* father = nullptr) noexcept
+                                      pkpy::PyObject* parent = nullptr) noexcept
         {
             using underlying_type = std::remove_cv_t<std::remove_reference_t<T>>;
 
@@ -194,7 +194,7 @@ namespace pybind11
             {
                 instance.data = &_value;
                 instance.flag = Flag::Ref;
-                instance.father = father;
+                instance.parent = parent;
             }
 
             return vm->heap.gcnew<pybind11::instance>(type, std::move(instance));
@@ -210,9 +210,9 @@ namespace pybind11
 
         void _gc_mark() const noexcept
         {
-            if(father && (flag & Flag::Ref))
+            if(parent && (flag & Flag::Ref))
             {
-                PK_OBJ_MARK(father);
+                PK_OBJ_MARK(parent);
             }
         }
 

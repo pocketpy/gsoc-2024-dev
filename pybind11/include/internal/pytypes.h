@@ -16,14 +16,137 @@ namespace pybind11
         template <typename T>
         static handle handle_of()
         {
-            auto result = vm->_cxx_typeid_map.find(typeid(T));
-            if(result != vm->_cxx_typeid_map.end())
+            if constexpr(std::is_same_v<T, type>)
             {
-                return vm->_t(result->second);
+                return vm->_t(vm->tp_type);
             }
+            else if constexpr(std::is_same_v<T, class iterator>)
+            {
+                // FIXME:
+                return nullptr;
+            }
+            else if constexpr(std::is_same_v<T, class iterable>)
+            {
+                // FIXME:
+                return nullptr;
+            }
+            else if constexpr(std::is_same_v<T, class str>)
+            {
+                return vm->_t(vm->tp_str);
+            }
+            else if constexpr(std::is_same_v<T, class bytes>)
+            {
+                return vm->_t(vm->tp_bytes);
+            }
+            else if constexpr(std::is_same_v<T, class bytearray>)
+            {
+                // FIXME:
+                return nullptr;
+            }
+            else if constexpr(std::is_same_v<T, class none>)
+            {
+                // FIXME:
+                return nullptr;
+            }
+            else if constexpr(std::is_same_v<T, class ellipsis>)
+            {
+                // FIXME:
+                return nullptr;
+            }
+            else if constexpr(std::is_same_v<T, class bool_>)
+            {
+                return vm->_t(vm->tp_bool);
+            }
+            else if constexpr(std::is_same_v<T, class int_>)
+            {
+                return vm->_t(vm->tp_int);
+            }
+            else if constexpr(std::is_same_v<T, class float_>)
+            {
+                return vm->_t(vm->tp_float);
+            }
+            else if constexpr(std::is_same_v<T, class slice>)
+            {
+                return vm->_t(vm->tp_slice);
+            }
+            else if constexpr(std::is_same_v<T, class capsule>)
+            {
+                // FIXME:
+                return nullptr;
+            }
+            else if constexpr(std::is_same_v<T, class tuple>)
+            {
+                return vm->_t(vm->tp_tuple);
+            }
+            else if constexpr(std::is_same_v<T, class dict>)
+            {
+                return vm->_t(vm->tp_dict);
+            }
+            else if constexpr(std::is_same_v<T, class sequence>)
+            {
+                // FIXME:
+                return nullptr;
+            }
+            else if constexpr(std::is_same_v<T, class list>)
+            {
+                return vm->_t(vm->tp_list);
+            }
+            else if constexpr(std::is_same_v<T, class args>)
+            {
+                // FIXME:
+                return nullptr;
+            }
+            else if constexpr(std::is_same_v<T, class kwargs>)
+            {
+                // FIXME:
+                return nullptr;
+            }
+            else if constexpr(std::is_same_v<T, class anyset>)
+            {
+                // FIXME:
+                return nullptr;
+            }
+            else if constexpr(std::is_same_v<T, class set>)
+            {
+                // FIXME:
+                return nullptr;
+            }
+            else if constexpr(std::is_same_v<T, class frozenset>)
+            {
+                // FIXME:
+                return nullptr;
+            }
+            else if constexpr(std::is_same_v<T, class function>)
+            {
+                // FIXME:
+                return nullptr;
+            }
+            else if constexpr(std::is_same_v<T, class staticmethod>)
+            {
+                // FIXME:
+                return nullptr;
+            }
+            else if constexpr(std::is_same_v<T, class buffer>)
+            {
+                // FIXME:
+                return nullptr;
+            }
+            else if constexpr(std::is_same_v<T, class memoryview>)
+            {
+                // FIXME:
+                return nullptr;
+            }
+            else
+            {
+                auto result = vm->_cxx_typeid_map.find(typeid(T));
+                if(result != vm->_cxx_typeid_map.end())
+                {
+                    return vm->_t(result->second);
+                }
 
-            // TODO: clarify the error message
-            throw std::runtime_error("Type not found");
+                // TODO: clarify the error message
+                throw std::runtime_error("Type not found");
+            }
         }
 
         template <typename T>
