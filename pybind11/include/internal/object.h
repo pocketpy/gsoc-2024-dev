@@ -27,17 +27,11 @@ namespace pybind11
         struct obj_attr;
         struct str_attr;
         struct generic_item;
-        struct sequence_item;
-        struct list_item;
-        struct tuple_item;
     }  // namespace accessor_policies
 
     using obj_attr_accessor = accessor<accessor_policies::obj_attr>;
     using str_attr_accessor = accessor<accessor_policies::str_attr>;
     using item_accessor = accessor<accessor_policies::generic_item>;
-    using sequence_accessor = accessor<accessor_policies::sequence_item>;
-    using list_accessor = accessor<accessor_policies::list_item>;
-    using tuple_accessor = accessor<accessor_policies::tuple_item>;
 
     struct pyobject_tag
     {
@@ -252,6 +246,30 @@ namespace pybind11
         return {h, object::stolen_t{}};
     }
 
+    template <typename Derived>
+    object object_api<Derived>::operator- () const
+    {
+        return vm->call_method(derived().ptr(), pkpy::__neg__);
+    }
+
+    template <typename Derived>
+    object object_api<Derived>::operator~() const
+    {
+        return vm->call_method(derived().ptr(), pkpy::__invert__);
+    }
+
+    template <typename Derived>
+    object object_api<Derived>::operator+ (const object_api& other) const
+    {
+        return vm->call_method(derived().ptr(), pkpy::__add__, other.derived().ptr());
+    }
+
+    template <typename Derived>
+    object object_api<Derived>::operator+= (const object_api& other)
+    {
+        
+    }
+
     template <typename Policy>
     class accessor : public object_api<accessor<Policy>>
     {
@@ -325,15 +343,9 @@ namespace pybind11
     {
         using key_type = const char*;
 
-        static object get(handle obj, const char* key)
-        {
-            // return getattr(obj, key);
-        }
+        static object get(handle obj, const char* key) { return getattr(obj, key); }
 
-        static void set(handle obj, const char* key, handle val)
-        {
-            // setattr(obj, key, val);
-        }
+        static void set(handle obj, const char* key, handle val) { setattr(obj, key, val); }
     };
 
     struct generic_item
@@ -342,99 +354,12 @@ namespace pybind11
 
         static object get(handle obj, handle key)
         {
-            // PyObject* result = PyObject_GetItem(obj.ptr(), key.ptr());
-            // if(!result)
-            //{
-            //     throw error_already_set();
-            // }
-            // return reinterpret_steal<object>(result);
+            pkpy::PyObject* result = vm->call_method(obj.ptr(), pkpy::__getitem__, key.ptr());
+            return reinterpret_borrow<object>(result);
         }
 
-        static void set(handle obj, handle key, handle val)
-        {
-            // if(PyObject_SetItem(obj.ptr(), key.ptr(), val.ptr()) != 0)
-            //{
-            //     throw error_already_set();
-            // }
-        }
+        static void set(handle obj, handle key, handle val) { vm->call_method(obj.ptr(), pkpy::__setitem__, key.ptr(), val.ptr()); }
     };
 
-    struct sequence_item
-    {
-        using key_type = size_t;
-
-        template <typename IdxType, std::enable_if_t<std::is_integral_v<IdxType>, int> = 0>
-        static object get(handle obj, const IdxType& index)
-        {
-            // PyObject* result = PySequence_GetItem(obj.ptr(), ssize_t_cast(index));
-            // if(!result)
-            //{
-            //     throw error_already_set();
-            // }
-            // return reinterpret_steal<object>(result);
-        }
-
-        template <typename IdxType, std::enable_if_t<std::is_integral_v<IdxType>, int> = 0>
-        static void set(handle obj, const IdxType& index, handle val)
-        {
-            //// PySequence_SetItem does not steal a reference to 'val'
-            // if(PySequence_SetItem(obj.ptr(), ssize_t_cast(index), val.ptr()) != 0)
-            //{
-            //     throw error_already_set();
-            // }
-        }
-    };
-
-    struct list_item
-    {
-        using key_type = size_t;
-
-        template <typename IdxType, std::enable_if_t<std::is_integral_v<IdxType>, int> = 0>
-        static object get(handle obj, const IdxType& index)
-        {
-            // PyObject* result = PyList_GetItem(obj.ptr(), ssize_t_cast(index));
-            // if(!result)
-            //{
-            //     throw error_already_set();
-            // }
-            // return reinterpret_borrow<object>(result);
-        }
-
-        template <typename IdxType, std::enable_if_t<std::is_integral_v<IdxType>, int> = 0>
-        static void set(handle obj, const IdxType& index, handle val)
-        {
-            //// PyList_SetItem steals a reference to 'val'
-            // if(PyList_SetItem(obj.ptr(), ssize_t_cast(index), val.inc_ref().ptr()) != 0)
-            //{
-            //     throw error_already_set();
-            // }
-        }
-    };
-
-    struct tuple_item
-    {
-        using key_type = size_t;
-
-        template <typename IdxType, std::enable_if_t<std::is_integral_v<IdxType>, int> = 0>
-        static object get(handle obj, const IdxType& index)
-        {
-            // PyObject* result = PyTuple_GetItem(obj.ptr(), ssize_t_cast(index));
-            // if(!result)
-            //{
-            //     throw error_already_set();
-            // }
-            // return reinterpret_borrow<object>(result);
-        }
-
-        template <typename IdxType, std::enable_if_t<std::is_integral_v<IdxType>, int> = 0>
-        static void set(handle obj, const IdxType& index, handle val)
-        {
-            // PyTuple_SetItem steals a reference to 'val'
-            // if(PyTuple_SetItem(obj.ptr(), ssize_t_cast(index), val.inc_ref().ptr()) != 0)
-            //{
-            //    throw error_already_set();
-            //}
-        }
-    };
 };  // namespace pybind11
 

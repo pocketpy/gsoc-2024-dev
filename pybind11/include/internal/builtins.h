@@ -75,11 +75,7 @@ namespace pybind11
         obj.ptr()->attr().set(name, value.ptr());
     }
 
-    inline long long hash(handle obj)
-    {
-        auto value = vm->call_method(obj.ptr(), "__hash__");
-        return pkpy::_py_cast<pkpy::i64>(vm, value);
-    }
+    inline int64_t hash(handle obj) { return vm->py_hash(obj.ptr()); }
 
     template <typename T>
     object cast(T&& value)

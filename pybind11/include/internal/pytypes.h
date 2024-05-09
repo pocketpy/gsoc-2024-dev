@@ -11,7 +11,7 @@ namespace pybind11
 
         static handle handle_of(handle h) { return vm->_t(h.ptr()); }
 
-        static type of(handle h) { return reinterpret_steal<type>(handle_of(h)); }
+        static type of(handle h) { return reinterpret_borrow<type>(handle_of(h)); }
 
         template <typename T>
         static handle handle_of()
@@ -29,7 +29,7 @@ namespace pybind11
         template <typename T>
         static type of()
         {
-            return reinterpret_steal<type>(handle_of<T>());
+            return reinterpret_borrow<type>(handle_of<T>());
         }
     };
 

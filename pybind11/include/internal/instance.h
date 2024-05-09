@@ -70,38 +70,39 @@ namespace pybind11
         reference_internal
     };
 
-    // use to record the type information of C++ class.
-    struct type_info
-    {
-        const char* name;
-        std::size_t size;
-        std::size_t alignment;
-        void (*destructor)(void*);
-        void (*copy)(void*, const void*);
-        void (*move)(void*, void*);
-        const std::type_info* type;
-    };
-
-    template <typename T>
-    type_info& info_of()
-    {
-        static_assert(!std::is_reference_v<T> && !std::is_const_v<std::remove_reference_t<T>>,
-                      "T must not be a reference type or const type.");
-        static type_info info = {
-            typeid(T).name(),
-            sizeof(T),
-            alignof(T),
-            [](void* ptr) { static_cast<T*>(ptr)->~T(); },
-            [](void* dst, const void* src) { ::new (dst) T(*static_cast<const T*>(src)); },
-            [](void* dst, void* src) { ::new (dst) T(std::move(*static_cast<T*>(src))); },
-            &typeid(T),
-        };
-        return info;
-    }
-
     // all registered C++ class will be ensured as instance type.
     class instance
     {
+    public:
+        // use to record the type information of C++ class.
+        struct type_info
+        {
+            const char* name;
+            std::size_t size;
+            std::size_t alignment;
+            void (*destructor)(void*);
+            void (*copy)(void*, const void*);
+            void (*move)(void*, void*);
+            const std::type_info* type;
+
+            template <typename T>
+            static type_info& of()
+            {
+                static_assert(!std::is_reference_v<T> && !std::is_const_v<std::remove_reference_t<T>>,
+                              "T must not be a reference type or const type.");
+                static type_info info = {
+                    typeid(T).name(),
+                    sizeof(T),
+                    alignof(T),
+                    [](void* ptr) { ::delete (T*)ptr; },
+                    [](void* dst, const void* src) { ::new (dst) T(*static_cast<const T*>(src)); },
+                    [](void* dst, void* src) { ::new (dst) T(std::move(*static_cast<T*>(src))); },
+                    &typeid(T),
+                };
+                return info;
+            }
+        };
+
     private:
         enum Flag
         {
@@ -167,6 +168,7 @@ namespace pybind11
             }();
 
             instance instance;
+            instance.type = &type_info::of<underlying_type>();
 
             if(policy == return_value_policy::take_ownership)
             {
