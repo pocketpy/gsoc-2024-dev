@@ -127,14 +127,14 @@ namespace pybind11
     template <typename T, typename>
     struct type_caster
     {
-        T& value;
+        T* value;
 
         bool load(handle src, bool convert)
         {
             if(isinstance<T>(src))
             {
                 auto& i = _builtin_cast<instance>(src);
-                value = i.cast<T>();
+                value = &i.cast<T>();
                 return true;
             }
 
@@ -148,8 +148,8 @@ namespace pybind11
             bool existed = vm->_cxx_typeid_map.find(typeid(T)) != vm->_cxx_typeid_map.end();
             if(existed)
             {
-                auto type = type::handle_of(typeid(T));
-                return instance::create(std::forward<U>(value), type, policy, parent);
+                auto type = vm->_cxx_typeid_map[typeid(T)];
+                return instance::create(std::forward<U>(value), type, policy, parent.ptr());
             }
             return nullptr;
         }

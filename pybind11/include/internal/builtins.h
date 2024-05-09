@@ -14,7 +14,7 @@ namespace pybind11
     template <typename T>
     inline bool isinstance(handle obj)
     {
-        pkpy::Type cls = vm->_tp(type::handle_of<T>().ptr());
+        pkpy::Type cls = _builtin_cast<pkpy::Type>(type::handle_of<T>().ptr());
         return vm->isinstance(type::handle_of(obj).ptr(), cls);
     }
 
@@ -76,5 +76,27 @@ namespace pybind11
     {
         using U = std::remove_cv_t<std::remove_reference_t<T>>;
         return reinterpret_borrow<object>(type_caster<U>::cast(std::forward<T>(value), policy, parent));
+    }
+
+    template <typename T>
+    T cast(handle obj)
+    {
+        using Caster = type_caster<std::remove_cv_t<std::remove_reference_t<T>>>;
+        Caster caster;
+        if constexpr(std::is_pointer_v<decltype(caster.value)>)
+        {
+            if(caster.load(obj, false))
+            {
+                return *caster.value;
+            }
+        }
+        else
+        {
+            if(caster.load(obj, false))
+            {
+                return caster.value;
+            }
+        }
+        throw std::runtime_error("Unable to cast Python instance to C++ type");
     }
 }  // namespace pybind11
