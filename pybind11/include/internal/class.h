@@ -20,8 +20,6 @@ namespace pybind11
         }
     };
 
-    constexpr static auto _null_register = +[](pkpy::VM*, pkpy::PyObject*, pkpy::PyObject*) {};
-
     template <typename T, typename... Options>
     class class_ : public type
     {
@@ -30,7 +28,8 @@ namespace pybind11
         template <typename... Extras>
         class_(handle scope, const char* name, const Extras&... extras)
         {
-            m_ptr = vm->register_user_class<T>(scope.ptr(), name, _null_register);
+            m_ptr = vm->new_type_object(scope.ptr(), name, vm->tp_object);
+            vm->_cxx_typeid_map.insert({typeid(T), _builtin_cast<pkpy::Type>(m_ptr)});
         }
     };
 }  // namespace pybind11
