@@ -15,7 +15,7 @@ namespace pybind11
     inline bool isinstance(handle obj)
     {
         pkpy::Type cls = _builtin_cast<pkpy::Type>(type::handle_of<T>().ptr());
-        return vm->isinstance(type::handle_of(obj).ptr(), cls);
+        return vm->isinstance(obj.ptr(), cls);
     }
 
     template <>
