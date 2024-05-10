@@ -72,10 +72,16 @@ namespace pybind11
     inline int64_t hash(handle obj) { return vm->py_hash(obj.ptr()); }
 
     template <typename T>
-    object cast(T&& value, return_value_policy policy = return_value_policy::automatic, handle parent = handle())
+    handle _cast(T&& value, return_value_policy policy = return_value_policy::automatic, handle parent = handle())
     {
         using U = std::remove_cv_t<std::remove_reference_t<T>>;
-        return reinterpret_borrow<object>(type_caster<U>::cast(std::forward<T>(value), policy, parent));
+        return type_caster<U>::cast(std::forward<T>(value), policy, parent);
+    }
+
+    template <typename T>
+    handle cast(T&& value, return_value_policy policy = return_value_policy::automatic, handle parent = handle())
+    {
+        return _cast(std::forward<T>(value), policy, parent);
     }
 
     template <typename T>
