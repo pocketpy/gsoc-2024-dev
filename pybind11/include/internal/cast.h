@@ -4,6 +4,9 @@
 
 namespace pybind11
 {
+    template <typename T>
+    bool isinstance(handle obj);
+
     template <typename T, typename = void>
     struct type_caster;
 

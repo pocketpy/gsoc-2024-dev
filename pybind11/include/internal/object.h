@@ -2,6 +2,12 @@
 
 #include "instance.h"
 
+#define PYBIND11_LOGICAL_OPERATOR(op, name)                                    \
+    bool operator op (const object_api& other) const                           \
+    {                                                                          \
+        return vm->py_##name(derived().ptr(), other.derived().ptr());          \
+    }
+
 namespace pybind11
 {
     // foward declaration
@@ -12,16 +18,6 @@ namespace pybind11
     class str;
     class bytes;
     class args_proxy;
-
-    bool hasattr(handle obj, handle name);
-    bool hasattr(handle obj, const char* name);
-    object getattr(handle obj, handle name);
-    object getattr(handle obj, const char* name);
-    void setattr(handle obj, handle name, handle value);
-    void setattr(handle obj, const char* name, handle value);
-    
-    template <typename T>
-    bool isinstance(handle obj);
 
     template <typename T>
     T& _builtin_cast(handle obj);
@@ -49,12 +45,50 @@ namespace pybind11
     class object_api : public pyobject_tag
     {
     private:
-        const Derived& derived() const { return static_cast<const Derived&>(*this); }
+        const Derived& derived() const
+        {
+            return static_cast<const Derived&>(*this);
+        }
 
     public:
-        iterator begin() const;
+        PYBIND11_LOGICAL_OPERATOR(==, eq);
+        PYBIND11_LOGICAL_OPERATOR(!=, ne);
+        PYBIND11_LOGICAL_OPERATOR(<, lt);
+        PYBIND11_LOGICAL_OPERATOR(<=, le);
+        PYBIND11_LOGICAL_OPERATOR(>, gt);
+        PYBIND11_LOGICAL_OPERATOR(>=, ge);
 
-        iterator end() const;
+        object operator- () const;
+        object operator~() const;
+
+        object operator+ (const object_api& other) const;
+        object operator- (const object_api& other) const;
+        object operator* (const object_api& other) const;
+        object operator% (const object_api& other) const;
+        object operator/ (const object_api& other) const;
+        object operator| (const object_api& other) const;
+        object operator& (const object_api& other) const;
+        object operator^ (const object_api& other) const;
+        object operator<< (const object_api& other) const;
+        object operator>> (const object_api& other) const;
+
+        object operator+= (const object_api& other);
+        object operator-= (const object_api& other);
+        object operator*= (const object_api& other);
+        object operator/= (const object_api& other);
+        object operator%= (const object_api& other);
+        object operator|= (const object_api& other);
+        object operator&= (const object_api& other);
+        object operator^= (const object_api& other);
+        object operator<<= (const object_api& other);
+        object operator>>= (const object_api& other);
+
+        template <return_value_policy policy =
+                      return_value_policy::automatic_reference,
+                  typename... Args>
+        object operator() (Args&&... args) const;
+
+        args_proxy operator* () const;
 
         item_accessor operator[] (handle key) const;
 
@@ -68,55 +102,21 @@ namespace pybind11
 
         str_attr_accessor attr(const char* key) const;
 
-        args_proxy operator* () const;
+        iterator begin() const;
 
-        /// Check if the given item is contained within this object, i.e. ``item in obj``.
+        iterator end() const;
+
         template <typename T>
         bool contains(T&& item) const;
-
-        template <return_value_policy policy = return_value_policy::automatic_reference, typename... Args>
-        object operator() (Args&&... args) const;
 
         /// Equivalent to ``obj is None`` in Python.
         bool is_none() const { return derived().ptr() == vm->None; }
 
         /// Equivalent to ``obj is other`` in Python.
-        bool is(const object_api& other) const { return derived().ptr() == other.derived().ptr(); }
-
-        /// Equivalent to obj == other in Python
-        // NOTE: Different from pybind11
-        bool operator== (const object_api& other) const { return vm->py_eq(derived().ptr(), other.derived().ptr()); }
-
-        bool operator!= (const object_api& other) const { return vm->py_ne(derived().ptr(), other.derived().ptr()); }
-
-        bool operator< (const object_api& other) const { return vm->py_lt(derived().ptr(), other.derived().ptr()); }
-
-        bool operator<= (const object_api& other) const { return vm->py_le(derived().ptr(), other.derived().ptr()); }
-
-        bool operator> (const object_api& other) const { return vm->py_gt(derived().ptr(), other.derived().ptr()); }
-
-        bool operator>= (const object_api& other) const { return vm->py_ge(derived().ptr(), other.derived().ptr()); }
-
-        object operator- () const;
-        object operator~() const;
-        object operator+ (const object_api& other) const;
-        object operator+= (const object_api& other);
-        object operator- (const object_api& other) const;
-        object operator-= (const object_api& other);
-        object operator* (const object_api& other) const;
-        object operator*= (const object_api& other);
-        object operator/ (const object_api& other) const;
-        object operator/= (const object_api& other);
-        object operator| (const object_api& other) const;
-        object operator|= (const object_api& other);
-        object operator& (const object_api& other) const;
-        object operator&= (const object_api& other);
-        object operator^ (const object_api& other) const;
-        object operator^= (const object_api& other);
-        object operator<< (const object_api& other) const;
-        object operator<<= (const object_api& other);
-        object operator>> (const object_api& other) const;
-        object operator>>= (const object_api& other);
+        bool is(const object_api& other) const
+        {
+            return derived().ptr() == other.derived().ptr();
+        }
 
         pybind11::str str() const;
 
@@ -212,6 +212,19 @@ namespace pybind11
             other.ref_count = nullptr;
         }
 
+        object& operator= (object&& other) noexcept
+        {
+            if(this != &other)
+            {
+                dec_ref();
+                m_ptr = other.m_ptr;
+                ref_count = other.ref_count;
+                other.m_ptr = nullptr;
+                other.ref_count = nullptr;
+            }
+            return *this;
+        }
+
         ~object() { dec_ref(); }
 
         // Calling cast() on an object lvalue just copies (via handle::cast)
@@ -253,119 +266,6 @@ namespace pybind11
         return {h, object::stolen_t{}};
     }
 
-    template <typename Derived>
-    object object_api<Derived>::operator- () const
-    {
-        return vm->call_method(derived().ptr(), pkpy::__neg__);
-    }
-
-    template <typename Derived>
-    object object_api<Derived>::operator~() const
-    {
-        return vm->call_method(derived().ptr(), pkpy::__invert__);
-    }
-
-    template <typename Derived>
-    object object_api<Derived>::operator+ (const object_api& other) const
-    {
-        return vm->call_method(derived().ptr(), pkpy::__add__, other.derived().ptr());
-    }
-
-    template <typename Derived>
-    object object_api<Derived>::operator+= (const object_api& other)
-    {
-    }
-
-    template <typename Policy>
-    class accessor : public object_api<accessor<Policy>>
-    {
-        using key_type = typename Policy::key_type;
-
-    public:
-        accessor(handle obj, key_type key) : obj(obj), key(std::move(key)) {}
-
-        accessor(const accessor&) = default;
-        accessor(accessor&&) noexcept = default;
-
-        // accessor overload required to override default assignment operator (templates are not
-        // allowed to replace default compiler-generated assignments).
-        void operator= (const accessor& a) && { std::move(*this).operator= (handle(a)); }
-
-        void operator= (const accessor& a) & { operator= (handle(a)); }
-
-        template <typename T>
-        void operator= (T&& value) &&
-        {
-            Policy::set(obj, key, object_or_cast(std::forward<T>(value)));
-        }
-
-        template <typename T>
-        void operator= (T&& value) &
-        {
-            get_cache() = ensure_object(object_or_cast(std::forward<T>(value)));
-        }
-
-        // NOLINTNEXTLINE(google-explicit-constructor)
-        operator object () const { return get_cache(); }
-
-        pkpy::PyObject* ptr() const { return get_cache().ptr(); }
-
-        template <typename T>
-        T cast() const
-        {
-            return get_cache().template cast<T>();
-        }
-
-    private:
-        static object ensure_object(object&& o) { return std::move(o); }
-
-        static object ensure_object(handle h) {}
-
-        object& get_cache() const
-        {
-            if(!cache)
-            {
-                cache = Policy::get(obj, key);
-            }
-            return cache;
-        }
-
-    private:
-        handle obj;
-        key_type key;
-        mutable object cache;
-    };
-
-    struct obj_attr
-    {
-        using key_type = object;
-
-        static object get(handle obj, handle key) { return getattr(obj, key); }
-
-        static void set(handle obj, handle key, handle val) { setattr(obj, key, val); }
-    };
-
-    struct str_attr
-    {
-        using key_type = const char*;
-
-        static object get(handle obj, const char* key) { return getattr(obj, key); }
-
-        static void set(handle obj, const char* key, handle val) { setattr(obj, key, val); }
-    };
-
-    struct generic_item
-    {
-        using key_type = object;
-
-        static object get(handle obj, handle key)
-        {
-            pkpy::PyObject* result = vm->call_method(obj.ptr(), pkpy::__getitem__, key.ptr());
-            return reinterpret_borrow<object>(result);
-        }
-
-        static void set(handle obj, handle key, handle val) { vm->call_method(obj.ptr(), pkpy::__setitem__, key.ptr(), val.ptr()); }
-    };
-
 };  // namespace pybind11
 
+#undef PYBIND11_LOGICAL_OPERATOR

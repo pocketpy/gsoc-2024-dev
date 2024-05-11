@@ -11,7 +11,10 @@ namespace pybind11
 
         static handle handle_of(handle h) { return vm->_t(h.ptr()); }
 
-        static type of(handle h) { return reinterpret_borrow<type>(handle_of(h)); }
+        static type of(handle h)
+        {
+            return reinterpret_borrow<type>(handle_of(h));
+        }
 
         template <typename T>
         static handle handle_of()
@@ -177,9 +180,15 @@ namespace pybind11
 
         static iterator sentinel() { return {}; }
 
-        friend bool operator== (const iterator& a, const iterator& b) { return a->ptr() == b->ptr(); }
+        friend bool operator== (const iterator& a, const iterator& b)
+        {
+            return a->ptr() == b->ptr();
+        }
 
-        friend bool operator!= (const iterator& a, const iterator& b) { return a->ptr() != b->ptr(); }
+        friend bool operator!= (const iterator& a, const iterator& b)
+        {
+            return a->ptr() != b->ptr();
+        }
     };
 
     class iterable : public object
@@ -189,7 +198,11 @@ namespace pybind11
     class str : public object
     {
     public:
-        str(const char* c, int len) { m_ptr = vm->heap.gcnew<pkpy::Str>(pkpy::VM::tp_str, c, len); }
+        str(const char* c, int len)
+        {
+            m_ptr = vm->heap.gcnew<pkpy::Str>(pkpy::VM::tp_str, c, len);
+            inc_ref();
+        }
 
         str(const char* c = "") : str(c, strlen(c)) {}
 
@@ -299,6 +312,10 @@ namespace pybind11
     };
 
     class memoryview : public object
+    {
+    };
+
+    class args_proxy : object
     {
     };
 }  // namespace pybind11
