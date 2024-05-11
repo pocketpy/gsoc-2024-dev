@@ -48,4 +48,4 @@ jobs:
           git add .
           short_commit=$(echo $new_commit | cut -c1-7)
           git commit -m "sync pocketpy to $short_commit"
-          git push origin main
+          git push origin main -f
