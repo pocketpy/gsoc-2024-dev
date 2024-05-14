@@ -37,7 +37,10 @@ namespace pybind11
             return false;
         }
 
-        static handle cast(bool src, return_value_policy, handle) { return src ? vm->True : vm->False; }
+        static handle cast(bool src, return_value_policy, handle)
+        {
+            return src ? vm->True : vm->False;
+        }
     };
 
     template <typename T>
@@ -101,7 +104,10 @@ namespace pybind11
             return false;
         }
 
-        static handle cast(const std::string& src, return_value_policy, handle) { return pkpy::py_var(vm, src); }
+        static handle cast(const std::string& src, return_value_policy, handle)
+        {
+            return pkpy::py_var(vm, src);
+        }
     };
 
     template <typename T>
@@ -130,7 +136,7 @@ namespace pybind11
     template <typename T, typename>
     struct type_caster
     {
-        T* value;
+        T* value = nullptr;
 
         bool load(handle src, bool convert)
         {
@@ -158,4 +164,16 @@ namespace pybind11
         }
     };
 
+    template <typename Caster>
+    auto& value_of_caster(Caster& caster)
+    {
+        if constexpr(std::is_pointer_v<decltype(caster.value)>)
+        {
+            return *caster.value;
+        }
+        else
+        {
+            return caster.value;
+        }
+    }
 }  // namespace pybind11

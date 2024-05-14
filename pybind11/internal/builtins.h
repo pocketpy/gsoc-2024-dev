@@ -7,8 +7,7 @@ namespace pybind11
     template <typename T>
     T& _builtin_cast(handle obj)
     {
-        static_assert(!std::is_reference_v<T>,
-                      "T must not be a reference type.");
+        static_assert(!std::is_reference_v<T>, "T must not be a reference type.");
         return ((pkpy::Py_<T>*)(obj.ptr()))->_value;
     }
 
@@ -29,8 +28,7 @@ namespace pybind11
 
     inline bool hasattr(handle obj, handle name)
     {
-        return obj.ptr()->attr().try_get(_builtin_cast<pkpy::Str>(name)) !=
-               nullptr;
+        return obj.ptr()->attr().try_get(_builtin_cast<pkpy::Str>(name)) != nullptr;
     }
 
     inline bool hasattr(handle obj, const char* name)
@@ -83,54 +81,38 @@ namespace pybind11
     inline int64_t hash(handle obj) { return vm->py_hash(obj.ptr()); }
 
     template <typename T>
-    handle _cast(
-        T&& value,
-        return_value_policy policy = return_value_policy::automatic_reference,
-        handle parent = handle())
+    handle _cast(T&& value,
+                 return_value_policy policy = return_value_policy::automatic_reference,
+                 handle parent = handle())
     {
-        using U =
-            std::remove_pointer_t<std::remove_cv_t<std::remove_reference_t<T>>>;
+        using U = std::remove_pointer_t<std::remove_cv_t<std::remove_reference_t<T>>>;
         return type_caster<U>::cast(std::forward<T>(value), policy, parent);
     }
 
     template <typename T>
-    object cast(
-        T&& value,
-        return_value_policy policy = return_value_policy::automatic_reference,
-        handle parent = handle())
+    object cast(T&& value,
+                return_value_policy policy = return_value_policy::automatic_reference,
+                handle parent = handle())
     {
-        return reinterpret_borrow<object>(
-            _cast(std::forward<T>(value), policy, parent));
+        return reinterpret_borrow<object>(_cast(std::forward<T>(value), policy, parent));
     }
 
     template <typename T>
     T cast(handle obj, bool convert = false)
     {
-        using Caster = type_caster<std::remove_pointer_t<
-            std::remove_cv_t<std::remove_reference_t<T>>>>;
+        using Caster =
+            type_caster<std::remove_pointer_t<std::remove_cv_t<std::remove_reference_t<T>>>>;
         Caster caster;
 
         if(caster.load(obj, convert))
         {
-            auto&& value = [&]() -> auto&&
-            {
-                if constexpr(std::is_pointer_v<decltype(caster.value)>)
-                {
-                    return *caster.value;
-                }
-                else
-                {
-                    return caster.value;
-                }
-            }();
-
             if constexpr(std::is_rvalue_reference_v<T>)
             {
-                return std::move(value);
+                return std::move(value_of_caster(caster));
             }
             else
             {
-                return value;
+                return value_of_caster(caster);
             }
         }
         throw std::runtime_error("Unable to cast Python instance to C++ type");
