@@ -1,29 +1,35 @@
-#include "pocketpy.h"
-#include "numpy.hpp"
+#include <internal/class.h>
 
-#include <iostream>
-#include <fstream>
+namespace py = pybind11;
+using namespace pybind11;
 
-using namespace pkpy;
+struct Point
+{
+    int x, y;
 
-int main(){
-    // Create a virtual machine
-    VM* vm = new VM();
+    void print(int z) { std::cout << "x = " << x << ", y = " << y << ", z = " << z << std::endl; }
+};
 
-    // Add numpy module
-    add_numpy_module(vm);
+int main()
+{
+    py::init();
+    py::extras_info<2> info;
 
-    // Load numpy.py
-    std::ifstream file("../test_numpy.py");
-    if(!file.is_open()){
-        std::cerr << "Failed to open test_numpy.py" << std::endl;
-        return 1;
+    try
+    {
+        auto __main__ = py::module_::import("__main__");
+
+        class_<Point> point(__main__, "Point");
+
+        bind(point.ptr(), "print", &Point::print, info);
+        // vm->bind_property()
+        py::object p = py::cast(Point{1, 3});
+        p.attr("print")(1);
     }
-    std::string source((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-    file.close();
-    vm->exec(source);
+    catch(pkpy::Exception& e)
+    {
+        std::cerr << e.msg << std::endl;
+    }
 
-    // Dispose the virtual machine
-    delete vm;
     return 0;
 }
