@@ -18,22 +18,24 @@ jobs:
     if: github.actor != 'github-actions[bot]'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          submodules: 'recursive'
+        uses: actions/checkout@v4
       - name: Sync submodule
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
           git config --global pull.rebase true
 
+          # git pull all submodules
+          git submodule update --init --recursive
+
           # sync pocketpy
           cd pocketpy
+          git branch
           old_commit=$(git rev-parse HEAD)
           echo "old_commit: $old_commit"
           # force pull latest changes
           git fetch --all
-          git reset --hard origin/main
+          git reset --hard origin/v2.0
           new_commit=$(git rev-parse HEAD)
           echo "new_commit: $new_commit"
 
