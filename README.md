@@ -18,6 +18,19 @@ This is the repository for GSoC'24 projects. [Implement pybind11 for bindings](h
 
 If you need to alter files which are not owned by you, please ask your mentor first.
 
+# Setup Instructions
+
+Clone the repository:
+```sh
+git clone https://github.com/pocketpy/gsoc-2024-dev.git
+```
+
+Initialize and update the pocketpy sub-module with this command:
+```sh
+cd gsoc-2024-dev
+git submodule update --init --recursive
+```
+
 # Build and test on Linux
 
 ```sh
