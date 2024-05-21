@@ -10,3 +10,13 @@ namespace pkpy{
         });
     }
 }
+
+int main(){
+    VM* vm = new VM();
+
+    add_numpy_module(vm);
+    vm->exec("import numpy; numpy.hello()");
+
+    delete vm;
+    return 0;
+}
