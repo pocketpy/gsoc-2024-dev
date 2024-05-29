@@ -547,6 +547,39 @@ ndarray<complex_> arctan(const ndarray<complex128>& arr) {
     return ndarray<complex_>(xt::atan(arr.get_array()));
 }
 
+// Exponents and Logarithms
+template <typename T>
+ndarray<float_> exp(const ndarray<T>& arr) {
+    return ndarray<float_>(xt::exp(arr.get_array()));
+}
+ndarray<complex_> exp(const ndarray<complex64>& arr) {
+    return ndarray<complex_>(xt::exp(arr.get_array()));
+}
+ndarray<complex_> exp(const ndarray<complex128>& arr) {
+    return ndarray<complex_>(xt::exp(arr.get_array()));
+}
+
+template <typename T>
+ndarray<float_> log(const ndarray<T>& arr) {
+    return ndarray<float_>(xt::log(arr.get_array()));
+}
+ndarray<complex_> log(const ndarray<complex64>& arr) {
+    return ndarray<complex_>(xt::log(arr.get_array()));
+}
+ndarray<complex_> log(const ndarray<complex128>& arr) {
+    return ndarray<complex_>(xt::log(arr.get_array()));
+}
+
+template <typename T>
+ndarray<float_> log2(const ndarray<T>& arr) {
+    return ndarray<float_>(xt::log2(arr.get_array()));
+}
+
+template <typename T>
+ndarray<float_> log10(const ndarray<T>& arr) {
+    return ndarray<float_>(xt::log10(arr.get_array()));
+}
+
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const ndarray<T>& arr) {
     os << arr.get_array();
