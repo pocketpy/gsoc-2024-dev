@@ -480,6 +480,73 @@ ndarray<T> linspace(const T& start, const T& stop, int num = 50, bool endpoint =
     return ndarray<T>(xt::linspace<T>(start, stop, num, endpoint));
 }
 
+// Trigonometry
+template <typename T>
+ndarray<float_> sin(const ndarray<T>& arr) {
+    return ndarray<float_>(xt::sin(arr.get_array()));
+}
+ndarray<complex_> sin(const ndarray<complex64>& arr) {
+    return ndarray<complex_>(xt::sin(arr.get_array()));
+}
+ndarray<complex_> sin(const ndarray<complex128>& arr) {
+    return ndarray<complex_>(xt::sin(arr.get_array()));
+}
+
+template <typename T>
+ndarray<float_> cos(const ndarray<T>& arr) {
+    return ndarray<float_>(xt::cos(arr.get_array()));
+}
+ndarray<complex_> cos(const ndarray<complex64>& arr) {
+    return ndarray<complex_>(xt::cos(arr.get_array()));
+}
+ndarray<complex_> cos(const ndarray<complex128>& arr) {
+    return ndarray<complex_>(xt::cos(arr.get_array()));
+}
+
+template <typename T>
+ndarray<float_> tan(const ndarray<T>& arr) {
+    return ndarray<float_>(xt::tan(arr.get_array()));
+}
+ndarray<complex_> tan(const ndarray<complex64>& arr) {
+    return ndarray<complex_>(xt::tan(arr.get_array()));
+}
+ndarray<complex_> tan(const ndarray<complex128>& arr) {
+    return ndarray<complex_>(xt::tan(arr.get_array()));
+}
+
+template <typename T>
+ndarray<float_> arcsin(const ndarray<T>& arr) {
+    return ndarray<float_>(xt::asin(arr.get_array()));
+}
+ndarray<complex_> arcsin(const ndarray<complex64>& arr) {
+    return ndarray<complex_>(xt::asin(arr.get_array()));
+}
+ndarray<complex_> arcsin(const ndarray<complex128>& arr) {
+    return ndarray<complex_>(xt::asin(arr.get_array()));
+}
+
+template <typename T>
+ndarray<float_> arccos(const ndarray<T>& arr) {
+    return ndarray<float_>(xt::acos(arr.get_array()));
+}
+ndarray<complex_> arccos(const ndarray<complex64>& arr) {
+    return ndarray<complex_>(xt::acos(arr.get_array()));
+}
+ndarray<complex_> arccos(const ndarray<complex128>& arr) {
+    return ndarray<complex_>(xt::acos(arr.get_array()));
+}
+
+template <typename T>
+ndarray<float_> arctan(const ndarray<T>& arr) {
+    return ndarray<float_>(xt::atan(arr.get_array()));
+}
+ndarray<complex_> arctan(const ndarray<complex64>& arr) {
+    return ndarray<complex_>(xt::atan(arr.get_array()));
+}
+ndarray<complex_> arctan(const ndarray<complex128>& arr) {
+    return ndarray<complex_>(xt::atan(arr.get_array()));
+}
+
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const ndarray<T>& arr) {
     os << arr.get_array();
