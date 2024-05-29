@@ -338,6 +338,39 @@ public:
         return ndarray<T>(result);
     }
 
+    // Searching and Sorting Methods
+    ndarray<T> argmin() const {
+        return ndarray<T>(xt::argmin(_array));
+    }
+    ndarray<T> argmin(int axis) const {
+        xt::xarray<T> result = xt::argmin(_array, {axis});
+        return ndarray<T>(result);
+    }
+
+    ndarray<T> argmax() const {
+        return ndarray<T>(xt::argmax(_array));
+    }
+    ndarray<T> argmax(int axis) const {
+        xt::xarray<T> result = xt::argmax(_array, {axis});
+        return ndarray<T>(result);
+    }
+
+    ndarray<T> argsort() const {
+        return ndarray<T>(xt::argsort(_array));
+    }
+    ndarray<T> argsort(int axis) const {
+        xt::xarray<T> result = xt::argsort(_array, {axis});
+        return ndarray<T>(result);
+    }
+
+    ndarray<T> sort() const {
+        return ndarray<T>(xt::sort(_array));
+    }
+    ndarray<T> sort(int axis) const {
+        xt::xarray<T> result = xt::sort(_array, {axis});
+        return ndarray<T>(result);
+    }
+
     private:
         xt::xarray<T> _array;
 
