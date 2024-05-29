@@ -428,6 +428,58 @@ public:
 
 };
 
+// Array Creation
+template <typename U, typename T>
+ndarray<U> array(const std::vector<T>& vec, const _ShapeLike& shape = {}) {
+    if (shape.empty()) {
+        return ndarray<U>(xt::cast<U>(xt::adapt(vec)));
+    } else {
+        return ndarray<U>(xt::cast<U>(xt::adapt(vec, shape)));
+    }
+}
+
+template <typename T>
+ndarray<T> zeros(const _ShapeLike& shape) {
+    return ndarray<T>(xt::zeros<T>(shape));
+}
+
+template <typename T>
+ndarray<T> ones(const _ShapeLike& shape) {
+    return ndarray<T>(xt::ones<T>(shape));
+}
+
+template <typename T>
+ndarray<T> full(const _ShapeLike& shape, const T& fill_value) {
+    xt::xarray<T> result = xt::ones<T>(shape);
+    for(auto it = result.begin(); it != result.end(); ++it) {
+        *it = fill_value;
+    }
+    return ndarray<T>(result);
+}
+
+template <typename T>
+ndarray<T> identity(int n){
+    return ndarray<T>(xt::eye<T>(n));
+}
+
+template <typename T>
+ndarray<T> arange(const T& stop) {
+    return ndarray<T>(xt::arange<T>(stop));
+}
+template <typename T>
+ndarray<T> arange(const T& start, const T& stop) {
+    return ndarray<T>(xt::arange<T>(start, stop));
+}
+template <typename T>
+ndarray<T> arange(const T& start, const T& stop, const T& step) {
+    return ndarray<T>(xt::arange<T>(start, stop, step));
+}
+
+template <typename T>
+ndarray<T> linspace(const T& start, const T& stop, int num = 50, bool endpoint = true) {
+    return ndarray<T>(xt::linspace<T>(start, stop, num, endpoint));
+}
+
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const ndarray<T>& arr) {
     os << arr.get_array();
