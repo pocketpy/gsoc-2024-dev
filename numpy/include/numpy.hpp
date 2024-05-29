@@ -580,6 +580,38 @@ ndarray<float_> log10(const ndarray<T>& arr) {
     return ndarray<float_>(xt::log10(arr.get_array()));
 }
 
+// Miscellanous
+template <typename T>
+ndarray<float_> round(const ndarray<T>& arr) {
+    return ndarray<float_>(xt::round(arr.get_array()));
+}
+
+template <typename T>
+ndarray<float_> floor(const ndarray<T>& arr) {
+    return ndarray<float_>(xt::floor(arr.get_array()));
+}
+
+template <typename T>
+ndarray<float_> ceil(const ndarray<T>& arr) {
+    return ndarray<float_>(xt::ceil(arr.get_array()));
+}
+
+template <typename T>
+auto abs(const ndarray<T>& arr) {
+    if constexpr (std::is_same_v<T, complex64> || std::is_same_v<T, complex128>) {
+        return ndarray<float_>(xt::abs(arr.get_array()));
+    } else {
+        return ndarray<T>(xt::abs(arr.get_array()));
+    }
+}
+
+template <typename T>
+ndarray<T> concatenate(const std::vector<ndarray<T>>& arrays, int axis = 0) {
+    xt::xarray<T> xarr1 = arrays[0].get_array();
+    xt::xarray<T> xarr2 = arrays[1].get_array();
+    return ndarray<T>(xt::concatenate(xt::xtuple(xarr1, xarr2), axis));
+}
+
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const ndarray<T>& arr) {
     os << arr.get_array();
