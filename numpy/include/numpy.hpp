@@ -371,6 +371,46 @@ public:
         return ndarray<T>(result);
     }
 
+    // Shape Manipulation
+    void reshape(const _ShapeLike& shape) {
+        _array.reshape(shape);
+    }
+
+    void resize(const _ShapeLike& shape) {
+        _array.resize(shape);
+    }
+
+    ndarray<T> squeeze() const {
+        return ndarray<T>(xt::squeeze(_array));
+    }
+    ndarray<T> squeeze(int axis) const {
+        xt::xarray<T> result = xt::squeeze(_array, {axis});
+        return ndarray<T>(result);
+    }
+
+    ndarray<T> transpose() const {
+        return ndarray<T>(xt::transpose(_array));
+    }
+    ndarray<T> transpose(const _ShapeLike& permutation) const {
+        return ndarray<T>(xt::transpose(_array, permutation));
+    }
+    template <typename... Args>
+    ndarray<T> transpose(Args... args) const {
+        xt::xarray<T> result = xt::transpose(_array, {args...});
+        return ndarray<T>(result);
+    }
+
+    ndarray<T> repeat(int repeats, int axis) const {
+        return ndarray<T>(xt::repeat(_array, repeats, axis));
+    }
+    ndarray<T> repeat(const std::vector<size_t>& repeats, int axis) const {
+        return ndarray<T>(xt::repeat(_array, repeats, axis));
+    }
+
+    ndarray<T> flatten() const {
+        return ndarray<T>(xt::flatten(_array));
+    }
+
     private:
         xt::xarray<T> _array;
 
