@@ -246,6 +246,98 @@ public:
     bool all() const { return xt::all(_array); }
     bool any() const { return xt::any(_array); }
 
+    // Aggregate Functions
+    ndarray<T> sum() const {
+        return ndarray<T>(xt::sum(_array));
+    }
+    ndarray<T> sum(int axis) const {
+        xt::xarray<T> result = xt::sum(_array, {axis});
+        return ndarray<T>(result);
+    }
+    template <typename... Args>
+    ndarray<T> sum(Args... args) const {
+        xt::xarray<T> result = xt::sum(_array, {args...});
+        return ndarray<T>(result);
+    }
+
+    ndarray<T> prod() const {
+        return ndarray<T>(xt::prod(_array));
+    }
+    ndarray<T> prod(int axis) const {
+        xt::xarray<T> result = xt::prod(_array, {axis});
+        return ndarray<T>(result);
+    }
+    template <typename... Args>
+    ndarray<T> prod(Args... args) const {
+        xt::xarray<T> result = xt::prod(_array, {args...});
+        return ndarray<T>(result);
+    }
+
+    ndarray<T> min() const {
+        return ndarray<T>(xt::amin(_array));
+    }
+    ndarray<T> min(int axis) const {
+        xt::xarray<T> result = xt::amin(_array, {axis});
+        return ndarray<T>(result);
+    }
+    template <typename... Args>
+    ndarray<T> min(Args... args) const {
+        xt::xarray<T> result = xt::amin(_array, {args...});
+        return ndarray<T>(result);
+    }
+
+    ndarray<T> max() const {
+        return ndarray<T>(xt::amax(_array));
+    }
+    ndarray<T> max(int axis) const {
+        xt::xarray<T> result = xt::amax(_array, {axis});
+        return ndarray<T>(result);
+    }
+    template <typename... Args>
+    ndarray<T> max(Args... args) const {
+        xt::xarray<T> result = xt::amax(_array, {args...});
+        return ndarray<T>(result);
+    }
+
+    ndarray<T> mean() const {
+        return ndarray<T>(xt::mean(_array));
+    }
+    ndarray<T> mean(int axis) const {
+        xt::xarray<T> result = xt::mean(_array, {axis});
+        return ndarray<T>(result);
+    }
+    template <typename... Args>
+    ndarray<T> mean(Args... args) const {
+        xt::xarray<T> result = xt::mean(_array, {args...});
+        return ndarray<T>(result);
+    }
+
+    ndarray<T> std() const {
+        return ndarray<T>(xt::stddev(_array));
+    }
+    ndarray<T> std(int axis) const {
+        xt::xarray<T> result = xt::stddev(_array, {axis});
+        return ndarray<T>(result);
+    }
+    template <typename... Args>
+    ndarray<T> std(Args... args) const {
+        xt::xarray<T> result = xt::stddev(_array, {args...});
+        return ndarray<T>(result);
+    }
+
+    ndarray<T> var() const {
+        return ndarray<T>(xt::variance(_array));
+    }
+    ndarray<T> var(int axis) const {
+        xt::xarray<T> result = xt::variance(_array, {axis});
+        return ndarray<T>(result);
+    }
+    template <typename... Args>
+    ndarray<T> var(Args... args) const {
+        xt::xarray<T> result = xt::variance(_array, {args...});
+        return ndarray<T>(result);
+    }
+
     private:
         xt::xarray<T> _array;
 
