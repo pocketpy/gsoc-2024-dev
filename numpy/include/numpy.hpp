@@ -242,6 +242,10 @@ public:
         return _array(args...);
     }
 
+    // Boolean Functions
+    bool all() const { return xt::all(_array); }
+    bool any() const { return xt::any(_array); }
+
     private:
         xt::xarray<T> _array;
 
