@@ -83,6 +83,165 @@ public:
     int size() const { return _array.size(); }
     _ShapeLike shape() const { return _ShapeLike(_array.shape().begin(), _array.shape().end()); }
 
+    // Dunder Methods
+    template <typename U>
+    auto operator+(const ndarray<U>& other) const {
+        using result_type = std::common_type_t<T, U>;
+        xt::xarray<result_type> result = xt::cast<result_type>(_array) + xt::cast<result_type>(other.get_array());
+        return ndarray<result_type>(result);
+    }
+    template <typename U>
+    auto operator+(const U& other) const {
+        return binary_operator_add_impl<U>(other);
+    }
+    template <typename U>
+    auto binary_operator_add_impl(const U& other) const {
+        using result_type = std::common_type_t<T, U>;
+        xt::xarray<result_type> result = xt::cast<result_type>(_array) + other;
+        return ndarray<result_type>(result);
+    }
+    template <>
+    auto binary_operator_add_impl(const float_& other) const {
+        xt::xarray<float_> result = xt::cast<float_>(_array) + other;
+        return ndarray<float_>(result);
+    }
+
+    template <typename U>
+    auto operator-(const ndarray<U>& other) const {
+        using result_type = std::common_type_t<T, U>;
+        xt::xarray<result_type> result = xt::cast<result_type>(_array) - xt::cast<result_type>(other.get_array());
+        return ndarray<result_type>(result);
+    }
+    template <typename U>
+    auto operator-(const U& other) const {
+        return binary_operator_sub_impl<U>(other);
+    }
+    template <typename U>
+    auto binary_operator_sub_impl(const U& other) const {
+        using result_type = std::common_type_t<T, U>;
+        xt::xarray<result_type> result = xt::cast<result_type>(_array) - other;
+        return ndarray<result_type>(result);
+    }
+    template <>
+    auto binary_operator_sub_impl(const float_& other) const {
+        xt::xarray<float_> result = xt::cast<float_>(_array) - other;
+        return ndarray<float_>(result);
+    }
+
+    template <typename U>
+    auto operator*(const ndarray<U>& other) const {
+        using result_type = std::common_type_t<T, U>;
+        xt::xarray<result_type> result = xt::cast<result_type>(_array) * xt::cast<result_type>(other.get_array());
+        return ndarray<result_type>(result);
+    }
+    template <typename U>
+    auto operator*(const U& other) const {
+        return binary_operator_mul_impl<U>(other);
+    }
+    template <typename U>
+    auto binary_operator_mul_impl(const U& other) const {
+        using result_type = std::common_type_t<T, U>;
+        xt::xarray<result_type> result = xt::cast<result_type>(_array) * other;
+        return ndarray<result_type>(result);
+    }
+    template <>
+    auto binary_operator_mul_impl(const float_& other) const {
+        xt::xarray<float_> result = xt::cast<float_>(_array) * other;
+        return ndarray<float_>(result);
+    }
+
+    template <typename U>
+    auto operator/(const ndarray<U>& other) const {
+        using result_type = std::common_type_t<T, U>;
+        xt::xarray<result_type> result = xt::cast<result_type>(_array) / xt::cast<result_type>(other.get_array());
+        return ndarray<result_type>(result);
+    }
+    template <typename U>
+    auto operator/(const U& other) const {
+        return binary_operator_truediv_impl<U>(other);
+    }
+    template <typename U>
+    auto binary_operator_truediv_impl(const U& other) const {
+        using result_type = std::common_type_t<T, U>;
+        xt::xarray<result_type> result = xt::cast<result_type>(_array) / other;
+        return ndarray<result_type>(result);
+    }
+    template <>
+    auto binary_operator_truediv_impl(const float_& other) const {
+        xt::xarray<float_> result = xt::cast<float_>(_array) / other;
+        return ndarray<float_>(result);
+    }
+
+    template <typename U>
+    auto pow(const ndarray<U>& other) const {
+        using result_type = std::common_type_t<T, U>;
+        xt::xarray<result_type> result = xt::pow(xt::cast<result_type>(_array), xt::cast<result_type>(other.get_array()));
+        return ndarray<result_type>(result);
+    }
+    template <typename U>
+    auto pow(const U& other) const {
+        return pow_impl<U>(other);
+    }
+    template <typename U>
+    auto pow_impl(const U& other) const {
+        xt::xarray<float_> result = xt::pow(xt::cast<float_>(_array), other);
+        return ndarray<float_>(result);
+    }
+
+    template <typename U>
+    auto matmul(const ndarray<U>& other) const {
+        using result_type = std::common_type_t<T, U>;
+        xt::xarray<result_type> result = xt::linalg::dot(xt::cast<result_type>(_array), xt::cast<result_type>(other.get_array()));
+        return ndarray<result_type>(result);
+    }
+
+    template <typename U>
+    ndarray operator&(const ndarray<U>& other) const {
+        xt::xarray<int_> result = _array & other.get_array();
+        return ndarray(result);
+    }
+    template <typename U>
+    ndarray operator&(const U& other) const {
+        xt::xarray<int_> result = _array & other;
+        return ndarray(result);
+    }
+
+    template <typename U>
+    ndarray operator|(const ndarray<U>& other) const {
+        xt::xarray<int_> result = _array | other.get_array();
+        return ndarray(result);
+    }
+    template <typename U>
+    ndarray operator|(const U& other) const {
+        xt::xarray<int_> result = _array | other;
+        return ndarray(result);
+    }
+
+    template <typename U>
+    ndarray operator^(const ndarray<U>& other) const {
+        xt::xarray<int_> result = _array ^ other.get_array();
+        return ndarray(result);
+    }
+    template <typename U>
+    ndarray operator^(const U& other) const {
+        xt::xarray<int_> result = _array ^ other;
+        return ndarray(result);
+    }
+
+    ndarray operator~() const { return ndarray(~(_array)); }
+
+    T operator[](int index) const { return _array[index]; }
+    template <typename... Args>
+    T operator()(Args... args) const {
+        return _array(args...);
+    }
+
+    T& operator[](int index) { return _array[index]; }
+    template <typename... Args>
+    T& operator()(Args... args) {
+        return _array(args...);
+    }
+
     private:
         xt::xarray<T> _array;
 
