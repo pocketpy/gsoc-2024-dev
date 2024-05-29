@@ -74,9 +74,18 @@ public:
     ndarray(std::initializer_list<std::initializer_list<std::initializer_list<std::initializer_list<T>>>> init_list) : _array(init_list) {}
     ndarray(std::initializer_list<std::initializer_list<std::initializer_list<std::initializer_list<std::initializer_list<T>>>>> init_list) : _array(init_list) {}
 
+    // Accessor function for _array
+    const xt::xarray<T>& get_array() const { return _array; }
+
     private:
         xt::xarray<T> _array;
 
 };
+
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const ndarray<T>& arr) {
+    os << arr.get_array();
+    return os;
+}
 
 } // namespace pkpy
