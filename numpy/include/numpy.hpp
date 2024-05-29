@@ -1,5 +1,11 @@
 #pragma once
 
+#include <xtensor/xarray.hpp>
+#include <xtensor/xio.hpp>
+#include <xtensor/xmath.hpp>
+#include <xtensor/xsort.hpp> 
+#include <xtensor/xview.hpp> 
+#include <xtensor-blas/xlinalg.hpp>
 #include <cstdint>
 #include <complex>
 #include <type_traits>
@@ -59,6 +65,17 @@ class ndarray {
 public:
     // Constructor for xtensor xarray
     ndarray() = default;
+    ndarray(const xt::xarray<T>& arr) : _array(arr) {}
+
+    // Constructor for mutli-dimensional array
+    ndarray(std::initializer_list<T> init_list) : _array(init_list) {}
+    ndarray(std::initializer_list<std::initializer_list<T>> init_list) : _array(init_list) {}
+    ndarray(std::initializer_list<std::initializer_list<std::initializer_list<T>>> init_list) : _array(init_list) {}
+    ndarray(std::initializer_list<std::initializer_list<std::initializer_list<std::initializer_list<T>>>> init_list) : _array(init_list) {}
+    ndarray(std::initializer_list<std::initializer_list<std::initializer_list<std::initializer_list<std::initializer_list<T>>>>> init_list) : _array(init_list) {}
+
+    private:
+        xt::xarray<T> _array;
 
 };
 
