@@ -411,6 +411,18 @@ public:
         return ndarray<T>(xt::flatten(_array));
     }
 
+    // Miscellanous
+    template <typename U>
+    ndarray<U> astype() const {
+        xt::xarray<U> result = xt::cast<U>(_array);
+        return ndarray<U>(result);
+    }
+
+    ndarray<T> copy() const {
+        ndarray<T> result = *this;
+        return result;
+    }
+
     private:
         xt::xarray<T> _array;
 
