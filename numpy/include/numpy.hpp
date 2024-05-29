@@ -77,6 +77,12 @@ public:
     // Accessor function for _array
     const xt::xarray<T>& get_array() const { return _array; }
 
+    // Properties
+    _Dtype dtype() const { return dtype_traits<T>::name; }
+    int ndim() const { return _array.dimension(); }
+    int size() const { return _array.size(); }
+    _ShapeLike shape() const { return _ShapeLike(_array.shape().begin(), _array.shape().end()); }
+
     private:
         xt::xarray<T> _array;
 
