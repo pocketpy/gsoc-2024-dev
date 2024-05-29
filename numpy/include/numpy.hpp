@@ -54,4 +54,12 @@ using _Dtype = std::string;
 using _ShapeLike = std::vector<int_>;
 using _Number = std::variant<int_, float_, bool_>;
 
+template <typename T>
+class ndarray {
+public:
+    // Constructor for xtensor xarray
+    ndarray() = default;
+
+};
+
 } // namespace pkpy
