@@ -1,6 +1,6 @@
-# 类型转换
+# Type Conversion
 
-pybind11 如何做到 C++ 和 Python 中函数函数的双向调用的呢？关键就是 implicit cast。pybind11 在函数调用的时候会适当的进行类型转换从而保证调用正确。
+How does pybind11 achieve bidirectional function calls between C++ and Python? The key is implicit cast. pybind11 performs appropriate type conversions during function calls to ensure correct invocation.
 
 # C++ -> Python
 
@@ -23,9 +23,9 @@ pybind11 如何做到 C++ 和 Python 中函数函数的双向调用的呢？关�
 | T\*                                               | instance  | instance            |
 | T&, T&&                                           | instance  | instance            |
 
-# 自定义类型转换
+# Custom Type Conversion
 
-在 pybind11 中，类型转换是由`type_caster`负责的，一个合格的`type_caster`具有以下结构
+In pybind11, type conversion is handled by `type_caster`. A qualified `type_caster` has the following structure:
 
 ```cpp
 template<typename T>
@@ -39,4 +39,4 @@ struct type_caster {
 };
 ```
 
-其中`load`函数负责 Python 对象到 C++ 对象的转换，`h`是 Python 对象的句柄，`convert`表示是否需要进行类型转换。`cast`函数负责 C++ 对象到 Python 对象的转换，`src`是 C++ 对象的引用，`policy`是返回值的策略，`parent`是父对象的句柄。
+The `load` function is responsible for converting a Python object to a C++ object. `h` is the handle to the Python object, and `convert` indicates whether type conversion is needed. The `cast` function is responsible for converting a C++ object to a Python object. `src` is a reference to the C++ object, `policy` is the return value policy, and `parent` is the handle to the parent object.

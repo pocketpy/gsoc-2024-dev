@@ -20,7 +20,10 @@ namespace pybind11 {
                 typeid(T).name(),
                 sizeof(T),
                 alignof(T),
-                [](void* ptr) { delete (T*)ptr; },
+                [](void* ptr) {
+                    ((T*)ptr)->~T();
+                    operator delete (ptr);
+                },
                 [](void* dst, const void* src) { new (dst) T(*(const T*)src); },
                 [](void* dst, void* src) { new (dst) T(std::move(*(T*)src)); },
                 &typeid(T),
@@ -130,7 +133,7 @@ namespace pybind11 {
             }
         }
 
-        void _gc_mark() const noexcept {
+        void _gc_mark(pkpy::VM* vm) const noexcept {
             if(parent && (flag & Flag::Ref)) {
                 PK_OBJ_MARK(parent);
             }

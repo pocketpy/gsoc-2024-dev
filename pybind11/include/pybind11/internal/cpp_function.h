@@ -1,7 +1,7 @@
 #pragma once
 
 #include "cast.h"
-#include <functional>
+#include <bitset>
 
 namespace pybind11 {
 
@@ -289,19 +289,19 @@ namespace pybind11 {
     template <typename Getter_, typename Setter_, typename... Extras>
     handle bind_property(const handle& obj,
                          const char* name,
-                         Getter_&& getter,
-                         Setter_&& setter,
+                         Getter_&& getter_,
+                         Setter_&& setter_,
                          const Extras&... extras) {
         pkpy::PyVar var = obj.ptr();
-        pkpy::PyVar _0 = vm->None;
-        pkpy::PyVar _1 = vm->None;
+        pkpy::PyVar getter = vm->None;
+        pkpy::PyVar setter = vm->None;
         using Getter = std::decay_t<Getter_>;
         using Setter = std::decay_t<Setter_>;
 
-        _0 = vm->new_object<pkpy::NativeFunc>(
+        getter = vm->new_object<pkpy::NativeFunc>(
             vm->tp_native_func,
             [](pkpy::VM* vm, pkpy::ArgsView view) -> pkpy::PyVar {
-                auto getter = pkpy::lambda_get_userdata<Getter>(view.begin());
+                auto& getter = pkpy::lambda_get_userdata<Getter>(view.begin());
 
                 if constexpr(std::is_member_pointer_v<Getter>) {
                     using Self = class_type_t<Getter>;
@@ -333,13 +333,13 @@ namespace pybind11 {
                 }
             },
             1,
-            std::forward<Getter>(getter));
+            std::forward<Getter_>(getter_));
 
         if constexpr(!std::is_same_v<Setter, std::nullptr_t>) {
-            _1 = vm->new_object<pkpy::NativeFunc>(
+            setter = vm->new_object<pkpy::NativeFunc>(
                 vm->tp_native_func,
                 [](pkpy::VM* vm, pkpy::ArgsView view) -> pkpy::PyVar {
-                    auto setter = pkpy::lambda_get_userdata<Setter>(view.begin());
+                    auto& setter = pkpy::lambda_get_userdata<Setter>(view.begin());
 
                     if constexpr(std::is_member_pointer_v<Setter>) {
                         using Self = class_type_t<Setter>;
@@ -372,10 +372,10 @@ namespace pybind11 {
                     vm->TypeError("invalid argument");
                 },
                 2,
-                std::forward<Setter>(setter));
+                std::forward<Setter_>(setter_));
         }
 
-        pkpy::PyVar property = vm->new_object<pkpy::Property>(vm->tp_property, _0, _1);
+        pkpy::PyVar property = vm->new_object<pkpy::Property>(vm->tp_property, getter, setter);
         var->attr().set(name, property);
         return property;
     }

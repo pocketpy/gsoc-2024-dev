@@ -9,8 +9,8 @@ namespace pybind11
 
     inline void initialize(bool enable_os = true)
     {
-        vm = ::new pkpy::VM(enable_os);
-        _ref_counts_map = ::new std::map<pkpy::PyVar, int*>();
+        vm = new pkpy::VM(enable_os);
+        _ref_counts_map = new std::map<pkpy::PyVar, int*>();
 
         // use to keep alive PyObject, when the object is hold by C++ side.
         vm->heap._gc_marker_ex = [](pkpy::VM* vm)
@@ -28,10 +28,16 @@ namespace pybind11
                 {
                     // if ref count is zero, then delete it.
                     iter = _ref_counts_map->erase(iter);
-                    ::delete ref_count;
+                    delete ref_count;
                 }
             }
         };
+    }
+
+    inline void finalize()
+    {
+        delete _ref_counts_map;
+        delete vm;
     }
 
     enum class return_value_policy : uint8_t

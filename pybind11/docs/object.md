@@ -12,9 +12,7 @@ public:
 }
 ```
 
-对 Python 对象的轻量级包装，不持有 Python 对象的引用。常用于中间计算结果的传递。
-
-成员函数
+A lightweight wrapper for Python objects, which does not hold a reference to the Python object. Commonly used for passing intermediate calculation results.
 
 #### cast
 
@@ -23,7 +21,7 @@ template <typename T>
 T cast() const;
 ```
 
-把 Python 对象转换为 C++ 对象。如果转换失败，会抛出异常。
+Converts a Python object to a C++ object. Throws an exception if the conversion fails.
 
 #### is/is_none
 

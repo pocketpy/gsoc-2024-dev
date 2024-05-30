@@ -47,6 +47,8 @@ namespace pybind11 {
 
         pkpy::PyVar ptr() const { return m_ptr; }
 
+        int reference_count() const { return ref_count == nullptr ? 0 : *ref_count; }
+
         const handle& inc_ref() const {
             PK_DEBUG_ASSERT(m_ptr != nullptr);
             if(ref_count == nullptr) {
@@ -66,22 +68,17 @@ namespace pybind11 {
 
         const handle& dec_ref() const {
             PK_DEBUG_ASSERT(m_ptr != nullptr);
-
-            if(ref_count == nullptr) {
-                auto iter = _ref_counts_map->find(m_ptr);
-                if(iter == _ref_counts_map->end()) {
-                    return *this;
-                }
-                ref_count = iter->second;
-            }
+            PK_DEBUG_ASSERT(ref_count != nullptr);
 
             *ref_count -= 1;
+            try {
+                if(*ref_count == 0) {
+                    _ref_counts_map->erase(m_ptr);
+                    ::delete ref_count;
+                    ref_count = nullptr;
+                }
+            } catch(std::exception& e) { std::cerr << "Error: " << e.what() << std::endl; }
 
-            if(*ref_count == 0) {
-                _ref_counts_map->erase(m_ptr);
-                ::delete ref_count;
-                ref_count = nullptr;
-            }
             return *this;
         }
 
@@ -165,8 +162,6 @@ namespace pybind11 {
 
     class object : public handle {
     public:
-        object() = default;
-
         object(const object& other) : handle(other) { inc_ref(); }
 
         object(object&& other) noexcept : handle(other) {

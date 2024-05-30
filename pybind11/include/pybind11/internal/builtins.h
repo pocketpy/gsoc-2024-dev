@@ -3,6 +3,10 @@
 #include "types.h"
 
 namespace pybind11 {
+    inline void exec(const char* code, handle global = {}, handle local = {}) {
+        vm->py_exec(code, global.ptr(), local.ptr());
+    }
+
     // wrapper for builtin functions in Python
     inline bool hasattr(const handle& obj, const handle& name) {
         auto& key = _builtin_cast<pkpy::Str>(name);

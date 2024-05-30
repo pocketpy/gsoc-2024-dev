@@ -5,7 +5,17 @@
 namespace pybind11 {
 
     class module : public object {
+
     public:
+        using object::object;
+
+        static module import(const char* name) {
+            if(name == std::string_view{"__main__"}) {
+                return module{vm->_main, true};
+            } else {
+                return module{vm->py_import(name, false), true};
+            }
+        }
     };
 
     // TODO:
@@ -16,19 +26,19 @@ namespace pybind11 {
     template <typename T, typename... Others>
     class class_ : public type {
     public:
-        template <typename... Args>
-        class_(const handle& scope, const char* name, Args&&... args) {
-            pkpy::PyVar mod = scope.ptr();
-            m_ptr = vm->new_type_object(mod,
-                                        name,
-                                        vm->tp_object,
-                                        false,
-                                        pkpy::PyTypeInfo::Vt::get<T>());
+        using type::type;
 
+        template <typename... Args>
+        class_(const handle& scope, const char* name, Args&&... args) :
+            type(vm->new_type_object(scope.ptr(),
+                                     name,
+                                     vm->tp_object,
+                                     false,
+                                     pkpy::PyTypeInfo::Vt::get<instance>()),
+                 true) {
+            pkpy::PyVar mod = scope.ptr();
             mod->attr().set(name, m_ptr);
             vm->_cxx_typeid_map[typeid(T)] = _builtin_cast<pkpy::Type>(m_ptr);
-            inc_ref();
-
             vm->bind_func(m_ptr, "__new__", -1, [](pkpy::VM* vm, pkpy::ArgsView args) {
                 auto cls = _builtin_cast<pkpy::Type>(args[0]);
                 return instance::create<T>(cls);
@@ -72,7 +82,7 @@ namespace pybind11 {
         /// bind operators
         template <typename Operator, typename... Extras>
         class_& def(Operator op, const Extras&... extras) {
-            op.bind(*this, extras...);
+            op.execute(*this, extras...);
             return *this;
         }
 
@@ -141,6 +151,33 @@ namespace pybind11 {
             static_assert(
                 dependent_false<Getter>,
                 "define static properties requires metaclass. This is a complex feature with few use cases, so it may never be implemented.");
+            return *this;
+        }
+    };
+
+    template <typename T, typename... Others>
+    class enum_ : public class_<T, Others...> {
+        std::map<const char*, pkpy::PyVar> m_values;
+
+    public:
+        using class_<T, Others...>::class_;
+
+        template <typename... Args>
+        enum_(const handle& scope, const char* name, Args&&... args) :
+            class_<T, Others...>(scope, name, std::forward<Args>(args)...) {}
+
+        enum_& value(const char* name, T value) {
+            handle var = type_caster<T>::cast(value, return_value_policy::copy);
+            this->m_ptr->attr().set(name, var.ptr());
+            m_values[name] = var.ptr();
+            return *this;
+        }
+
+        enum_& export_values() {
+            pkpy::PyVar mod = this->m_ptr->attr("__module__");
+            for(auto& [name, value]: m_values) {
+                mod->attr().set(name, value);
+            }
             return *this;
         }
     };

@@ -5,6 +5,7 @@
 namespace pybind11 {
     class type : public object {
     public:
+        using object::object;
         template <typename T>
         static handle handle_of();
     };

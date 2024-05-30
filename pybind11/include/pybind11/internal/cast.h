@@ -113,8 +113,6 @@ namespace pybind11 {
         }
     };
 
-
-
     template <typename T, typename>
     struct type_caster {
         value_wrapper<T> value;
@@ -132,7 +130,7 @@ namespace pybind11 {
         }
 
         template <typename U>
-        static handle cast(U&& value, return_value_policy policy, handle parent = handle()) {
+        static handle cast(U&& value, return_value_policy policy, const handle& parent = handle()) {
             // TODO: support implicit cast
             const auto& info = typeid(underlying_type);
             bool existed = vm->_cxx_typeid_map.find(info) != vm->_cxx_typeid_map.end();
@@ -141,6 +139,34 @@ namespace pybind11 {
                 return instance::create(std::forward<U>(value), type, policy, parent.ptr());
             }
             vm->TypeError("type not registered");
+        }
+    };
+
+    template <typename T>
+    struct type_caster<T, std::enable_if_t<std::is_pointer_v<T> || std::is_reference_v<T>>> {
+        using underlying = std::conditional_t<std::is_pointer_v<T>,
+                                              std::remove_pointer_t<T>,
+                                              std::remove_reference_t<T>>;
+
+        struct wrapper {
+            type_caster<underlying> caster;
+
+            operator T () {
+                if constexpr(std::is_pointer_v<T>) {
+                    return caster.value.pointer;
+                } else {
+                    return caster.value;
+                }
+            }
+        };
+
+        wrapper value;
+
+        bool load(const handle& src, bool convert) { return value.caster.load(src, convert); }
+
+        template <typename U>
+        static handle cast(U&& value, return_value_policy policy, const handle& parent) {
+            return type_caster<underlying>::cast(std::forward<U>(value), policy, parent);
         }
     };
 }  // namespace pybind11
