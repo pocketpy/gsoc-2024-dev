@@ -37,11 +37,20 @@ void test_str() {
     assert(obj.cast<std::string_view>() == "123");
 }
 
+void test_list() {
+    py::handle obj = py::vm->eval("[1, 2, 3]");
+    obj[2] = py::cast(4);
+    for(auto i: obj) {
+        py::print(i);
+    }
+}
+
 int test_types() {
     py::initialize();
     test_int();
     test_float();
     test_str();
+    test_list();
     py::finalize();
     return 0;
 }

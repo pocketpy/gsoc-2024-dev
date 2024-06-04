@@ -3,6 +3,13 @@
 #include "object.h"
 
 namespace pybind11 {
+    class none : public object {
+    public:
+        using object::object;
+
+        none() : object(vm->None, false) {}
+    };
+
     class type : public object {
     public:
         using object::object;
@@ -10,46 +17,25 @@ namespace pybind11 {
         static handle handle_of();
     };
 
-    class iterable : public object {
+    class bool_ : public object {
     public:
         using object::object;
-        iterable() = delete;
+
+        bool_(bool value) : object(pkpy::py_var(vm, value), false) {}
     };
 
-    class iterator : public object {
+    class int_ : public object {
     public:
         using object::object;
-        iterator() = delete;
+
+        int_(int64_t value) : object(pkpy::py_var(vm, value), true) {}
     };
 
-    class list : public object {
+    class float_ : public object {
     public:
         using object::object;
 
-        list() : object(vm->new_object<pkpy::List>(pkpy::VM::tp_list), true) {}
-    };
-
-    class tuple : public object {
-    public:
-        using object::object;
-
-        tuple(int n) : object(vm->new_object<pkpy::Tuple>(pkpy::VM::tp_tuple, n), true) {}
-
-        //& operator[](int i){ return _args[i]; }
-        // PyVar operator[](int i) const { return _args[i]; }
-    };
-
-    class set : public object {
-    public:
-        using object::object;
-        // set() : object(vm->new_object<pkpy::Se>(pkpy::VM::tp_set), true) {}
-    };
-
-    class dict : public object {
-    public:
-        using object::object;
-
-        dict() : object(vm->new_object<pkpy::Dict>(pkpy::VM::tp_dict), true) {}
+        float_(double value) : object(pkpy::py_var(vm, value), true) {}
     };
 
     class str : public object {
@@ -75,32 +61,80 @@ namespace pybind11 {
         str format(Args&&... args) const;
     };
 
-    class none : public object {
+    class bytes : public object {
     public:
         using object::object;
-
-        none() : object(vm->None, false) {}
     };
 
-    class int_ : public object {
+    class bytearray : public object {
     public:
         using object::object;
-
-        int_(int64_t value) : object(pkpy::py_var(vm, value), true) {}
     };
 
-    class float_ : public object {
+    class tuple : public object {
     public:
         using object::object;
 
-        float_(double value) : object(pkpy::py_var(vm, value), true) {}
+        tuple(int n) : object(vm->new_object<pkpy::Tuple>(pkpy::VM::tp_tuple, n), true) {}
+
+        //& operator[](int i){ return _args[i]; }
+        // PyVar operator[](int i) const { return _args[i]; }
     };
 
-    class bool_ : public object {
+    class list : public object {
     public:
         using object::object;
 
-        bool_(bool value) : object(pkpy::py_var(vm, value), false) {}
+        list() : object(vm->new_object<pkpy::List>(pkpy::VM::tp_list), true) {}
+    };
+
+    class set : public object {
+    public:
+        using object::object;
+        // set() : object(vm->new_object<pkpy::Se>(pkpy::VM::tp_set), true) {}
+    };
+
+    class dict : public object {
+    public:
+        using object::object;
+
+        dict() : object(vm->new_object<pkpy::Dict>(pkpy::VM::tp_dict), true) {}
+    };
+
+    class iterable : public object {
+    public:
+        using object::object;
+        iterable() = delete;
+    };
+
+    class iterator : public object {
+        handle value;
+
+        iterator(pkpy::PyVar stop) : object(none{}, false), value(stop) {}
+
+    public:
+        using object::object;
+        iterator() = delete;
+
+        iterator(object&& obj) : object(std::move(obj)), value(vm->py_next(m_ptr)) {}
+
+        iterator operator++ () {
+            value = vm->py_next(m_ptr);
+            return *this;
+        }
+
+        iterator operator++ (int) {
+            value = vm->py_next(m_ptr);
+            return *this;
+        }
+
+        handle operator* () const { return value; }
+
+        bool operator== (const iterator& other) const { return value.ptr() == other.value.ptr(); }
+
+        bool operator!= (const iterator& other) const { return !(*this == other); }
+
+        static iterator sentinel() { return iterator(vm->StopIteration); }
     };
 
     class function : public object {
@@ -108,30 +142,34 @@ namespace pybind11 {
         using object::object;
     };
 
-    class attr_accessor : public object {
-    private:
-        object key;
-
+    class buffer : public object {
     public:
-        template <typename T>
-        attr_accessor(const object& obj, T&& key) : object(obj), key(std::forward<T>(key)){};
-
-        template <typename T>
-        attr_accessor& operator= (T&& value) & {
-            static_assert(std::is_base_of_v<object, std::decay_t<T>>,
-                          "T must be derived from object");
-            m_ptr = std::forward<T>(value);
-            return *this;
-        }
-
-        template <typename T>
-        attr_accessor& operator= (T&& value) && {
-            static_assert(std::is_base_of_v<object, std::decay_t<T>>,
-                          "T must be derived from object");
-            setattr(*this, key, std::forward<T>(value));
-            return *this;
-        }
+        using object::object;
     };
+
+    class memory_view : public object {
+    public:
+        using object::object;
+    };
+
+    class capsule : public object {
+    public:
+        using object::object;
+    };
+
+    class args : public tuple {
+        using tuple::tuple;
+    };
+
+    class kwargs : public dict {
+        using dict::dict;
+    };
+
+    inline iterator handle::begin() const {
+        return reinterpret_borrow<object>(vm->py_iter(this->ptr()));
+    }
+
+    inline iterator handle::end() const { return iterator::sentinel(); }
 
     inline attr_accessor handle::attr(const char* name) const {
         return attr_accessor(reinterpret_borrow<object>(*this), str(name));
@@ -144,29 +182,6 @@ namespace pybind11 {
     inline attr_accessor handle::attr(object&& name) const {
         return attr_accessor(reinterpret_borrow<object>(*this), std::move(name));
     }
-
-    class item_accessor : public object {
-    public:
-        object key;
-
-    public:
-        template <typename T>
-        item_accessor(const object& obj, T&& key) : object(obj), key(std::forward<T>(key)){};
-
-        template <typename T>
-        item_accessor& operator= (T&& value) & {
-            static_assert(std::is_base_of_v<object, std::decay_t<T>>,
-                          "T must be derived from object");
-            m_ptr = std::forward<T>(value);
-        }
-
-        template <typename T>
-        item_accessor& operator= (object&& value) && {
-            static_assert(std::is_base_of_v<object, std::decay_t<T>>,
-                          "T must be derived from object");
-            setitem(*this, key, std::forward<T>(value));
-        }
-    };
 
     inline item_accessor handle::operator[] (int64_t key) const {
         return item_accessor(reinterpret_borrow<object>(*this), int_(key));
@@ -190,14 +205,6 @@ namespace pybind11 {
 
         // vm->vectorcall()
     }
-
-    class args : public tuple {
-        using tuple::tuple;
-    };
-
-    class kwargs : public dict {
-        using dict::dict;
-    };
 
     template <typename T>
     handle type::handle_of() {

@@ -72,7 +72,10 @@ namespace pybind11 {
 
         const handle& dec_ref() const {
             assert(m_ptr != nullptr);
-            assert(ref_count != nullptr);
+            
+            if(ref_count == nullptr) {
+                return *this;
+            }
 
             *ref_count -= 1;
 
@@ -251,5 +254,58 @@ namespace pybind11 {
     PYBIND11_BINARY_OPERATOR(>=, "ge");
 
 #undef PYBIND11_BINARY_OPERATOR
+
+    inline void setattr(const handle& obj, const handle& key, const handle& value);
+    inline void setitem(const handle& obj, const handle& key, const handle& value);
+
+    class attr_accessor : public object {
+    private:
+        object key;
+
+    public:
+        template <typename T>
+        attr_accessor(const object& obj, T&& key) : object(obj), key(std::forward<T>(key)){};
+
+        template <typename T>
+        attr_accessor& operator= (T&& value) & {
+            static_assert(std::is_base_of_v<object, std::decay_t<T>>,
+                          "T must be derived from object");
+            m_ptr = std::forward<T>(value);
+            return *this;
+        }
+
+        template <typename T>
+        attr_accessor& operator= (T&& value) && {
+            static_assert(std::is_base_of_v<object, std::decay_t<T>>,
+                          "T must be derived from object");
+            setattr(*this, key, std::forward<T>(value));
+            return *this;
+        }
+    };
+
+    class item_accessor : public object {
+    public:
+        object key;
+
+    public:
+        template <typename T>
+        item_accessor(const object& obj, T&& key) : object(obj), key(std::forward<T>(key)){};
+
+        template <typename T>
+        item_accessor& operator= (T&& value) & {
+            static_assert(std::is_base_of_v<object, std::decay_t<T>>,
+                          "T must be derived from object");
+            m_ptr = std::forward<T>(value);
+            return *this;
+        }
+
+        template <typename T>
+        item_accessor& operator= (T&& value) && {
+            static_assert(std::is_base_of_v<object, std::decay_t<T>>,
+                          "T must be derived from object");
+            setitem(*this, key, std::forward<T>(value));
+            return *this;
+        }
+    };
 
 }  // namespace pybind11

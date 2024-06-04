@@ -2,30 +2,23 @@
 
 #include <pocketpy.h>
 
-namespace pybind11
-{
+namespace pybind11 {
     inline pkpy::VM* vm = nullptr;
     inline std::map<pkpy::PyVar, int*>* _ref_counts_map = nullptr;
 
-    inline void initialize(bool enable_os = true)
-    {
+    inline void initialize(bool enable_os = true) {
         vm = new pkpy::VM(enable_os);
         _ref_counts_map = new std::map<pkpy::PyVar, int*>();
 
         // use to keep alive PyObject, when the object is hold by C++ side.
-        vm->heap._gc_marker_ex = [](pkpy::VM* vm)
-        {
-            for(auto iter = _ref_counts_map->begin(); iter != _ref_counts_map->end();)
-            {
+        vm->heap._gc_marker_ex = [](pkpy::VM* vm) {
+            for(auto iter = _ref_counts_map->begin(); iter != _ref_counts_map->end();) {
                 auto ref_count = iter->second;
-                if(*ref_count != 0)
-                {
+                if(*ref_count != 0) {
                     // if ref count is not zero, then mark it.
                     PK_OBJ_MARK(iter->first);
                     ++iter;
-                }
-                else
-                {
+                } else {
                     // if ref count is zero, then delete it.
                     iter = _ref_counts_map->erase(iter);
                     delete ref_count;
@@ -34,14 +27,12 @@ namespace pybind11
         };
     }
 
-    inline void finalize()
-    {
+    inline void finalize() {
         delete _ref_counts_map;
         delete vm;
     }
 
-    enum class return_value_policy : uint8_t
-    {
+    enum class return_value_policy : uint8_t {
         /**
          *  This is the default return value policy, which falls back to the policy
          *  return_value_policy::take_ownership when the return value is a pointer.

@@ -45,6 +45,27 @@ Need further discussion.
 
 Need further discussion.
 
+- [x] `object`
+- [x] `none`
+- [x] `type`
+- [x] `bool_`
+- [x] `int_`
+- [x] `float_`
+- [x] `str`
+- [ ] `bytes`
+- [ ] `bytearray`
+- [ ] `tuple`
+- [ ] `list`
+- [ ] `set`
+- [ ] `dict`
+- [ ] `slice`
+- [x] `iterable`
+- [x] `iterator`
+- [ ] `function`
+- [ ] `buffer`
+- [ ] `memoryview`
+- [ ] `capsule`
+
 ## [Miscellaneous](https://pybind11.readthedocs.io/en/stable/advanced/misc.html)
 
 - [ ] Global Interpreter Lock (GIL)

@@ -61,24 +61,27 @@ namespace pybind11 {
         vm->setattr(obj.ptr(), name, value.ptr());
     }
 
+    inline void setitem(const handle& obj, const handle& key, const handle& value) {
+        vm->call_method(obj.ptr(), pkpy::__setitem__, key.ptr(), value.ptr());
+    }
+
     template <typename T>
     inline bool isinstance(const handle& obj) {
-        pkpy::Type cls = _builtin_cast<pkpy::Type>(type::handle_of<T>().ptr());
-        return vm->isinstance(obj.ptr(), cls);
+        if constexpr(std::is_same_v<T, iterable>) {
+            // if the object has __iter__ attribute, it is iterable
+            return vm->getattr(obj.ptr(), pkpy::__iter__, false) != nullptr;
+        } else if constexpr(std::is_same_v<T, iterator>) {
+            // if the object has __iter__ and __next__ attribute, it is iterator
+            return vm->getattr(obj.ptr(), pkpy::__iter__, false) != nullptr &&
+                   vm->getattr(obj.ptr(), pkpy::__next__, false) != nullptr;
+        } else {
+            pkpy::Type cls = _builtin_cast<pkpy::Type>(type::handle_of<T>().ptr());
+            return vm->isinstance(obj.ptr(), cls);
+        }
     }
 
     template <>
     inline bool isinstance<handle>(const handle&) = delete;
-
-    template <>
-    inline bool isinstance<iterable>(const handle& obj) {
-        return hasattr(obj, "__iter__");
-    }
-
-    template <>
-    inline bool isinstance<iterator>(const handle& obj) {
-        return hasattr(obj, "__iter__") && hasattr(obj, "__next__");
-    }
 
     inline bool isinstance(const handle& obj, const handle& type) {
         return vm->isinstance(obj.ptr(), _builtin_cast<pkpy::Type>(type));
@@ -110,6 +113,7 @@ namespace pybind11 {
 
     template <typename T>
     T cast(handle obj, bool convert = false) {
+
         type_caster<T> caster;
 
         if(caster.load(obj, convert)) {
@@ -117,6 +121,11 @@ namespace pybind11 {
         }
 
         throw std::runtime_error("Unable to cast Python instance to C++ type");
+    }
+
+    template <typename T>
+    T handle::cast() const {
+        return pybind11::cast<T>(*this);
     }
 
     template <typename... Args>
