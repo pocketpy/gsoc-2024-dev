@@ -22,7 +22,7 @@ void test_float() {
 
     assert(obj.cast<float>() == 123.0);
     assert(obj.cast<double>() == 123.0);
-    //assert(obj.cast<long double>() == 123.0);
+    // assert(obj.cast<long double>() == 123.0);
 }
 
 void test_str() {
@@ -31,7 +31,10 @@ void test_str() {
 
     assert(obj == obj2);
 
+    assert(obj.cast<const char*>() == std::string_view{"123"});
+    assert(obj.cast<char*>() == std::string_view{"123"});
     assert(obj.cast<std::string>() == "123");
+    assert(obj.cast<std::string_view>() == "123");
 }
 
 int test_types() {

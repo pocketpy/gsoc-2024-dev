@@ -15,6 +15,10 @@ namespace pybind11 {
         std::is_same_v<T, std::string> || std::is_same_v<T, std::string_view>;
 
     template <typename T>
+    constexpr bool is_pointer_v =
+        std::is_pointer_v<T> && !std::is_same_v<T, char*> && !std::is_same_v<T, const char*>;
+
+    template <typename T>
     constexpr bool is_pyobject_v = std::is_base_of_v<handle, T>;
 
     template <typename T, typename>
@@ -82,7 +86,16 @@ namespace pybind11 {
         bool load(const handle& src, bool) {
             if(isinstance<pybind11::str>(src)) {
                 // FIXME: support other kinds of string
-                value = pkpy::_py_cast<std::string>(vm, src.ptr());
+                auto& str = _builtin_cast<pkpy::Str>(src);
+                if constexpr(std::is_same_v<T, std::string>) {
+                    value = str;
+                } else if constexpr(std::is_same_v<T, std::string_view>) {
+                    value = str;
+                } else if constexpr(std::is_same_v<T, char*>) {
+                    value = str.data;
+                } else if constexpr(std::is_same_v<T, const char*>) {
+                    value = str.data;
+                }
                 return true;
             }
 
@@ -143,10 +156,9 @@ namespace pybind11 {
     };
 
     template <typename T>
-    struct type_caster<T, std::enable_if_t<std::is_pointer_v<T> || std::is_reference_v<T>>> {
-        using underlying = std::conditional_t<std::is_pointer_v<T>,
-                                              std::remove_pointer_t<T>,
-                                              std::remove_reference_t<T>>;
+    struct type_caster<T, std::enable_if_t<is_pointer_v<T> || std::is_reference_v<T>>> {
+        using underlying = std::
+            conditional_t<is_pointer_v<T>, std::remove_pointer_t<T>, std::remove_reference_t<T>>;
 
         struct wrapper {
             type_caster<underlying> caster;
