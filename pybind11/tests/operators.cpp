@@ -1,3 +1,4 @@
+#include <iostream>
 #include <pybind11/pybind11.h>
 
 namespace py = pybind11;
@@ -26,7 +27,7 @@ int test_operators() {
     py::initialize();
 
     try {
-        py::module m = py::module::import("__main__");
+        py::module_ m = py::module_::import("__main__");
         py::class_<Int>(m, "Int")
             .def(py::init<int>())
             .def_readwrite("x", &Int::x)

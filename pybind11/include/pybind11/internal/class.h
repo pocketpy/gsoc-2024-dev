@@ -4,16 +4,16 @@
 
 namespace pybind11 {
 
-    class module : public object {
+    class module_ : public object {
 
     public:
         using object::object;
 
-        static module import(const char* name) {
+        static module_ import(const char* name) {
             if(name == std::string_view{"__main__"}) {
-                return module{vm->_main, true};
+                return {vm->_main, true};
             } else {
-                return module{vm->py_import(name, false), true};
+                return {vm->py_import(name, false), true};
             }
         }
     };
@@ -30,17 +30,27 @@ namespace pybind11 {
 
         template <typename... Args>
         class_(const handle& scope, const char* name, Args&&... args) :
-            type(vm->new_type_object(scope.ptr(),
+            type(vm->new_type_object(scope.ptr().get(),
                                      name,
                                      vm->tp_object,
                                      false,
                                      pkpy::PyTypeInfo::Vt::get<instance>()),
                  true) {
+
+            // set __module__
             pkpy::PyVar mod = scope.ptr();
             mod->attr().set(name, m_ptr);
             vm->_cxx_typeid_map[typeid(T)] = _builtin_cast<pkpy::Type>(m_ptr);
-            vm->bind_func(m_ptr, "__new__", -1, [](pkpy::VM* vm, pkpy::ArgsView args) {
+
+            // bind __new__
+            vm->bind_func(m_ptr.get(), pkpy::__new__, -1, [](pkpy::VM* vm, pkpy::ArgsView args) {
                 auto cls = _builtin_cast<pkpy::Type>(args[0]);
+
+                // check if the class has constructor, if not, raise error
+                if(args[0]->attr().try_get(pkpy::__init__) == nullptr) {
+                    vm->RuntimeError("Bound class must have constructor");
+                }
+
                 return instance::create<T>(cls);
             });
         }

@@ -45,12 +45,15 @@ namespace pybind11 {
 
         handle(pkpy::PyVar ptr) : m_ptr(ptr) {}
 
+        handle(pkpy::PyObject* ptr) : m_ptr(ptr) {}
+
         pkpy::PyVar ptr() const { return m_ptr; }
 
         int reference_count() const { return ref_count == nullptr ? 0 : *ref_count; }
 
         const handle& inc_ref() const {
             assert(m_ptr != nullptr);
+
             if(ref_count == nullptr) {
                 auto iter = _ref_counts_map->find(m_ptr);
                 if(iter == _ref_counts_map->end()) {
@@ -63,6 +66,7 @@ namespace pybind11 {
             } else {
                 *ref_count += 1;
             }
+
             return *this;
         }
 
@@ -71,13 +75,12 @@ namespace pybind11 {
             assert(ref_count != nullptr);
 
             *ref_count -= 1;
-            try {
-                if(*ref_count == 0) {
-                    _ref_counts_map->erase(m_ptr);
-                    ::delete ref_count;
-                    ref_count = nullptr;
-                }
-            } catch(std::exception& e) { std::cerr << "Error: " << e.what() << std::endl; }
+
+            if(*ref_count == 0) {
+                _ref_counts_map->erase(m_ptr);
+                ::delete ref_count;
+                ref_count = nullptr;
+            }
 
             return *this;
         }
@@ -114,13 +117,12 @@ namespace pybind11 {
         item_accessor operator[] (const handle& key) const;
         item_accessor operator[] (object&& key) const;
 
-        object operator- () const;
-        object operator~() const;
-
         template <return_value_policy policy = return_value_policy::automatic, typename... Args>
         object operator() (Args&&... args) const;
 
-    private:
+        object operator- () const;
+        object operator~() const;
+
         friend object operator+ (const handle& lhs, const handle& rhs);
         friend object operator- (const handle& lhs, const handle& rhs);
         friend object operator* (const handle& lhs, const handle& rhs);
@@ -213,9 +215,6 @@ namespace pybind11 {
             return {h, false};
         }
     };
-
-    inline void setattr(const handle& obj, const handle& name, const handle& value);
-    inline void setitem(const handle& obj, const handle& key, const handle& value);
 
 #define PYBIND11_BINARY_OPERATOR(OP, NAME)                                                         \
     inline object operator OP (const handle& lhs, const handle& rhs) {                             \

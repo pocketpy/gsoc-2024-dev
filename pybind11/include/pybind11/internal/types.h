@@ -75,6 +75,13 @@ namespace pybind11 {
         str format(Args&&... args) const;
     };
 
+    class none : public object {
+    public:
+        using object::object;
+
+        none() : object(vm->None, false) {}
+    };
+
     class int_ : public object {
     public:
         using object::object;
@@ -93,7 +100,7 @@ namespace pybind11 {
     public:
         using object::object;
 
-        bool_(bool value) : object(pkpy::py_var(vm, value), true) {}
+        bool_(bool value) : object(pkpy::py_var(vm, value), false) {}
     };
 
     class function : public object {
@@ -175,6 +182,13 @@ namespace pybind11 {
 
     inline item_accessor handle::operator[] (object&& key) const {
         return item_accessor(reinterpret_borrow<object>(*this), std::move(key));
+    }
+
+    template <return_value_policy policy, typename... Args>
+    object handle::operator() (Args&&... args) const {
+        // TODO: implement, resolve named arguments
+
+        // vm->vectorcall()
     }
 
     class args : public tuple {

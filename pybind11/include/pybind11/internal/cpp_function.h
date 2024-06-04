@@ -266,7 +266,7 @@ namespace pybind11 {
         // if the function is not bound yet, bind it
         if(!callable) {
             pkpy::any userdata = function_record(std::forward<Fn>(fn), name, extras...);
-            callable = vm->bind_func(var, name, -1, _wrapper, std::move(userdata));
+            callable = vm->bind_func(var.get(), name, -1, _wrapper, std::move(userdata));
         } else {
             auto& userdata = callable.obj_get<pkpy::NativeFunc>()._userdata;
             function_record* record = new function_record(std::forward<Fn>(fn), name, extras...);

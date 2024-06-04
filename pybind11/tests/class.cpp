@@ -1,4 +1,4 @@
-#include <cassert>
+#include <iostream>
 #include <pybind11/pybind11.h>
 
 // test for simple struct, all member is built-in type.
@@ -54,19 +54,17 @@ struct Line {
 
 namespace py = pybind11;
 
-int test_class() {
-    py::initialize();
-    try {
-        py::module m = py::module::import("__main__");
-        py::class_<Point>(m, "Point")
-            .def(py::init<>())
-            .def(py::init<int, int, int>())
-            .def_readwrite("x", &Point::x)
-            .def_readwrite("y", &Point::y)
-            .def_property("z", &Point::get_z, &Point::set_z)
-            .def("stringfy", &Point::stringfy);
+void test_simple() {
+    py::module_ m = py::module_::import("__main__");
+    py::class_<Point>(m, "Point")
+        .def(py::init<>())
+        .def(py::init<int, int, int>())
+        .def_readwrite("x", &Point::x)
+        .def_readwrite("y", &Point::y)
+        .def_property("z", &Point::get_z, &Point::set_z)
+        .def("stringfy", &Point::stringfy);
 
-        py::vm->exec(R"(
+    py::vm->exec(R"(
 p = Point()
 assert p.stringfy() == '(0, 0, 0)'
 p = Point(1, 2, 3)
@@ -79,13 +77,27 @@ p.y = 20
 p.z = 30
 assert p.stringfy() == '(10, 20, 30)'
 )");
+}
 
-        py::class_<Line>(m, "Line")
-            .def(py::init<>())
-            .def_readwrite("start", &Line::start)
-            .def_readwrite("end", &Line::end);
+void test_complex() {
+    py::module_ m = py::module_::import("__main__");
+    py::class_<Line> line(m, "Line");
 
-        py::vm->exec(R"(
+    line  // not bind constructor
+        .def_readwrite("start", &Line::start)
+        .def_readwrite("end", &Line::end);
+
+    try {
+        py::vm->eval("Line()");
+    } catch(const std::exception& e) {
+        // expect error: "Bound class must have constructor"
+        std::cerr << e.what() << std::endl;
+    }
+
+    // bind constructor
+    line.def(py::init<>());
+
+    py::vm->exec(R"(
 l = Line()
 l.start = Point(1, 2, 3)
 l.end = Point(4, 5, 6)
@@ -93,7 +105,18 @@ p = l.start
 assert l.start.stringfy() == '(1, 2, 3)'
 assert l.end.stringfy() == '(4, 5, 6)'
 )");
-    } catch(const pkpy::Exception& e) { std::cerr << e.msg << '\n'; }
+}
+
+int test_class() {
+    py::initialize();
+
+    try {
+        test_simple();
+        test_complex();
+    } catch(const std::exception& e) {
+        std::cerr << e.what() << std::endl;
+        return 1;
+    }
 
     py::finalize();
     assert(Point::constructor_calls == Point::destructor_calls);

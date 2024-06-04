@@ -3,7 +3,12 @@
 #include "types.h"
 
 namespace pybind11 {
-    inline void exec(const char* code, handle global = {}, handle local = {}) {
+    inline object
+        eval(std::string_view code, const handle& global = none{}, handle local = none{}) {
+        return reinterpret_borrow<object>(vm->py_eval(code, global.ptr(), local.ptr()));
+    }
+
+    inline void exec(std::string_view code, const handle& global = none{}, handle local = none{}) {
         vm->py_exec(code, global.ptr(), local.ptr());
     }
 
@@ -89,7 +94,11 @@ namespace pybind11 {
                  return_value_policy policy = return_value_policy::automatic_reference,
                  handle parent = handle()) {
         using U = std::remove_pointer_t<std::remove_cv_t<std::remove_reference_t<T>>>;
-        return type_caster<U>::cast(std::forward<T>(value), policy, parent);
+        if constexpr(std::is_same_v<U, handle>) {
+            return std::forward<T>(value);
+        } else {
+            return type_caster<U>::cast(std::forward<T>(value), policy, parent);
+        }
     }
 
     template <typename T>
@@ -101,17 +110,18 @@ namespace pybind11 {
 
     template <typename T>
     T cast(handle obj, bool convert = false) {
-        using Caster =
-            type_caster<std::remove_pointer_t<std::remove_cv_t<std::remove_reference_t<T>>>>;
-        Caster caster;
+        type_caster<T> caster;
 
         if(caster.load(obj, convert)) {
-            if constexpr(std::is_rvalue_reference_v<T>) {
-                return std::move(caster.value);
-            } else {
-                return caster.value;
-            }
+            return caster.value;
         }
+
         throw std::runtime_error("Unable to cast Python instance to C++ type");
+    }
+
+    template <typename... Args>
+    inline void print(Args&&... args) {
+        pkpy::PyVar print = vm->builtins->attr("print");
+        vm->call(print, _cast(std::forward<Args>(args)).ptr()...);
     }
 }  // namespace pybind11

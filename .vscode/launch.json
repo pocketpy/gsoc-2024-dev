@@ -5,7 +5,7 @@
       "type": "lldb",
       "request": "launch",
       "name": "Debug",
-      "program": "${workspaceFolder}/build/gsoc2024.exe",
+      "program": "${workspaceFolder}/build/pybind11_test.exe",
       "args": [],
       "cwd": "${workspaceFolder}",
       "preLaunchTask": "build"
