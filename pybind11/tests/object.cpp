@@ -8,7 +8,7 @@ int test_object(){
     try{
         py::module_ m = py::module_::import("__main__");
         py::handle str = py::vm->eval("123");
-        py::print(str);
+        assert(str == py::int_(123));
     }catch(const std::exception &e){
         std::cerr << e.what() << std::endl;
     }

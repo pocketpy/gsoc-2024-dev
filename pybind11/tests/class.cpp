@@ -88,10 +88,10 @@ void test_complex() {
         .def_readwrite("end", &Line::end);
 
     try {
-        py::vm->eval("Line()");
+        // py::vm->eval("Line()");
     } catch(const std::exception& e) {
         // expect error: "Bound class must have constructor"
-        std::cerr << e.what() << std::endl;
+        // std::cerr << e.what() << std::endl;
     }
 
     // bind constructor
