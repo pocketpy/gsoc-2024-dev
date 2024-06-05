@@ -633,6 +633,21 @@ auto operator/(const U& scalar, const ndarray<T>& array) {
     return array.pow(-1) * scalar;
 }
 
+template <typename T, typename U>
+auto operator&(const U& scalar, const ndarray<T>& array) {
+    return array & scalar;
+}
+
+template <typename T, typename U>
+auto operator|(const U& scalar, const ndarray<T>& array) {
+    return array | scalar;
+}
+
+template <typename T, typename U>
+auto operator^(const U& scalar, const ndarray<T>& array) {
+    return array ^ scalar;
+}
+
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const ndarray<T>& arr) {
     os << arr.get_array();
