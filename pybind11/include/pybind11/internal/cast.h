@@ -1,7 +1,7 @@
 #pragma once
 
 #include "instance.h"
-#include "builtins.h"
+#include "accessor.h"
 #include "type_traits.h"
 
 namespace pybind11 {

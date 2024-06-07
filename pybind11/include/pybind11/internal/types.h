@@ -38,69 +38,6 @@ namespace pybind11 {
         float_(double value) : object(pkpy::py_var(vm, value), true) {}
     };
 
-    class str : public object {
-
-    public:
-        using object::object;
-        str(const char* c, int len) :
-            object(vm->new_object<pkpy::Str>(pkpy::VM::tp_str, c, len), true) {
-
-            };
-
-        str(const char* c = "") : str(c, strlen(c)) {}
-
-        str(const std::string& s) : str(s.data(), s.size()) {}
-
-        str(std::string_view sv) : str(sv.data(), sv.size()) {}
-
-        explicit str(const bytes& b);
-        explicit str(handle h);
-        operator std::string () const;
-
-        template <typename... Args>
-        str format(Args&&... args) const;
-    };
-
-    class bytes : public object {
-    public:
-        using object::object;
-    };
-
-    class bytearray : public object {
-    public:
-        using object::object;
-    };
-
-    class tuple : public object {
-    public:
-        using object::object;
-
-        tuple(int n) : object(vm->new_object<pkpy::Tuple>(pkpy::VM::tp_tuple, n), true) {}
-
-        //& operator[](int i){ return _args[i]; }
-        // PyVar operator[](int i) const { return _args[i]; }
-    };
-
-    class list : public object {
-    public:
-        using object::object;
-
-        list() : object(vm->new_object<pkpy::List>(pkpy::VM::tp_list), true) {}
-    };
-
-    class set : public object {
-    public:
-        using object::object;
-        // set() : object(vm->new_object<pkpy::Se>(pkpy::VM::tp_set), true) {}
-    };
-
-    class dict : public object {
-    public:
-        using object::object;
-
-        dict() : object(vm->new_object<pkpy::Dict>(pkpy::VM::tp_dict), true) {}
-    };
-
     class iterable : public object {
     public:
         using object::object;
@@ -137,6 +74,108 @@ namespace pybind11 {
         static iterator sentinel() { return iterator(vm->StopIteration); }
     };
 
+    template <typename Derived>
+    inline iterator object_api<Derived>::begin() const {
+        return reinterpret_borrow<object>(vm->py_iter(this->get()));
+    }
+
+    template <typename Derived>
+    inline iterator object_api<Derived>::end() const {
+        return iterator::sentinel();
+    }
+
+    class str : public object {
+
+    public:
+        using object::object;
+        str(const char* c, int len) :
+            object(vm->new_object<pkpy::Str>(pkpy::VM::tp_str, c, len), true) {
+
+            };
+
+        str(const char* c = "") : str(c, strlen(c)) {}
+
+        str(const std::string& s) : str(s.data(), s.size()) {}
+
+        str(std::string_view sv) : str(sv.data(), sv.size()) {}
+
+        explicit str(const bytes& b);
+        explicit str(handle h);
+        operator std::string () const;
+
+        template <typename... Args>
+        str format(Args&&... args) const;
+    };
+
+    class bytes : public object {
+    public:
+        using object::object;
+    };
+
+    class bytearray : public object {
+    public:
+        using object::object;
+    };
+
+    class tuple : public object {
+        pkpy::Tuple& get() const { return _builtin_cast<pkpy::Tuple>(m_ptr); }
+
+    public:
+        using object::object;
+
+        explicit tuple(int n) : object(vm->new_object<pkpy::Tuple>(pkpy::VM::tp_tuple, n), true) {}
+
+        int size() const { return get().size(); }
+
+        bool empty() const { return size() == 0; }
+
+        tuple_accessor operator[] (int i) const;
+    };
+
+    class list : public object {
+        pkpy::List& get() const { return _builtin_cast<pkpy::List>(m_ptr); }
+
+    public:
+        using object::object;
+
+        list() : object(vm->new_object<pkpy::List>(pkpy::VM::tp_list), true) {}
+
+        list(int n) : object(vm->new_object<pkpy::List>(pkpy::VM::tp_list, n), true) {}
+
+        int size() const { return get().size(); }
+
+        bool empty() const { return size() == 0; }
+
+        list_accessor operator[] (int i) const;
+
+        void append(const handle& value) { get().push_back(value.ptr()); }
+
+        void extend(const handle& iterable) {
+            for(auto item: iterable) {
+                get().push_back(item.ptr());
+            }
+        }
+
+        void insert(int index, const handle& value) { get().insert(index, value.ptr()); }
+
+        void remove(int index) { get().erase(index); }
+
+        // void pop(int index) { get().popx_back(index); }
+    };
+
+    class set : public object {
+    public:
+        using object::object;
+        // set() : object(vm->new_object<pkpy::Se>(pkpy::VM::tp_set), true) {}
+    };
+
+    class dict : public object {
+    public:
+        using object::object;
+
+        dict() : object(vm->new_object<pkpy::Dict>(pkpy::VM::tp_dict), true) {}
+    };
+
     class function : public object {
     public:
         using object::object;
@@ -164,47 +203,6 @@ namespace pybind11 {
     class kwargs : public dict {
         using dict::dict;
     };
-
-    inline iterator handle::begin() const {
-        return reinterpret_borrow<object>(vm->py_iter(this->ptr()));
-    }
-
-    inline iterator handle::end() const { return iterator::sentinel(); }
-
-    inline attr_accessor handle::attr(const char* name) const {
-        return attr_accessor(reinterpret_borrow<object>(*this), str(name));
-    }
-
-    inline attr_accessor handle::attr(const handle& name) const {
-        return attr_accessor(reinterpret_borrow<object>(*this), reinterpret_borrow<object>(name));
-    }
-
-    inline attr_accessor handle::attr(object&& name) const {
-        return attr_accessor(reinterpret_borrow<object>(*this), std::move(name));
-    }
-
-    inline item_accessor handle::operator[] (int64_t key) const {
-        return item_accessor(reinterpret_borrow<object>(*this), int_(key));
-    }
-
-    inline item_accessor handle::operator[] (const char* key) const {
-        return item_accessor(reinterpret_borrow<object>(*this), str(key));
-    }
-
-    inline item_accessor handle::operator[] (const handle& key) const {
-        return item_accessor(reinterpret_borrow<object>(*this), reinterpret_borrow<object>(key));
-    }
-
-    inline item_accessor handle::operator[] (object&& key) const {
-        return item_accessor(reinterpret_borrow<object>(*this), std::move(key));
-    }
-
-    template <return_value_policy policy, typename... Args>
-    object handle::operator() (Args&&... args) const {
-        // TODO: implement, resolve named arguments
-
-        // vm->vectorcall()
-    }
 
     template <typename T>
     handle type::handle_of() {

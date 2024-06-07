@@ -5,8 +5,6 @@
 namespace pybind11 {
     class handle;
     class object;
-    class attr_accessor;
-    class item_accessor;
     class iterator;
     class str;
     class bytes;
@@ -24,6 +22,21 @@ namespace pybind11 {
     class str;
     class bytes;
 
+    template <typename policy>
+    class accessor;
+
+    namespace policy {
+        struct attr;
+        struct item;
+        struct tuple;
+        struct list;
+    }  // namespace policy
+
+    using attr_accessor = accessor<policy::attr>;
+    using item_accessor = accessor<policy::item>;
+    using tuple_accessor = accessor<policy::tuple>;
+    using list_accessor = accessor<policy::list>;
+
     template <typename T>
     T& _builtin_cast(const handle& obj);
 
@@ -33,7 +46,72 @@ namespace pybind11 {
     template <typename T>
     T reinterpret_steal(const handle& h);
 
-    class handle {
+    template <typename Derived>
+    class object_api {
+    public:
+        pkpy::PyVar get() const { return static_cast<const Derived*>(this)->ptr(); }
+
+    public:
+        bool is_none() const { return get() == vm->None; }
+
+        bool is(const object_api& other) const { return get() == other.get(); }
+
+        bool in(const object_api& other) const {
+            return pkpy::py_cast<bool>(vm, vm->call(vm->py_op("contains"), other.get(), get()));
+        }
+
+        bool contains(const object_api& other) const {
+            return pkpy::py_cast<bool>(vm, vm->call(vm->py_op("contains"), get(), other.get()));
+        }
+
+        iterator begin() const;
+        iterator end() const;
+
+        str doc() const;
+        attr_accessor attr(const char* key) const;
+        attr_accessor attr(const object_api& key) const;
+
+        item_accessor operator[] (int index) const;
+        item_accessor operator[] (const char* key) const;
+        item_accessor operator[] (const object_api& key) const;
+
+        template <return_value_policy policy = return_value_policy::automatic, typename... Args>
+        object operator() (Args&&... args) const;
+
+        object operator- () const;
+        object operator~() const;
+
+        object operator+ (const object_api& other) const;
+        object operator- (const object_api& other) const;
+        object operator* (const object_api& other) const;
+        object operator% (const object_api& other) const;
+        object operator/ (const object_api& other) const;
+        object operator| (const object_api& other) const;
+        object operator& (const object_api& other) const;
+        object operator^ (const object_api& other) const;
+        object operator<< (const object_api& other) const;
+        object operator>> (const object_api& other) const;
+
+        object operator+= (const object_api& other) const;
+        object operator-= (const object_api& other) const;
+        object operator*= (const object_api& other) const;
+        object operator/= (const object_api& other) const;
+        object operator%= (const object_api& other) const;
+        object operator|= (const object_api& other) const;
+        object operator&= (const object_api& other) const;
+        object operator^= (const object_api& other) const;
+        object operator<<= (const object_api& other) const;
+        object operator>>= (const object_api& other) const;
+
+        object operator== (const object_api& other) const;
+        object operator!= (const object_api& other) const;
+        object operator< (const object_api& other) const;
+        object operator> (const object_api& other) const;
+        object operator<= (const object_api& other) const;
+        object operator>= (const object_api& other) const;
+    };
+
+    class handle : public object_api<handle> {
     protected:
         pkpy::PyVar m_ptr = nullptr;
         mutable int* ref_count = nullptr;
@@ -50,6 +128,8 @@ namespace pybind11 {
         pkpy::PyVar ptr() const { return m_ptr; }
 
         int reference_count() const { return ref_count == nullptr ? 0 : *ref_count; }
+
+        explicit operator bool () const { return m_ptr != nullptr; }
 
         const handle& inc_ref() const {
             assert(m_ptr != nullptr);
@@ -72,18 +152,18 @@ namespace pybind11 {
 
         const handle& dec_ref() const {
             assert(m_ptr != nullptr);
-            
+
             if(ref_count == nullptr) {
                 return *this;
             }
 
             *ref_count -= 1;
 
-            if(*ref_count == 0) {
-                _ref_counts_map->erase(m_ptr);
-                ::delete ref_count;
-                ref_count = nullptr;
-            }
+            // if(*ref_count == 0) {
+            //     _ref_counts_map->erase(m_ptr);
+            //     ::delete ref_count;
+            //     ref_count = nullptr;
+            // }
 
             return *this;
         }
@@ -92,72 +172,8 @@ namespace pybind11 {
         template <typename T>
         T cast() const;
 
-        explicit operator bool () const { return m_ptr.operator bool (); }
-
-        bool is(const handle& other) const { return m_ptr == other.m_ptr; }
-
-        bool is_none() const { return m_ptr == vm->None; }
-
-        bool in(const handle& other) const {
-            return pkpy::py_cast<bool>(vm, vm->call(vm->py_op("contains"), other.m_ptr, m_ptr));
-        }
-
-        bool contains(const handle& other) const {
-            return pkpy::py_cast<bool>(vm, vm->call(vm->py_op("contains"), m_ptr, other.m_ptr));
-        }
-
-        iterator begin() const;
-        iterator end() const;
-
-        str doc() const;
-
-        attr_accessor attr(const char* name) const;
-        attr_accessor attr(const handle& name) const;
-        attr_accessor attr(object&& name) const;
-
-        item_accessor operator[] (int64_t key) const;
-        item_accessor operator[] (const char* key) const;
-        item_accessor operator[] (const handle& key) const;
-        item_accessor operator[] (object&& key) const;
-
-        template <return_value_policy policy = return_value_policy::automatic, typename... Args>
-        object operator() (Args&&... args) const;
-
-        object operator- () const;
-        object operator~() const;
-
-        friend object operator+ (const handle& lhs, const handle& rhs);
-        friend object operator- (const handle& lhs, const handle& rhs);
-        friend object operator* (const handle& lhs, const handle& rhs);
-        friend object operator% (const handle& lhs, const handle& rhs);
-        friend object operator/ (const handle& lhs, const handle& rhs);
-        friend object operator| (const handle& lhs, const handle& rhs);
-        friend object operator& (const handle& lhs, const handle& rhs);
-        friend object operator^ (const handle& lhs, const handle& rhs);
-        friend object operator<< (const handle& lhs, const handle& rhs);
-        friend object operator>> (const handle& lhs, const handle& rhs);
-
-        friend object operator+= (const handle& lhs, const handle& rhs);
-        friend object operator-= (const handle& lhs, const handle& rhs);
-        friend object operator*= (const handle& lhs, const handle& rhs);
-        friend object operator/= (const handle& lhs, const handle& rhs);
-        friend object operator%= (const handle& lhs, const handle& rhs);
-        friend object operator|= (const handle& lhs, const handle& rhs);
-        friend object operator&= (const handle& lhs, const handle& rhs);
-        friend object operator^= (const handle& lhs, const handle& rhs);
-        friend object operator<<= (const handle& lhs, const handle& rhs);
-        friend object operator>>= (const handle& lhs, const handle& rhs);
-
-        friend object operator== (const handle& lhs, const handle& rhs);
-        friend object operator!= (const handle& lhs, const handle& rhs);
-        friend object operator< (const handle& lhs, const handle& rhs);
-        friend object operator> (const handle& lhs, const handle& rhs);
-        friend object operator<= (const handle& lhs, const handle& rhs);
-        friend object operator>= (const handle& lhs, const handle& rhs);
-
         template <typename T>
         friend T& _builtin_cast(const handle& obj) {
-            // FIXME: 2.0 does not use Py_<T> anymore
             static_assert(!std::is_reference_v<T>, "T must not be a reference type.");
             return obj.ptr().obj_get<T>();
         }
@@ -220,8 +236,9 @@ namespace pybind11 {
     };
 
 #define PYBIND11_BINARY_OPERATOR(OP, NAME)                                                         \
-    inline object operator OP (const handle& lhs, const handle& rhs) {                             \
-        return reinterpret_borrow<object>(vm->call(vm->py_op(NAME), lhs.m_ptr, rhs.m_ptr));        \
+    template <typename Derived>                                                                    \
+    inline object object_api<Derived>::operator OP (const object_api & other) const {              \
+        return reinterpret_borrow<object>(vm->call(vm->py_op(NAME), this->get(), other.get()));    \
     }
 
     PYBIND11_BINARY_OPERATOR(+, "add");
@@ -254,58 +271,4 @@ namespace pybind11 {
     PYBIND11_BINARY_OPERATOR(>=, "ge");
 
 #undef PYBIND11_BINARY_OPERATOR
-
-    inline void setattr(const handle& obj, const handle& key, const handle& value);
-    inline void setitem(const handle& obj, const handle& key, const handle& value);
-
-    class attr_accessor : public object {
-    private:
-        object key;
-
-    public:
-        template <typename T>
-        attr_accessor(const object& obj, T&& key) : object(obj), key(std::forward<T>(key)){};
-
-        template <typename T>
-        attr_accessor& operator= (T&& value) & {
-            static_assert(std::is_base_of_v<object, std::decay_t<T>>,
-                          "T must be derived from object");
-            m_ptr = std::forward<T>(value);
-            return *this;
-        }
-
-        template <typename T>
-        attr_accessor& operator= (T&& value) && {
-            static_assert(std::is_base_of_v<object, std::decay_t<T>>,
-                          "T must be derived from object");
-            setattr(*this, key, std::forward<T>(value));
-            return *this;
-        }
-    };
-
-    class item_accessor : public object {
-    public:
-        object key;
-
-    public:
-        template <typename T>
-        item_accessor(const object& obj, T&& key) : object(obj), key(std::forward<T>(key)){};
-
-        template <typename T>
-        item_accessor& operator= (T&& value) & {
-            static_assert(std::is_base_of_v<object, std::decay_t<T>>,
-                          "T must be derived from object");
-            m_ptr = std::forward<T>(value);
-            return *this;
-        }
-
-        template <typename T>
-        item_accessor& operator= (T&& value) && {
-            static_assert(std::is_base_of_v<object, std::decay_t<T>>,
-                          "T must be derived from object");
-            setitem(*this, key, std::forward<T>(value));
-            return *this;
-        }
-    };
-
 }  // namespace pybind11

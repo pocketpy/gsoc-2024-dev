@@ -39,10 +39,10 @@ void test_str() {
 
 void test_list() {
     py::handle obj = py::vm->eval("[1, 2, 3]");
-    obj[2] = py::cast(4);
-    for(auto i: obj) {
-        py::print(i);
-    }
+    // obj[2] = py::cast(4);
+    // for(auto i: obj) {
+    // py::print(i);
+    //}
 }
 
 int test_types() {

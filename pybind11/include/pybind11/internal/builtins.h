@@ -69,11 +69,11 @@ namespace pybind11 {
     inline bool isinstance(const handle& obj) {
         if constexpr(std::is_same_v<T, iterable>) {
             // if the object has __iter__ attribute, it is iterable
-            return vm->getattr(obj.ptr(), pkpy::__iter__, false) != nullptr;
+            return !vm->getattr(obj.ptr(), pkpy::__iter__, false);
         } else if constexpr(std::is_same_v<T, iterator>) {
             // if the object has __iter__ and __next__ attribute, it is iterator
-            return vm->getattr(obj.ptr(), pkpy::__iter__, false) != nullptr &&
-                   vm->getattr(obj.ptr(), pkpy::__next__, false) != nullptr;
+            return !vm->getattr(obj.ptr(), pkpy::__iter__, false) &&
+                   !vm->getattr(obj.ptr(), pkpy::__next__, false);
         } else {
             pkpy::Type cls = _builtin_cast<pkpy::Type>(type::handle_of<T>().ptr());
             return vm->isinstance(obj.ptr(), cls);
@@ -97,7 +97,7 @@ namespace pybind11 {
                  return_value_policy policy = return_value_policy::automatic_reference,
                  handle parent = handle()) {
         using U = std::remove_pointer_t<std::remove_cv_t<std::remove_reference_t<T>>>;
-        if constexpr(std::is_same_v<U, handle>) {
+        if constexpr(std::is_convertible_v<U, handle>) {
             return std::forward<T>(value);
         } else {
             return type_caster<U>::cast(std::forward<T>(value), policy, parent);
