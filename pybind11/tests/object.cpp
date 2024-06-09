@@ -64,7 +64,7 @@ int test_object() {
         py::module_ m = py::module_::import("__main__");
         py::vm->exec(source);
         py::vm->exec("p = Point(3, 4)");
-        py::handle p = py::vm->eval("p");
+        py::handle p = py::eval("p");
 
         // test is
         assert(!p.is_none());
@@ -82,7 +82,7 @@ int test_object() {
         py::vm->exec("assert p == Point(5, 6)");
 
         // test operators
-        assert((p + p) == py::handle(py::vm->eval("Point(10, 12)")));
+        assert((p + p) == py::handle(py::eval("Point(10, 12)")));
 
     } catch(const std::exception& e) { std::cerr << e.what() << std::endl; }
     py::finalize();

@@ -38,7 +38,7 @@ int test_operators() {
             .def("__gt__", &Int::operator>)
             .def("__ge__", &Int::operator>=);
 
-        py::vm->exec(R"(
+        py::exec(R"(
 a = Int(1)
 b = Int(2)
 assert a < b

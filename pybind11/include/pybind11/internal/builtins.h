@@ -100,7 +100,7 @@ namespace pybind11 {
         if constexpr(std::is_convertible_v<remove_cvref_t<T>, handle>) {
             return std::forward<T>(value);
         } else {
-            return type_caster<remove_cvref_t<T>>::cast(std::forward<T>(value), policy, parent);
+            return type_caster<std::decay_t<T>>::cast(std::forward<T>(value), policy, parent);
         }
     }
 

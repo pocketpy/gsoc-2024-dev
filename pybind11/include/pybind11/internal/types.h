@@ -65,7 +65,7 @@ namespace pybind11 {
             return *this;
         }
 
-        handle operator* () const { return value; }
+        const handle& operator* () const { return value; }
 
         bool operator== (const iterator& other) const { return value.ptr() == other.value.ptr(); }
 
@@ -120,10 +120,20 @@ namespace pybind11 {
     class tuple : public object {
         pkpy::Tuple& get() const { return _builtin_cast<pkpy::Tuple>(m_ptr); }
 
+        static pkpy::PyVar create(int n) {
+            return vm->new_object<pkpy::Tuple>(pkpy::VM::tp_tuple, n);
+        }
+
     public:
         using object::object;
 
-        explicit tuple(int n) : object(vm->new_object<pkpy::Tuple>(pkpy::VM::tp_tuple, n), true) {}
+        explicit tuple(int n) : object(create(n), true) {}
+
+        template <typename... Args, std::enable_if_t<(sizeof...(Args) > 0)>* = nullptr>
+        tuple(Args&&... args) : object(create(sizeof...(Args)), true) {
+            int index = 0;
+            ((get()[index++] = _cast(std::forward<Args>(args)).ptr()), ...);
+        }
 
         int size() const { return get().size(); }
 
@@ -133,14 +143,26 @@ namespace pybind11 {
     };
 
     class list : public object {
+    private:
         pkpy::List& get() const { return _builtin_cast<pkpy::List>(m_ptr); }
+
+        template <typename... Args>
+        static pkpy::PyVar create(Args&&... args) {
+            return vm->new_object<pkpy::List>(pkpy::VM::tp_list, std::forward<Args>(args)...);
+        }
 
     public:
         using object::object;
 
-        list() : object(vm->new_object<pkpy::List>(pkpy::VM::tp_list), true) {}
+        list() : object(create(), true) {}
 
-        list(int n) : object(vm->new_object<pkpy::List>(pkpy::VM::tp_list, n), true) {}
+        list(int n) : object(create(n), true) {}
+
+        template <typename... Args>
+        list(Args&&... args) : object(create(sizeof...(Args)), true) {
+            int index = 0;
+            ((get()[index++] = _cast(std::forward<Args>(args)).ptr()), ...);
+        }
 
         int size() const { return get().size(); }
 
@@ -151,18 +173,14 @@ namespace pybind11 {
         void append(const handle& value) { get().push_back(value.ptr()); }
 
         void extend(const handle& iterable) {
-            for(auto item: iterable) {
-                get().push_back(item.ptr());
+            for(auto& item: iterable) {
+                append(item);
             }
         }
 
         void insert(int index, const handle& value) {
             get().insert(get().begin() + index, value.ptr());
         }
-
-        void remove(int index) { get().erase(get().begin() + index); }
-
-        // void pop(int index) { get().popx_back(index); }
     };
 
     class set : public object {

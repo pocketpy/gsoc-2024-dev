@@ -76,25 +76,25 @@ namespace pybind11 {
         struct tuple {
             using key_type = int;
 
-            static pkpy::PyVar get(pkpy::PyVar obj, size_t key) {
+            static pkpy::PyVar get(const handle& obj, size_t key) {
                 return _builtin_cast<pkpy::Tuple>(obj)[key];
             }
 
             template <typename Value>
-            static void set(pkpy::PyVar obj, size_t key, Value&& value) {
-                _builtin_cast<pkpy::Tuple>(obj)[key] = std::forward<Value>(value);
+            static void set(const handle& obj, size_t key, Value&& value) {
+                _builtin_cast<pkpy::Tuple>(obj)[key] = std::forward<Value>(value).ptr();
             }
         };
 
         struct list {
             using key_type = int;
 
-            static pkpy::PyVar get(pkpy::PyVar obj, size_t key) {
+            static pkpy::PyVar get(const handle& obj, size_t key) {
                 return _builtin_cast<pkpy::List>(obj)[key];
             }
 
             template <typename Value>
-            static void set(pkpy::PyVar obj, size_t key, Value&& value) {
+            static void set(const handle& obj, size_t key, Value&& value) {
                 _builtin_cast<pkpy::List>(obj)[key] = std::forward<Value>(value).ptr();
             }
         };

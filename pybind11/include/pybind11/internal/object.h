@@ -103,12 +103,12 @@ namespace pybind11 {
         object operator<<= (const object_api& other) const;
         object operator>>= (const object_api& other) const;
 
-        object operator== (const object_api& other) const;
-        object operator!= (const object_api& other) const;
-        object operator< (const object_api& other) const;
-        object operator> (const object_api& other) const;
-        object operator<= (const object_api& other) const;
-        object operator>= (const object_api& other) const;
+        bool operator== (const object_api& other) const;
+        bool operator!= (const object_api& other) const;
+        bool operator< (const object_api& other) const;
+        bool operator> (const object_api& other) const;
+        bool operator<= (const object_api& other) const;
+        bool operator>= (const object_api& other) const;
     };
 
     class handle : public object_api<handle> {
@@ -241,6 +241,12 @@ namespace pybind11 {
         return reinterpret_borrow<object>(vm->call(vm->py_op(NAME), this->get(), other.get()));    \
     }
 
+#define PYBIND11_BINARY_LOGIC_OPERATOR(OP, NAME)                                                   \
+    template <typename Derived>                                                                    \
+    inline bool object_api<Derived>::operator OP (const object_api & other) const {                \
+        return handle(vm->call(vm->py_op(NAME), this->get(), other.get())).cast<bool>();           \
+    }
+
     PYBIND11_BINARY_OPERATOR(+, "add");
     PYBIND11_BINARY_OPERATOR(-, "sub");
     PYBIND11_BINARY_OPERATOR(*, "mul");
@@ -263,12 +269,12 @@ namespace pybind11 {
     PYBIND11_BINARY_OPERATOR(<<=, "ilshift");
     PYBIND11_BINARY_OPERATOR(>>=, "irshift");
 
-    PYBIND11_BINARY_OPERATOR(==, "eq");
-    PYBIND11_BINARY_OPERATOR(!=, "ne");
-    PYBIND11_BINARY_OPERATOR(<, "lt");
-    PYBIND11_BINARY_OPERATOR(>, "gt");
-    PYBIND11_BINARY_OPERATOR(<=, "le");
-    PYBIND11_BINARY_OPERATOR(>=, "ge");
+    PYBIND11_BINARY_LOGIC_OPERATOR(==, "eq");
+    PYBIND11_BINARY_LOGIC_OPERATOR(!=, "ne");
+    PYBIND11_BINARY_LOGIC_OPERATOR(<, "lt");
+    PYBIND11_BINARY_LOGIC_OPERATOR(>, "gt");
+    PYBIND11_BINARY_LOGIC_OPERATOR(<=, "le");
+    PYBIND11_BINARY_LOGIC_OPERATOR(>=, "ge");
 
 #undef PYBIND11_BINARY_OPERATOR
 }  // namespace pybind11
