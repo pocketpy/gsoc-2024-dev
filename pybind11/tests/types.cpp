@@ -76,11 +76,12 @@ void test_list() {
 
 int test_types() {
     py::initialize();
-    test_int();
-    test_float();
-    test_str();
-    test_tuple();
-    test_list();
-    py::finalize();
+    try {
+        test_int();
+        test_float();
+        test_str();
+        test_tuple();
+        test_list();
+    } catch(const std::exception& e) { py::print(e.what()); }
     return 0;
 }

@@ -1,257 +1,271 @@
 #pragma once
-
 #include "object.h"
 
 namespace pybind11 {
-    class none : public object {
-    public:
-        using object::object;
 
-        none() : object(vm->None, false) {}
-    };
-
-    class type : public object {
-    public:
-        using object::object;
-        template <typename T>
-        static handle handle_of();
-    };
-
-    class bool_ : public object {
-    public:
-        using object::object;
-
-        bool_(bool value) : object(pkpy::py_var(vm, value), false) {}
-    };
-
-    class int_ : public object {
-    public:
-        using object::object;
-
-        int_(int64_t value) : object(pkpy::py_var(vm, value), true) {}
-    };
-
-    class float_ : public object {
-    public:
-        using object::object;
-
-        float_(double value) : object(pkpy::py_var(vm, value), true) {}
-    };
-
-    class iterable : public object {
-    public:
-        using object::object;
-        iterable() = delete;
-    };
-
-    class iterator : public object {
-        handle value;
-
-        iterator(pkpy::PyVar stop) : object(none{}, false), value(stop) {}
-
-    public:
-        using object::object;
-        iterator() = delete;
-
-        iterator(object&& obj) : object(std::move(obj)), value(vm->py_next(m_ptr)) {}
-
-        iterator operator++ () {
-            value = vm->py_next(m_ptr);
-            return *this;
-        }
-
-        iterator operator++ (int) {
-            value = vm->py_next(m_ptr);
-            return *this;
-        }
-
-        const handle& operator* () const { return value; }
-
-        bool operator== (const iterator& other) const { return value.ptr() == other.value.ptr(); }
-
-        bool operator!= (const iterator& other) const { return !(*this == other); }
-
-        static iterator sentinel() { return iterator(vm->StopIteration); }
-    };
-
-    template <typename Derived>
-    inline iterator object_api<Derived>::begin() const {
-        return reinterpret_borrow<object>(vm->py_iter(this->get()));
-    }
-
-    template <typename Derived>
-    inline iterator object_api<Derived>::end() const {
-        return iterator::sentinel();
-    }
-
-    class str : public object {
-
-    public:
-        using object::object;
-        str(const char* c, int len) :
-            object(vm->new_object<pkpy::Str>(pkpy::VM::tp_str, c, len), true) {
-
-            };
-
-        str(const char* c = "") : str(c, strlen(c)) {}
-
-        str(const std::string& s) : str(s.data(), s.size()) {}
-
-        str(std::string_view sv) : str(sv.data(), sv.size()) {}
-
-        explicit str(const bytes& b);
-        explicit str(handle h);
-        operator std::string () const;
-
-        template <typename... Args>
-        str format(Args&&... args) const;
-    };
-
-    class bytes : public object {
-    public:
-        using object::object;
-    };
-
-    class bytearray : public object {
-    public:
-        using object::object;
-    };
-
-    class tuple : public object {
-        pkpy::Tuple& get() const { return _builtin_cast<pkpy::Tuple>(m_ptr); }
-
-        static pkpy::PyVar create(int n) {
-            return vm->new_object<pkpy::Tuple>(pkpy::VM::tp_tuple, n);
-        }
-
-    public:
-        using object::object;
-
-        explicit tuple(int n) : object(create(n), true) {}
-
-        template <typename... Args, std::enable_if_t<(sizeof...(Args) > 0)>* = nullptr>
-        tuple(Args&&... args) : object(create(sizeof...(Args)), true) {
-            int index = 0;
-            ((get()[index++] = _cast(std::forward<Args>(args)).ptr()), ...);
-        }
-
-        int size() const { return get().size(); }
-
-        bool empty() const { return size() == 0; }
-
-        tuple_accessor operator[] (int i) const;
-    };
-
-    class list : public object {
-    private:
-        pkpy::List& get() const { return _builtin_cast<pkpy::List>(m_ptr); }
-
-        template <typename... Args>
-        static pkpy::PyVar create(Args&&... args) {
-            return vm->new_object<pkpy::List>(pkpy::VM::tp_list, std::forward<Args>(args)...);
-        }
-
-    public:
-        using object::object;
-
-        list() : object(create(), true) {}
-
-        list(int n) : object(create(n), true) {}
-
-        template <typename... Args>
-        list(Args&&... args) : object(create(sizeof...(Args)), true) {
-            int index = 0;
-            ((get()[index++] = _cast(std::forward<Args>(args)).ptr()), ...);
-        }
-
-        int size() const { return get().size(); }
-
-        bool empty() const { return size() == 0; }
-
-        list_accessor operator[] (int i) const;
-
-        void append(const handle& value) { get().push_back(value.ptr()); }
-
-        void extend(const handle& iterable) {
-            for(auto& item: iterable) {
-                append(item);
-            }
-        }
-
-        void insert(int index, const handle& value) {
-            get().insert(get().begin() + index, value.ptr());
-        }
-    };
-
-    class set : public object {
-    public:
-        using object::object;
-        // set() : object(vm->new_object<pkpy::Se>(pkpy::VM::tp_set), true) {}
-    };
-
-    class dict : public object {
-    public:
-        using object::object;
-
-        dict() : object(vm->new_object<pkpy::Dict>(pkpy::VM::tp_dict), true) {}
-    };
-
-    class function : public object {
-    public:
-        using object::object;
-    };
-
-    class buffer : public object {
-    public:
-        using object::object;
-    };
-
-    class memory_view : public object {
-    public:
-        using object::object;
-    };
-
-    class capsule : public object {
-    public:
-        using object::object;
-    };
-
-    class args : public tuple {
-        using tuple::tuple;
-    };
-
-    class kwargs : public dict {
-        using dict::dict;
-    };
-
+struct type_visitor {
     template <typename T>
-    handle type::handle_of() {
-        if constexpr(std::is_same_v<T, object>) {
-            return vm->_t(vm->tp_object);
-        }
-#define PYBIND11_TYPE_MAPPER(type, tp)                                                             \
-    else if constexpr(std::is_same_v<T, type>) {                                                   \
-        return vm->_t(vm->tp);                                                                     \
+    constexpr static auto type_or_check() {
+        return T::type_or_check;
     }
-        PYBIND11_TYPE_MAPPER(type, tp_type)
-        PYBIND11_TYPE_MAPPER(str, tp_str)
-        PYBIND11_TYPE_MAPPER(int_, tp_int)
-        PYBIND11_TYPE_MAPPER(float_, tp_float)
-        PYBIND11_TYPE_MAPPER(bool_, tp_bool)
-        PYBIND11_TYPE_MAPPER(list, tp_list)
-        PYBIND11_TYPE_MAPPER(tuple, tp_tuple)
-        PYBIND11_TYPE_MAPPER(args, tp_tuple)
-        PYBIND11_TYPE_MAPPER(dict, tp_dict)
-        PYBIND11_TYPE_MAPPER(kwargs, tp_dict)
-#undef PYBIND11_TYPE_MAPPER
-        else {
-            auto result = vm->_cxx_typeid_map.try_get(typeid(T));
-            if(result != nullptr) {
-                return vm->_t(*result);
-            }
+};
 
-            vm->TypeError("Type not registered");
+template <typename T, typename = void>
+constexpr inline static bool has_underlying_type = false;
+
+template <typename T>
+constexpr inline static bool has_underlying_type<T, std::void_t<typename T::type_or_check>> = true;
+
+#define PYBIND11_TYPE_IMPLEMENT(name, tp)                                                                              \
+                                                                                                                       \
+private:                                                                                                               \
+    using underlying_type = name;                                                                                      \
+    constexpr inline static auto type_or_check = tp;                                                                   \
+    decltype(auto) value() const { return _as<underlying_type>(); }                                                    \
+    template <typename... Args>                                                                                        \
+    static handle create(Args&&... args) {                                                                             \
+        return vm->new_object<underlying_type>(type_or_check, std::forward<Args>(args)...);                            \
+    }                                                                                                                  \
+    friend type_visitor;                                                                                               \
+    using object::object;
+
+class none : public object {
+    PYBIND11_TYPE_IMPLEMENT(empty, vm->tp_none_type);
+
+public:
+    none() : object(vm->None) {}
+};
+
+/// corresponding to type in Python
+class type : public object {
+    PYBIND11_TYPE_IMPLEMENT(pkpy::Type, vm->tp_type);
+
+public:
+    template <typename T>
+    static handle handle_of() {
+        if constexpr(has_underlying_type<T>) {
+            return T::underlying_type;
+        } else {
+            auto type = vm->_cxx_typeid_map.try_get(typeid(T));
+            if(type) {
+                return vm->_t(*type);
+            } else {
+                vm->TypeError("type not registered");
+            }
         }
     }
+};
+
+/// corresponding to bool in Python
+class bool_ : public object {
+    PYBIND11_TYPE_IMPLEMENT(bool, vm->tp_bool);
+
+public:
+    bool_(bool value) : object(create(value)) {}
+
+    operator bool () const { return value(); }
+};
+
+/// corresponding to int in Python
+class int_ : public object {
+    PYBIND11_TYPE_IMPLEMENT(pkpy::i64, vm->tp_int);
+
+public:
+    int_(int64_t value) : object(create(value)) {}
+
+    operator int64_t () const { return value(); }
+};
+
+/// corresponding to float in Python
+class float_ : public object {
+    PYBIND11_TYPE_IMPLEMENT(pkpy::f64, vm->tp_float);
+
+public:
+    float_(double value) : object(create(value)) {}
+
+    operator double () const { return value(); }
+};
+
+class iterable : public object {
+    PYBIND11_TYPE_IMPLEMENT(empty, [](const handle& obj) {
+        return vm->getattr(obj.ptr(), pkpy::__iter__, false) != nullptr;
+    });
+};
+
+class iterator : public object {
+    PYBIND11_TYPE_IMPLEMENT(empty, [](const handle& obj) {
+        return vm->getattr(obj.ptr(), pkpy::__next__, false) != nullptr &&
+               vm->getattr(obj.ptr(), pkpy::__iter__, false) != nullptr;
+    });
+
+    handle m_value;
+
+public:
+    iterator(const handle& obj) : object(obj) { m_value = vm->py_next(obj.ptr()); }
+
+    iterator operator++ () {
+        m_value = vm->py_next(m_ptr);
+        return *this;
+    }
+
+    iterator operator++ (int) {
+        m_value = vm->py_next(m_ptr);
+        return *this;
+    }
+
+    const handle& operator* () const { return m_value; }
+
+    friend bool operator== (const iterator& lhs, const iterator& rhs) { return lhs.m_value.is(rhs.m_value); }
+
+    friend bool operator!= (const iterator& lhs, const iterator& rhs) { return !(lhs == rhs); }
+
+    static iterator sentinel() {
+        iterator iter;
+        iter.m_ptr = vm->None;
+        iter.m_value = vm->StopIteration;
+        return iter;
+    }
+};
+
+class str : public object {
+    PYBIND11_TYPE_IMPLEMENT(pkpy::Str, vm->tp_str);
+
+public:
+    str(const char* c, int len) : object(create(c, len)) {};
+
+    str(const char* c = "") : str(c, strlen(c)) {}
+
+    str(const std::string& s) : str(s.data(), s.size()) {}
+
+    str(std::string_view sv) : str(sv.data(), sv.size()) {}
+
+    // explicit str(const bytes& b);
+    explicit str(handle h);
+    operator std::string () const;
+
+    template <typename... Args>
+    str format(Args&&... args) const;
+};
+
+// class bytes : public object {
+// public:
+//     using object::object;
+// };
+
+// class bytearray : public object {
+// public:
+//     using object::object;
+// };
+
+class tuple : public object {
+    PYBIND11_TYPE_IMPLEMENT(pkpy::Tuple, vm->tp_tuple);
+
+public:
+    tuple(int n) : object(create(n)) {}
+
+    template <typename... Args, std::enable_if_t<(sizeof...(Args) > 0)>* = nullptr>
+    tuple(Args&&... args) : object(create(sizeof...(Args))) {
+        int index = 0;
+        ((value()[index++] = pybind11::cast(std::forward<Args>(args)).ptr()), ...);
+    }
+
+    int size() const { return value().size(); }
+
+    bool empty() const { return size() == 0; }
+
+    tuple_accessor operator[] (int i) const;
+};
+
+class list : public object {
+private:
+    PYBIND11_TYPE_IMPLEMENT(pkpy::List, vm->tp_list)
+
+public:
+    list() : object(create()) {}
+
+    list(int n) : object(create(n)) {}
+
+    template <typename... Args>
+    list(Args&&... args) : object(create(sizeof...(Args))) {
+        int index = 0;
+        ((value()[index++] = pybind11::cast(std::forward<Args>(args)).ptr()), ...);
+    }
+
+    int size() const { return value().size(); }
+
+    bool empty() const { return size() == 0; }
+
+    list_accessor operator[] (int i) const;
+
+    void append(const handle& obj) { value().push_back(obj.ptr()); }
+
+    void extend(const handle& iterable) {
+        for(auto& item: iterable) {
+            append(item);
+        }
+    }
+
+    void insert(int index, const handle& obj) {
+        const auto pos = value().begin() + index;
+        value().insert(pos, obj.ptr());
+    }
+};
+
+// class set : public object {
+// public:
+//     using object::object;
+//     // set() : object(vm->new_object<pkpy::Se>(pkpy::VM::tp_set), true) {}
+// };
+//
+
+class dict : public object {
+public:
+    using object::object;
+
+    // dict() : object(vm->new_object<pkpy::Dict>(pkpy::VM::tp_dict), true) {}
+};
+
+class function : public object {
+public:
+    using object::object;
+};
+
+//
+// class buffer : public object {
+// public:
+//    using object::object;
+//};
+//
+// class memory_view : public object {
+// public:
+//    using object::object;
+//};
+//
+// class capsule : public object {
+// public:
+//    using object::object;
+//};
+//
+
+class args : public tuple {
+    using tuple::tuple;
+};
+
+class kwargs : public dict {
+    using dict::dict;
+};
+
+#undef PYBIND11_TYPE_IMPLEMENT
+
+// implement iterator methods for interface
+template <typename Derived>
+inline iterator interface<Derived>::begin() const {
+    return handle(vm->py_iter(this->ptr()));
+}
+
+template <typename Derived>
+inline iterator interface<Derived>::end() const {
+    return iterator::sentinel();
+}
 
 }  // namespace pybind11

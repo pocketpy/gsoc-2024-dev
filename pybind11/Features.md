@@ -54,8 +54,8 @@ Need further discussion.
 - [x] `str`
 - [ ] `bytes`
 - [ ] `bytearray`
-- [ ] `tuple`
-- [ ] `list`
+- [x] `tuple`
+- [x] `list`
 - [ ] `set`
 - [ ] `dict`
 - [ ] `slice`

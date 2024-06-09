@@ -1,4 +1,3 @@
-#include <iostream>
 #include <pybind11/pybind11.h>
 
 // test for simple struct, all member is built-in type.
@@ -64,7 +63,7 @@ void test_simple() {
         .def_property("z", &Point::get_z, &Point::set_z)
         .def("stringfy", &Point::stringfy);
 
-    py::vm->exec(R"(
+    py::exec(R"(
 p = Point()
 assert p.stringfy() == '(0, 0, 0)'
 p = Point(1, 2, 3)
@@ -97,7 +96,7 @@ void test_complex() {
     // bind constructor
     line.def(py::init<>());
 
-    py::vm->exec(R"(
+    py::exec(R"(
 l = Line()
 l.start = Point(1, 2, 3)
 l.end = Point(4, 5, 6)
@@ -114,7 +113,7 @@ int test_class() {
         test_simple();
         test_complex();
     } catch(const std::exception& e) {
-        std::cerr << e.what() << std::endl;
+        py::print(e.what());
         return 1;
     }
 
