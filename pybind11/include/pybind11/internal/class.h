@@ -40,7 +40,7 @@ namespace pybind11 {
             // set __module__
             pkpy::PyVar mod = scope.ptr();
             mod->attr().set(name, m_ptr);
-            vm->_cxx_typeid_map[typeid(T)] = _builtin_cast<pkpy::Type>(m_ptr);
+            vm->_cxx_typeid_map.insert(typeid(T), _builtin_cast<pkpy::Type>(m_ptr));
 
             // bind __new__
             vm->bind_func(m_ptr.get(), pkpy::__new__, -1, [](pkpy::VM* vm, pkpy::ArgsView args) {

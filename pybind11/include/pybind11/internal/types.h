@@ -156,9 +156,11 @@ namespace pybind11 {
             }
         }
 
-        void insert(int index, const handle& value) { get().insert(index, value.ptr()); }
+        void insert(int index, const handle& value) {
+            get().insert(get().begin() + index, value.ptr());
+        }
 
-        void remove(int index) { get().erase(index); }
+        void remove(int index) { get().erase(get().begin() + index); }
 
         // void pop(int index) { get().popx_back(index); }
     };
@@ -225,9 +227,9 @@ namespace pybind11 {
         PYBIND11_TYPE_MAPPER(kwargs, tp_dict)
 #undef PYBIND11_TYPE_MAPPER
         else {
-            auto result = vm->_cxx_typeid_map.find(typeid(T));
-            if(result != vm->_cxx_typeid_map.end()) {
-                return vm->_t(result->second);
+            auto result = vm->_cxx_typeid_map.try_get(typeid(T));
+            if(result != nullptr) {
+                return vm->_t(*result);
             }
 
             vm->TypeError("Type not registered");

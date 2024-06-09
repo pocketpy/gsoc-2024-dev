@@ -146,10 +146,9 @@ namespace pybind11 {
         static handle cast(U&& value, return_value_policy policy, const handle& parent = handle()) {
             // TODO: support implicit cast
             const auto& info = typeid(underlying_type);
-            bool existed = vm->_cxx_typeid_map.find(info) != vm->_cxx_typeid_map.end();
-            if(existed) {
-                auto type = vm->_cxx_typeid_map[info];
-                return instance::create(std::forward<U>(value), type, policy, parent.ptr());
+            pkpy::Type* type = vm->_cxx_typeid_map.try_get(info);
+            if(type) {
+                return instance::create(std::forward<U>(value), *type, policy, parent.ptr());
             }
             vm->TypeError("type not registered");
         }

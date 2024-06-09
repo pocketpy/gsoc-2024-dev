@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <pocketpy.h>
 
 namespace pybind11 {

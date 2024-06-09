@@ -1,6 +1,7 @@
 #pragma once
 
 #include "types.h"
+#include "type_traits.h"
 
 namespace pybind11 {
     inline object
@@ -96,11 +97,10 @@ namespace pybind11 {
     handle _cast(T&& value,
                  return_value_policy policy = return_value_policy::automatic_reference,
                  handle parent = handle()) {
-        using U = std::remove_pointer_t<std::remove_cv_t<std::remove_reference_t<T>>>;
-        if constexpr(std::is_convertible_v<U, handle>) {
+        if constexpr(std::is_convertible_v<remove_cvref_t<T>, handle>) {
             return std::forward<T>(value);
         } else {
-            return type_caster<U>::cast(std::forward<T>(value), policy, parent);
+            return type_caster<remove_cvref_t<T>>::cast(std::forward<T>(value), policy, parent);
         }
     }
 
