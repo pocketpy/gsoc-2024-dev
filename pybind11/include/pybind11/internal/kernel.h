@@ -7,7 +7,10 @@ inline pkpy::VM* vm = nullptr;
 
 inline void initialize(bool enable_os = true) { vm = new pkpy::VM(); }
 
-inline void finalize() { delete vm; }
+inline void finalize() {
+    delete vm;
+    vm = nullptr;
+}
 
 class handle;
 class object;

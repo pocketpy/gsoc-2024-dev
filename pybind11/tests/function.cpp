@@ -1,8 +1,6 @@
 #include "test.h"
 
-TEST(pybind11, function) {
-    py::initialize();
-
+TEST_F(PYBIND11_TEST, function) {
     py::module_ m = py::module_::import("__main__");
 
     // test *args
@@ -23,6 +21,4 @@ TEST(pybind11, function) {
     });
 
     EXPECT_EQ(py::eval("cal(a=1, b=2, c=3)").cast<int>(), 7);
-
-    py::finalize();
 }

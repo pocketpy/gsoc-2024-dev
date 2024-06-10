@@ -20,9 +20,7 @@ struct Int {
     bool operator!() const { return !x; }
 };
 
-TEST(pybind11, operators) {
-    py::initialize();
-
+TEST_F(PYBIND11_TEST, operators) {
     py::module_ m = py::module_::import("__main__");
     py::class_<Int>(m, "Int")
         .def(py::init<int>())
@@ -45,7 +43,5 @@ assert a >= a
 assert not a > a
 assert not not a
         )");
-
-    py::finalize();
 }
 

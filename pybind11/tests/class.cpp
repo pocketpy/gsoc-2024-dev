@@ -53,7 +53,7 @@ struct Line {
 
 namespace py = pybind11;
 
-void test_simple() {
+TEST_F(PYBIND11_TEST, class) {
     py::module_ m = py::module_::import("__main__");
     py::class_<Point>(m, "Point")
         .def(py::init<>())
@@ -76,10 +76,7 @@ p.y = 20
 p.z = 30
 assert p.stringfy() == '(10, 20, 30)'
 )");
-}
 
-void test_complex() {
-    py::module_ m = py::module_::import("__main__");
     py::class_<Line> line(m, "Line");
 
     line  // not bind constructor
@@ -104,13 +101,6 @@ p = l.start
 assert l.start.stringfy() == '(1, 2, 3)'
 assert l.end.stringfy() == '(4, 5, 6)'
 )");
-}
-
-TEST(pybind11, class) {
-    py::initialize();
-
-    test_simple();
-    test_complex();
 
     py::finalize();
 

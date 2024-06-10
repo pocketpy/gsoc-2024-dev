@@ -55,8 +55,7 @@ class Point:
         return f'Point({self.x}, {self.y})'
 )";
 
-TEST(pybind11, object) {
-    py::initialize();
+TEST_F(PYBIND11_TEST, object) {
     py::module_ m = py::module_::import("__main__");
     py::vm->exec(source);
     py::vm->exec("p = Point(3, 4)");
@@ -79,5 +78,4 @@ TEST(pybind11, object) {
 
     // test operators
     assert((p + p) == py::handle(py::eval("Point(10, 12)")));
-    py::finalize();
 }

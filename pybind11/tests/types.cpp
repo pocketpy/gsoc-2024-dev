@@ -1,6 +1,6 @@
 #include "test.h"
 
-void test_int() {
+TEST_F(PYBIND11_TEST, int) {
     py::object obj = py::int_(123);
     py::handle obj2 = py::eval("123");
 
@@ -11,7 +11,7 @@ void test_int() {
     EXPECT_EQ(obj.cast<long long>(), 123);
 }
 
-void test_float() {
+TEST_F(PYBIND11_TEST, float) {
     py::object obj = py::float_(123.0);
     py::handle obj2 = py::eval("123.0");
 
@@ -21,7 +21,7 @@ void test_float() {
     EXPECT_EQ(obj.cast<double>(), 123.0);
 }
 
-void test_str() {
+TEST_F(PYBIND11_TEST, str) {
     py::object obj = py::str("123");
     py::handle obj2 = py::eval("'123'");
 
@@ -33,7 +33,7 @@ void test_str() {
     EXPECT_EQ(obj.cast<std::string_view>(), "123");
 }
 
-void test_tuple() {
+TEST_F(PYBIND11_TEST, tuple) {
     py::tuple tuple = py::tuple(1, "123", 3);
     EXPECT_EQ(tuple, py::eval("(1, '123', 3)"));
     EXPECT_EQ(tuple.size(), 3);
@@ -44,7 +44,7 @@ void test_tuple() {
     EXPECT_EQ(tuple, py::eval("(3, '123', 1)"));
 }
 
-void test_list() {
+TEST_F(PYBIND11_TEST, list) {
     // test constructors
     py::list list = py::list();
     EXPECT_EQ(list, py::eval("[]"));
@@ -88,17 +88,4 @@ void test_dict() {
     // test other apis
     dict.clear();
     EXPECT_EQ(dict, py::eval("{}"));
-}
-
-TEST(pybind11, types) {
-    py::initialize();
-
-    test_int();
-    test_float();
-    test_str();
-    test_tuple();
-    test_list();
-    test_dict();
-
-    py::finalize();
 }
