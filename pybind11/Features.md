@@ -5,7 +5,7 @@ This is a feature list of pybind11 for pocketpy. It lists all completed and pend
 - [x] Function overloading
 - [x] Return value policy
 - [x] is_prepend
-- [ ] `*args` and `**kwargs`
+- [x] `*args` and `**kwargs`
 - [ ] Keep-alive
 - [ ] Call Guard
 - [ ] Default arguments
@@ -57,7 +57,7 @@ Need further discussion.
 - [x] `tuple`
 - [x] `list`
 - [ ] `set`
-- [ ] `dict`
+- [x] `dict`
 - [ ] `slice`
 - [x] `iterable`
 - [x] `iterator`

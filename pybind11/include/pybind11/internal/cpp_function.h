@@ -166,7 +166,7 @@ struct generator<Fn, std::tuple<Extras...>, std::tuple<Args...>, std::index_sequ
             constexpr bool has_kwargs = types_count_v<kwargs, remove_cvref_t<Args>...> != 0;
             constexpr std::size_t count = sizeof...(Args) - has_args - has_kwargs;
 
-            handle stack[sizeof...(Args)] = {};
+            handle stack[sizeof...(Args)];
 
             // initialize the stack
 
@@ -200,7 +200,7 @@ struct generator<Fn, std::tuple<Extras...>, std::tuple<Args...>, std::index_sequ
                     dict.set(vm, str, view[count + i + 1]);
                 }
 
-                stack[count + 1] = var;
+                stack[count + has_args] = var;
             }
 
             // check if all the arguments are not valid

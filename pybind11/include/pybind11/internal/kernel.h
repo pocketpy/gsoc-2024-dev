@@ -22,14 +22,14 @@ struct attr;
 struct item;
 struct tuple;
 struct list;
+struct dict;
 }  // namespace policy
 
 using attr_accessor = accessor<policy::attr>;
 using item_accessor = accessor<policy::item>;
 using tuple_accessor = accessor<policy::tuple>;
 using list_accessor = accessor<policy::list>;
-
-
+using dict_accessor = accessor<policy::dict>;
 
 template <typename T>
 T cast(const handle& obj, bool convert = false);

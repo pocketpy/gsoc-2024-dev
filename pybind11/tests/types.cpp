@@ -74,6 +74,24 @@ void test_list() {
     assert(list == py::eval("[7, 3, 2, 1, 4, 5, 6]"));
 }
 
+void test_dict() {
+    // test constructors
+    py::dict dict = py::dict();
+    assert(dict == py::eval("{}"));
+    assert(dict.size() == 0);
+    assert(dict.empty());
+
+    // test accessor
+    dict[py::str("a")] = py::int_(1);
+    dict[py::str("b")] = py::int_(2);
+    dict[py::str("c")] = py::int_(3);
+    assert(dict == py::eval("{'a': 1, 'b': 2, 'c': 3}"));
+
+    // test other apis
+    dict.clear();
+    assert(dict == py::eval("{}"));
+}
+
 int test_types() {
     py::initialize();
     try {
@@ -82,6 +100,7 @@ int test_types() {
         test_str();
         test_tuple();
         test_list();
+        test_dict();
     } catch(const std::exception& e) { py::print(e.what()); }
     return 0;
 }

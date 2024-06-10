@@ -1,3 +1,4 @@
+#pragma once
 #include "builtins.h"
 
 namespace pybind11 {
@@ -15,6 +16,7 @@ class accessor : public interface<accessor<policy>> {
     friend interface<accessor<policy>>;
     friend tuple;
     friend list;
+    friend dict;
 
     accessor(const handle& obj, key_type key) : m_obj(obj), m_value(), m_key(key) {}
 
@@ -48,10 +50,9 @@ namespace policy {
 struct attr {
     using key_type = pkpy::StrName;
 
-    static pkpy::PyVar get(const handle& obj, pkpy::StrName key) { return vm->getattr(obj.ptr(), key); }
+    static handle get(const handle& obj, pkpy::StrName key) { return vm->getattr(obj.ptr(), key); }
 
-    template <typename Value>
-    static void set(const handle& obj, pkpy::StrName key, Value&& value) {
+    static void set(const handle& obj, pkpy::StrName key, const handle& value) {
         vm->setattr(obj.ptr(), key, value.ptr());
     }
 };
@@ -59,12 +60,11 @@ struct attr {
 struct item {
     using key_type = handle;
 
-    static pkpy::PyVar get(const handle& obj, const handle& key) {
+    static handle get(const handle& obj, const handle& key) {
         return vm->call(vm->py_op("getitem"), obj.ptr(), key.ptr());
     }
 
-    template <typename Value>
-    static void set(const handle& obj, const handle& key, Value&& value) {
+    static void set(const handle& obj, const handle& key, const handle& value) {
         vm->call(vm->py_op("setitem"), obj.ptr(), key.ptr(), value.ptr());
     }
 };
@@ -72,24 +72,29 @@ struct item {
 struct tuple {
     using key_type = int;
 
-    static pkpy::PyVar get(const handle& obj, int key) { return obj._as<pkpy::Tuple>()[key]; }
+    static handle get(const handle& obj, int key) { return obj._as<pkpy::Tuple>()[key]; }
 
-    template <typename Value>
-    static void set(const handle& obj, size_t key, Value&& value) {
-        obj._as<pkpy::Tuple>()[key] = std::forward<Value>(value).ptr();
-    }
+    static void set(const handle& obj, size_t key, const handle& value) { obj._as<pkpy::Tuple>()[key] = value.ptr(); }
 };
 
 struct list {
     using key_type = int;
 
-    static pkpy::PyVar get(const handle& obj, size_t key) { return obj._as<pkpy::List>()[key]; }
+    static handle get(const handle& obj, size_t key) { return obj._as<pkpy::List>()[key]; }
 
-    template <typename Value>
-    static void set(const handle& obj, size_t key, Value&& value) {
-        obj._as<pkpy::List>()[key] = std::forward<Value>(value).ptr();
+    static void set(const handle& obj, size_t key, const handle& value) { obj._as<pkpy::List>()[key] = value.ptr(); }
+};
+
+struct dict {
+    using key_type = handle;
+
+    static handle get(const handle& obj, const handle& key) { return obj._as<pkpy::Dict>().try_get(vm, key.ptr()); }
+
+    static void set(const handle& obj, const handle& key, const handle& value) {
+        obj._as<pkpy::Dict>().set(vm, key.ptr(), value.ptr());
     }
 };
+
 }  // namespace policy
 
 // implement other methods of interface
@@ -130,5 +135,7 @@ object interface<Derived>::operator() (Args&&... args) const {
 inline tuple_accessor tuple::operator[] (int i) const { return tuple_accessor(this->ptr(), i); }
 
 inline list_accessor list::operator[] (int i) const { return list_accessor(this->ptr(), i); }
+
+inline dict_accessor dict::operator[] (const handle& key) const { return dict_accessor(this->ptr(), key); }
 
 }  // namespace pybind11

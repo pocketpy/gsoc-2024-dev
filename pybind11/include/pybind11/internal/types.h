@@ -16,7 +16,7 @@ constexpr inline static bool has_underlying_type = false;
 template <typename T>
 constexpr inline static bool has_underlying_type<T, std::void_t<typename T::type_or_check>> = true;
 
-#define PYBIND11_TYPE_IMPLEMENT(name, tp)                                                                              \
+#define PYBIND11_TYPE_IMPLEMENT(parent, name, tp)                                                                      \
                                                                                                                        \
 private:                                                                                                               \
     using underlying_type = name;                                                                                      \
@@ -27,10 +27,10 @@ private:                                                                        
         return vm->new_object<underlying_type>(type_or_check, std::forward<Args>(args)...);                            \
     }                                                                                                                  \
     friend type_visitor;                                                                                               \
-    using object::object;
+    using parent::parent;
 
 class none : public object {
-    PYBIND11_TYPE_IMPLEMENT(empty, vm->tp_none_type);
+    PYBIND11_TYPE_IMPLEMENT(object, empty, vm->tp_none_type);
 
 public:
     none() : object(vm->None) {}
@@ -38,7 +38,7 @@ public:
 
 /// corresponding to type in Python
 class type : public object {
-    PYBIND11_TYPE_IMPLEMENT(pkpy::Type, vm->tp_type);
+    PYBIND11_TYPE_IMPLEMENT(object, pkpy::Type, vm->tp_type);
 
 public:
     template <typename T>
@@ -58,7 +58,7 @@ public:
 
 /// corresponding to bool in Python
 class bool_ : public object {
-    PYBIND11_TYPE_IMPLEMENT(bool, vm->tp_bool);
+    PYBIND11_TYPE_IMPLEMENT(object, bool, vm->tp_bool);
 
 public:
     bool_(bool value) : object(create(value)) {}
@@ -68,7 +68,7 @@ public:
 
 /// corresponding to int in Python
 class int_ : public object {
-    PYBIND11_TYPE_IMPLEMENT(pkpy::i64, vm->tp_int);
+    PYBIND11_TYPE_IMPLEMENT(object, pkpy::i64, vm->tp_int);
 
 public:
     int_(int64_t value) : object(create(value)) {}
@@ -78,7 +78,7 @@ public:
 
 /// corresponding to float in Python
 class float_ : public object {
-    PYBIND11_TYPE_IMPLEMENT(pkpy::f64, vm->tp_float);
+    PYBIND11_TYPE_IMPLEMENT(object, pkpy::f64, vm->tp_float);
 
 public:
     float_(double value) : object(create(value)) {}
@@ -87,13 +87,13 @@ public:
 };
 
 class iterable : public object {
-    PYBIND11_TYPE_IMPLEMENT(empty, [](const handle& obj) {
+    PYBIND11_TYPE_IMPLEMENT(object, empty, [](const handle& obj) {
         return vm->getattr(obj.ptr(), pkpy::__iter__, false) != nullptr;
     });
 };
 
 class iterator : public object {
-    PYBIND11_TYPE_IMPLEMENT(empty, [](const handle& obj) {
+    PYBIND11_TYPE_IMPLEMENT(object, empty, [](const handle& obj) {
         return vm->getattr(obj.ptr(), pkpy::__next__, false) != nullptr &&
                vm->getattr(obj.ptr(), pkpy::__iter__, false) != nullptr;
     });
@@ -128,7 +128,7 @@ public:
 };
 
 class str : public object {
-    PYBIND11_TYPE_IMPLEMENT(pkpy::Str, vm->tp_str);
+    PYBIND11_TYPE_IMPLEMENT(object, pkpy::Str, vm->tp_str);
 
 public:
     str(const char* c, int len) : object(create(c, len)) {};
@@ -158,7 +158,7 @@ public:
 // };
 
 class tuple : public object {
-    PYBIND11_TYPE_IMPLEMENT(pkpy::Tuple, vm->tp_tuple);
+    PYBIND11_TYPE_IMPLEMENT(object, pkpy::Tuple, vm->tp_tuple);
 
 public:
     tuple(int n) : object(create(n)) {}
@@ -177,8 +177,7 @@ public:
 };
 
 class list : public object {
-private:
-    PYBIND11_TYPE_IMPLEMENT(pkpy::List, vm->tp_list)
+    PYBIND11_TYPE_IMPLEMENT(object, pkpy::List, vm->tp_list)
 
 public:
     list() : object(create()) {}
@@ -194,6 +193,8 @@ public:
     int size() const { return value().size(); }
 
     bool empty() const { return size() == 0; }
+
+    void clear() { value().clear(); }
 
     list_accessor operator[] (int i) const;
 
@@ -219,15 +220,22 @@ public:
 //
 
 class dict : public object {
-public:
-    using object::object;
+    PYBIND11_TYPE_IMPLEMENT(object, pkpy::Dict, vm->tp_dict);
 
-    // dict() : object(vm->new_object<pkpy::Dict>(pkpy::VM::tp_dict), true) {}
+public:
+    dict() : object(create()) {}
+
+    int size() const { return value().size(); }
+
+    bool empty() const { return size() == 0; }
+
+    void clear() { value().clear(); }
+
+    dict_accessor operator[] (const handle& key) const;
 };
 
 class function : public object {
-public:
-    using object::object;
+    PYBIND11_TYPE_IMPLEMENT(object, pkpy::Function, vm->tp_function);
 };
 
 //
@@ -248,11 +256,11 @@ public:
 //
 
 class args : public tuple {
-    using tuple::tuple;
+    PYBIND11_TYPE_IMPLEMENT(tuple, struct empty, vm->tp_tuple);
 };
 
 class kwargs : public dict {
-    using dict::dict;
+    PYBIND11_TYPE_IMPLEMENT(dict, struct empty, vm->tp_dict);
 };
 
 #undef PYBIND11_TYPE_IMPLEMENT
