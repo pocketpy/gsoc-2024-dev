@@ -1,21 +1,28 @@
-#include <pybind11/pybind11.h>
+#include "test.h"
 
-namespace py = pybind11;
-
-int test_function() {
+TEST(pybind11, function) {
     py::initialize();
-    try {
-        py::module_ m = py::module_::import("__main__");
-        m.def("sum", [](py::args args) {
-            int sum = 0;
-            for(auto arg: args) {
-                sum += arg.cast<int>();
-            }
-            return sum;
-        });
-        py::exec("assert sum(1, 2, 3) == 6");
-    } catch(const std::exception& e) { py::print(e.what()); }
+
+    py::module_ m = py::module_::import("__main__");
+
+    // test *args
+    m.def("sum", [](py::args args) {
+        int sum = 0;
+        for(auto arg: args) {
+            sum += arg.cast<int>();
+        }
+        return sum;
+    });
+
+    EXPECT_EQ(py::eval("sum(1, 2, 3)").cast<int>(), 6);
+
+    // test **kwargs
+    m.def("cal", [](py::kwargs kwargs) {
+        int sum = kwargs["a"].cast<int>() + kwargs["b"].cast<int>() * kwargs["c"].cast<int>();
+        return sum;
+    });
+
+    EXPECT_EQ(py::eval("cal(a=1, b=2, c=3)").cast<int>(), 7);
 
     py::finalize();
-    return 0;
 }

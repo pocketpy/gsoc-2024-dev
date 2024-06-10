@@ -136,6 +136,10 @@ inline tuple_accessor tuple::operator[] (int i) const { return tuple_accessor(th
 
 inline list_accessor list::operator[] (int i) const { return list_accessor(this->ptr(), i); }
 
+inline dict_accessor dict::operator[] (int index) const { return dict_accessor(this->ptr(), int_(index)); }
+
+inline dict_accessor dict::operator[] (std::string_view key) const { return dict_accessor(this->ptr(), str(key)); }
+
 inline dict_accessor dict::operator[] (const handle& key) const { return dict_accessor(this->ptr(), key); }
 
 }  // namespace pybind11

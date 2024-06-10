@@ -1,7 +1,4 @@
-#include <iostream>
-#include <pybind11/pybind11.h>
-
-namespace py = pybind11;
+#include "test.h"
 
 const char* source = R"(
 class Point:
@@ -58,33 +55,29 @@ class Point:
         return f'Point({self.x}, {self.y})'
 )";
 
-int test_object() {
+TEST(pybind11, object) {
     py::initialize();
-    try {
-        py::module_ m = py::module_::import("__main__");
-        py::vm->exec(source);
-        py::vm->exec("p = Point(3, 4)");
-        py::handle p = py::eval("p");
+    py::module_ m = py::module_::import("__main__");
+    py::vm->exec(source);
+    py::vm->exec("p = Point(3, 4)");
+    py::handle p = py::eval("p");
 
-        // test is
-        assert(!p.is_none());
-        assert(p.is(p));
+    // test is
+    assert(!p.is_none());
+    assert(p.is(p));
 
-        // test attrs
-        assert(p.attr("x").cast<int>() == 3);
-        assert(p.attr("y").cast<int>() == 4);
+    // test attrs
+    assert(p.attr("x").cast<int>() == 3);
+    assert(p.attr("y").cast<int>() == 4);
 
-        p.attr("x") = py::int_(5);
-        p.attr("y") = py::int_(6);
+    p.attr("x") = py::int_(5);
+    p.attr("y") = py::int_(6);
 
-        assert(p.attr("x").cast<int>() == 5);
-        assert(p.attr("y").cast<int>() == 6);
-        py::vm->exec("assert p == Point(5, 6)");
+    assert(p.attr("x").cast<int>() == 5);
+    assert(p.attr("y").cast<int>() == 6);
+    py::vm->exec("assert p == Point(5, 6)");
 
-        // test operators
-        assert((p + p) == py::handle(py::eval("Point(10, 12)")));
-
-    } catch(const std::exception& e) { std::cerr << e.what() << std::endl; }
+    // test operators
+    assert((p + p) == py::handle(py::eval("Point(10, 12)")));
     py::finalize();
-    return 0;
 }

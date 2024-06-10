@@ -1,106 +1,104 @@
-#include <pybind11/pybind11.h>
-
-namespace py = pybind11;
+#include "test.h"
 
 void test_int() {
     py::object obj = py::int_(123);
     py::handle obj2 = py::eval("123");
 
-    assert(obj == obj2);
+    EXPECT_EQ(obj, obj2);
 
-    assert(obj.cast<int>() == 123);
-    assert(obj.cast<long>() == 123);
-    assert(obj.cast<long long>() == 123);
+    EXPECT_EQ(obj.cast<int>(), 123);
+    EXPECT_EQ(obj.cast<long>(), 123);
+    EXPECT_EQ(obj.cast<long long>(), 123);
 }
 
 void test_float() {
     py::object obj = py::float_(123.0);
     py::handle obj2 = py::eval("123.0");
 
-    assert(obj == obj2);
+    EXPECT_EQ(obj, obj2);
 
-    assert(obj.cast<float>() == 123.0);
-    assert(obj.cast<double>() == 123.0);
+    EXPECT_EQ(obj.cast<float>(), 123.0);
+    EXPECT_EQ(obj.cast<double>(), 123.0);
 }
 
 void test_str() {
     py::object obj = py::str("123");
     py::handle obj2 = py::eval("'123'");
 
-    assert(obj == obj2);
+    EXPECT_EQ(obj, obj2);
 
-    assert(obj.cast<const char*>() == std::string_view{"123"});
-    assert(obj.cast<char*>() == std::string_view{"123"});
-    assert(obj.cast<std::string>() == "123");
-    assert(obj.cast<std::string_view>() == "123");
+    EXPECT_STREQ(obj.cast<char*>(), "123");
+    EXPECT_STREQ(obj.cast<const char*>(), "123");
+    EXPECT_EQ(obj.cast<std::string>(), "123");
+    EXPECT_EQ(obj.cast<std::string_view>(), "123");
 }
 
 void test_tuple() {
     py::tuple tuple = py::tuple(1, "123", 3);
-    assert(tuple == py::eval("(1, '123', 3)"));
-    assert(tuple.size() == 3);
-    assert(!tuple.empty());
+    EXPECT_EQ(tuple, py::eval("(1, '123', 3)"));
+    EXPECT_EQ(tuple.size(), 3);
+    EXPECT_FALSE(tuple.empty());
 
     tuple[0] = py::int_(3);
     tuple[2] = py::int_(1);
-    assert(tuple == py::eval("(3, '123', 1)"));
+    EXPECT_EQ(tuple, py::eval("(3, '123', 1)"));
 }
 
 void test_list() {
     // test constructors
     py::list list = py::list();
-    assert(list == py::eval("[]"));
-    assert(list.size() == 0);
-    assert(list.empty());
+    EXPECT_EQ(list, py::eval("[]"));
+    EXPECT_EQ(list.size(), 0);
+    EXPECT_TRUE(list.empty());
 
     list = py::list(1, 2, 3);
-    assert(list == py::eval("[1, 2, 3]"));
-    assert(list.size() == 3);
-    assert(!list.empty());
+    EXPECT_EQ(list, py::eval("[1, 2, 3]"));
+    EXPECT_EQ(list.size(), 3);
+    EXPECT_FALSE(list.empty());
 
     // test accessor
     list[0] = py::int_(3);
     list[2] = py::int_(1);
-    assert(list == py::eval("[3, 2, 1]"));
+    EXPECT_EQ(list, py::eval("[3, 2, 1]"));
 
     // test other apis
     list.append(py::int_(4));
-    assert(list == py::eval("[3, 2, 1, 4]"));
+    EXPECT_EQ(list, py::eval("[3, 2, 1, 4]"));
 
     list.extend(py::list(5, 6));
-    assert(list == py::eval("[3, 2, 1, 4, 5, 6]"));
+    EXPECT_EQ(list, py::eval("[3, 2, 1, 4, 5, 6]"));
 
     list.insert(0, py::int_(7));
-    assert(list == py::eval("[7, 3, 2, 1, 4, 5, 6]"));
+    EXPECT_EQ(list, py::eval("[7, 3, 2, 1, 4, 5, 6]"));
 }
 
 void test_dict() {
     // test constructors
     py::dict dict = py::dict();
-    assert(dict == py::eval("{}"));
-    assert(dict.size() == 0);
-    assert(dict.empty());
+    EXPECT_EQ(dict, py::eval("{}"));
+    EXPECT_EQ(dict.size(), 0);
+    EXPECT_TRUE(dict.empty());
 
     // test accessor
-    dict[py::str("a")] = py::int_(1);
-    dict[py::str("b")] = py::int_(2);
-    dict[py::str("c")] = py::int_(3);
-    assert(dict == py::eval("{'a': 1, 'b': 2, 'c': 3}"));
+    dict["a"] = py::int_(1);
+    dict["b"] = py::int_(2);
+    dict["c"] = py::int_(3);
+    EXPECT_EQ(dict, py::eval("{'a': 1, 'b': 2, 'c': 3}"));
 
     // test other apis
     dict.clear();
-    assert(dict == py::eval("{}"));
+    EXPECT_EQ(dict, py::eval("{}"));
 }
 
-int test_types() {
+TEST(pybind11, types) {
     py::initialize();
-    try {
-        test_int();
-        test_float();
-        test_str();
-        test_tuple();
-        test_list();
-        test_dict();
-    } catch(const std::exception& e) { py::print(e.what()); }
-    return 0;
+
+    test_int();
+    test_float();
+    test_str();
+    test_tuple();
+    test_list();
+    test_dict();
+
+    py::finalize();
 }

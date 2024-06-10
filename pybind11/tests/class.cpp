@@ -1,4 +1,4 @@
-#include <pybind11/pybind11.h>
+#include "test.h"
 
 // test for simple struct, all member is built-in type.
 struct Point {
@@ -106,21 +106,15 @@ assert l.end.stringfy() == '(4, 5, 6)'
 )");
 }
 
-int test_class() {
+TEST(pybind11, class) {
     py::initialize();
 
-    try {
-        test_simple();
-        test_complex();
-    } catch(const std::exception& e) {
-        py::print(e.what());
-        return 1;
-    }
+    test_simple();
+    test_complex();
 
     py::finalize();
-    assert(Point::constructor_calls == Point::destructor_calls);
-    assert(Point::copy_constructor_calls == 0);
-    assert(Point::move_constructor_calls == 0);
 
-    return 0;
+    EXPECT_EQ(Point::constructor_calls, Point::destructor_calls);
+    EXPECT_EQ(Point::copy_constructor_calls, 0);
+    EXPECT_EQ(Point::move_constructor_calls, 0);
 }

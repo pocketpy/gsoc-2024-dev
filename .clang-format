@@ -1,9 +1,8 @@
-
 # clang-format configuration
 # compatible with clang-format 18
 
 UseTab: Never
-ColumnLimit: 100
+ColumnLimit: 120
 
 # Indent
 IndentWidth: 4
@@ -15,12 +14,12 @@ IndentExternBlock: Indent
 IndentGotoLabels: true
 IndentRequiresClause: true
 IndentWrappedFunctionNames: true
-NamespaceIndentation: All
+NamespaceIndentation: None
 LambdaBodyIndentation: Signature
 BitFieldColonSpacing: Both
 
 # Insert
-InsertBraces: true
+InsertBraces: false
 InsertNewlineAtEOF: true
 KeepEmptyLinesAtEOF: true
 
@@ -54,8 +53,8 @@ AllowShortCaseLabelsOnASingleLine: true
 AllowShortCompoundRequirementOnASingleLine: true
 AllowShortEnumsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: All
-AllowShortIfStatementsOnASingleLine: Never
-AllowShortLambdasOnASingleLine: All
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortLambdasOnASingleLine: None
 AllowShortLoopsOnASingleLine: false
 AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: true
@@ -98,3 +97,6 @@ QualifierAlignment: Custom
 QualifierOrder: ["constexpr", "const", "inline", "static", "type"]
 SortIncludes: Never
 SortUsingDeclarations: LexicographicNumeric
+IncludeBlocks: Merge
+
+WhitespaceSensitiveMacros: ["PK_PROTECTED", "LUA_PROTECTED"]

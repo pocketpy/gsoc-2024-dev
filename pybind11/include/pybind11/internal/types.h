@@ -231,6 +231,8 @@ public:
 
     void clear() { value().clear(); }
 
+    dict_accessor operator[] (int index) const;
+    dict_accessor operator[] (std::string_view) const;
     dict_accessor operator[] (const handle& key) const;
 };
 
