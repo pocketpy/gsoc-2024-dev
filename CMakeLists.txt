@@ -20,14 +20,13 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 )
 
 if(ENABLE_TEST)
-    # git clone https://github.com/google/googletest.git
-    add_subdirectory(googletest)
-
     if(WIN32)
         set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
     endif()
 
+    # git clone https://github.com/google/googletest.git
     include_directories(googletest/googletest/include)
+    add_subdirectory(googletest)
 
     file(GLOB_RECURSE PYBIND11_TEST_SOURCES "pybind11/tests/*.cpp")
     add_executable(pybind11_test ${PYBIND11_TEST_SOURCES})
