@@ -138,7 +138,7 @@ class tuple : public object {
 public:
     tuple(int n) : object(create(n)) {}
 
-    template <typename... Args, std::enable_if_t<(sizeof...(Args) > 0)>* = nullptr>
+    template <typename... Args, std::enable_if_t<(sizeof...(Args) > 1)>* = nullptr>
     tuple(Args&&... args) : object(create(sizeof...(Args))) {
         int index = 0;
         ((value()[index++] = pybind11::cast(std::forward<Args>(args)).ptr()), ...);
