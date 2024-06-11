@@ -3,31 +3,8 @@
 
 namespace pybind11 {
 
-struct type_visitor {
-    template <typename T>
-    constexpr static auto type_or_check() {
-        return T::type_or_check;
-    }
-};
-
-template <typename T, typename = void>
-constexpr inline static bool has_underlying_type = false;
-
 template <typename T>
-constexpr inline static bool has_underlying_type<T, std::void_t<typename T::type_or_check>> = true;
-
-#define PYBIND11_TYPE_IMPLEMENT(parent, name, tp)                                                                      \
-                                                                                                                       \
-private:                                                                                                               \
-    using underlying_type = name;                                                                                      \
-    constexpr inline static auto type_or_check = tp;                                                                   \
-    decltype(auto) value() const { return _as<underlying_type>(); }                                                    \
-    template <typename... Args>                                                                                        \
-    static handle create(Args&&... args) {                                                                             \
-        return vm->new_object<underlying_type>(type_or_check, std::forward<Args>(args)...);                            \
-    }                                                                                                                  \
-    friend type_visitor;                                                                                               \
-    using parent::parent;
+handle cast(T&& value, return_value_policy policy = return_value_policy::automatic_reference, handle parent = {});
 
 class none : public object {
     PYBIND11_TYPE_IMPLEMENT(object, empty, vm->tp_none_type);
@@ -43,16 +20,7 @@ class type : public object {
 public:
     template <typename T>
     static handle handle_of() {
-        if constexpr(has_underlying_type<T>) {
-            return T::underlying_type;
-        } else {
-            auto type = vm->_cxx_typeid_map.try_get(typeid(T));
-            if(type) {
-                return vm->_t(*type);
-            } else {
-                vm->TypeError("type not registered");
-            }
-        }
+        return type_visitor::type<T>();
     }
 };
 

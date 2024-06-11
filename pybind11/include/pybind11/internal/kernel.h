@@ -1,6 +1,8 @@
 #pragma once
 #include <pocketpy.h>
 
+#include "type_traits.h"
+
 namespace pybind11 {
 
 inline pkpy::VM* vm = nullptr;
@@ -107,4 +109,8 @@ struct empty {};
 template <typename... Args>
 void print(Args&&... args);
 
+class object;
+
+template <typename T>
+constexpr inline bool is_pyobject_v = std::is_base_of_v<object, T>;
 }  // namespace pybind11

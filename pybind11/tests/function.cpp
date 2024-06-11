@@ -1,9 +1,9 @@
 #include "test.h"
 
-TEST_F(PYBIND11_TEST, function) {
-    py::module_ m = py::module_::import("__main__");
+TEST_F(PYBIND11_TEST, args) {
+    auto m = py::module_::__main__();
 
-    // test *args
+    // test for binding function with args
     m.def("sum", [](py::args args) {
         int sum = 0;
         for(auto arg: args) {
@@ -12,13 +12,17 @@ TEST_F(PYBIND11_TEST, function) {
         return sum;
     });
 
-    EXPECT_EQ(py::eval("sum(1, 2, 3)").cast<int>(), 6);
+    EXPECT_EVAL_EQ("sum(1, 2, 3)", 6);
+}
 
-    // test **kwargs
+TEST_F(PYBIND11_TEST, kwargs) {
+    auto m = py::module_::__main__();
+
+    // test for binding function with kwargs
     m.def("cal", [](py::kwargs kwargs) {
         int sum = kwargs["a"].cast<int>() + kwargs["b"].cast<int>() * kwargs["c"].cast<int>();
         return sum;
     });
 
-    EXPECT_EQ(py::eval("cal(a=1, b=2, c=3)").cast<int>(), 7);
+    EXPECT_EVAL_EQ("cal(a=1, b=2, c=3)", 7);
 }

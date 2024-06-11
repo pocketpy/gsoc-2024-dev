@@ -9,6 +9,8 @@ class module_ : public object {
 public:
     using object::object;
 
+    static module_ __main__() { return vm->_main; }
+
     static module_ import(const char* name) {
         if(name == std::string_view{"__main__"}) {
             return vm->_main;

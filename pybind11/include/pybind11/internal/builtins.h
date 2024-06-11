@@ -49,17 +49,7 @@ inline void setattr(const handle& obj, const char* name, const handle& value) {
 
 template <typename T>
 inline bool isinstance(const handle& obj) {
-    if constexpr(is_pyobject_v<T>) {
-        constexpr auto type_or_check = type_visitor::type_or_check<T>();
-        if constexpr(std::is_same_v<std::decay_t<decltype(type_or_check)>, pkpy::Type>) {
-            return vm->isinstance(obj.ptr(), type_or_check);
-        } else {
-            return type_or_check(obj);
-        }
-    } else {
-        auto cls = type::handle_of<T>().template _as<pkpy::Type>();
-        return vm->isinstance(obj.ptr(), cls);
-    }
+    return type_visitor::check<T>(obj);
 }
 
 template <>

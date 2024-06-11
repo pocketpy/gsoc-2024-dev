@@ -57,25 +57,30 @@ class Point:
 
 TEST_F(PYBIND11_TEST, object) {
     py::module_ m = py::module_::import("__main__");
-    py::vm->exec(source);
-    py::vm->exec("p = Point(3, 4)");
+    py::exec(source);
+    py::exec("p = Point(3, 4)");
     py::handle p = py::eval("p");
 
     // test is
-    assert(!p.is_none());
-    assert(p.is(p));
+    EXPECT_FALSE(p.is_none());
+    EXPECT_TRUE(p.is(p));
 
     // test attrs
-    assert(p.attr("x").cast<int>() == 3);
-    assert(p.attr("y").cast<int>() == 4);
+    EXPECT_EQ(p.attr("x").cast<int>(), 3);
+    EXPECT_EQ(p.attr("y").cast<int>(), 4);
 
     p.attr("x") = py::int_(5);
     p.attr("y") = py::int_(6);
 
-    assert(p.attr("x").cast<int>() == 5);
-    assert(p.attr("y").cast<int>() == 6);
-    py::vm->exec("assert p == Point(5, 6)");
+    EXPECT_EQ(p.attr("x").cast<int>(), 5);
+    EXPECT_EQ(p.attr("y").cast<int>(), 6);
+    EXPECT_EXEC_EQ("p", "Point(5, 6)");
 
     // test operators
-    assert((p + p) == py::handle(py::eval("Point(10, 12)")));
+    EXPECT_EVAL_EQ("Point(10, 12)", p + p);
+    EXPECT_EVAL_EQ("Point(0, 0)", p - p);
+    EXPECT_EVAL_EQ("Point(25, 36)", p * p);
+    EXPECT_EVAL_EQ("Point(1, 1)", p / p);
+    // EXPECT_EVAL_EQ("Point(0, 0)", p // p);
+    EXPECT_EVAL_EQ("Point(0, 0)", p % p);
 }

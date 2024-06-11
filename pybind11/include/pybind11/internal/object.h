@@ -70,14 +70,68 @@ public:
     }
 };
 
+// a helper class to visit type
+struct type_visitor {
+
+    template <typename T>
+    static pkpy::Type type() {
+        if constexpr(is_pyobject_v<T>) {
+            if constexpr(std::is_same_v<std::decay_t<decltype(T::type_or_check)>, pkpy::Type>) {
+                // for some type, they have according type in python, e.g. bool, int, float
+                // so just return the according type
+                return T::type_or_check;
+            } else {
+                // for other type, they don't have according type in python, like iterable, iterator
+                static_assert(dependent_false<T>, "type_or_check not defined");
+            }
+        } else {
+            // for C++ type, lookup the type in the type map
+            auto type = vm->_cxx_typeid_map.try_get(typeid(T));
+            // if found, return the type
+            if(type) return *type;
+            // if not found, raise error
+            vm->TypeError("type not registered");
+        }
+    }
+
+    template <typename T>
+    static bool check(const handle& obj) {
+        if constexpr(is_pyobject_v<T>) {
+            if constexpr(std::is_same_v<std::decay_t<decltype(T::type_or_check)>, pkpy::Type>) {
+                return vm->isinstance(obj.ptr(), T::type_or_check);
+            } else {
+                // some type, like iterable, iterator, they don't have according type in python
+                // but they have a function to check the type, then just call the function
+                return T::type_or_check(obj);
+            }
+        } else {
+            return vm->isinstance(obj.ptr(), type<T>());
+        }
+    }
+};
+
+#define PYBIND11_TYPE_IMPLEMENT(parent, name, tp)                                                                      \
+                                                                                                                       \
+private:                                                                                                               \
+    using underlying_type = name;                                                                                      \
+    constexpr inline static auto type_or_check = tp;                                                                   \
+    decltype(auto) value() const { return _as<underlying_type>(); }                                                    \
+    template <typename... Args>                                                                                        \
+    static handle create(Args&&... args) {                                                                             \
+        return vm->new_object<underlying_type>(type_or_check, std::forward<Args>(args)...);                            \
+    }                                                                                                                  \
+    friend type_visitor;                                                                                               \
+    using parent::parent;
+
 /// pkpy does not use reference counts, so object is just fot API compatibility
 class object : public handle {
-public:
-    using handle::handle;
+    PYBIND11_TYPE_IMPLEMENT(handle, pkpy::PyObject, vm->tp_object);
 
+public:
     object(const handle& h) : handle(h) {}
 };
 
+// implement some global functions
 #define PYBIND11_BINARY_OPERATOR(OP, NAME)                                                                             \
     inline object operator OP (const handle& lhs, const handle& rhs) {                                                 \
         return vm->call(vm->py_op(NAME), lhs.ptr(), rhs.ptr());                                                        \
@@ -124,11 +178,6 @@ PYBIND11_BINARY_LOGIC_OPERATOR(<=, "le");
 PYBIND11_BINARY_LOGIC_OPERATOR(>=, "ge");
 
 #undef PYBIND11_BINARY_OPERATOR
+#undef PYBIND11_INPLACE_OPERATOR
 #undef PYBIND11_BINARY_LOGIC_OPERATOR
-
-template <typename T>
-constexpr inline bool is_pyobject_v = std::is_base_of_v<object, T>;
-
-template <typename T>
-handle cast(T&& value, return_value_policy policy = return_value_policy::automatic_reference, handle parent = {});
 };  // namespace pybind11
