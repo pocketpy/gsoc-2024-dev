@@ -12,53 +12,77 @@ jobs:
   build_linux:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: ilammy/gcc-dev-cmd@v1
-      - uses: jwlawson/actions-setup-cmake@v1.10
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up GCC
+        uses: ilammy/gcc-dev-cmd@v1
+
+      - name: Set up CMake
+        uses: jwlawson/actions-setup-cmake@v1.10
 
       - name: Install dependencies
         run: |
           git submodule update --init --recursive
-          git clone
+          git clone https://github.com/google/googletest.git
 
       - name: Build
         run: |
           cmake -B build
           cmake --build build --config Release --parallel
+          
+      - name: Test
+        run: |
           build/pybind11_test
 
   build_win:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: ilammy/msvc-dev-cmd@v1
-      - uses: jwlawson/actions-setup-cmake@v1.10
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Set up CMake
+        uses: jwlawson/actions-setup-cmake@v1.10
 
       - name: Install dependencies
         run: |
           git submodule update --init --recursive
-          git clone
-
-      - name: Build
-        run: |
-          cmake -B build
-          cmake --build build--config Release --parallel
-          build32/Release/pybind11_test.exe
-
-  build_mac:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ilammy/clang-dev-cmd@v1
-      - uses: jwlawson/actions-setup-cmake@v1.10
-
-      - name: Install dependencies
-        run: |
-          git submodule update --init --recursive
-          git clone
+          git clone https://github.com/google/googletest.git
 
       - name: Build
         run: |
           cmake -B build
           cmake --build build --config Release --parallel
+          
+      - name: Test
+        run: |
+          build/Release/pybind11_test.exe
+
+  build_mac:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Clang
+        uses: ilammy/clang-dev-cmd@v1
+
+      - name: Set up CMake
+        uses: jwlawson/actions-setup-cmake@v1.10
+
+      - name: Install dependencies
+        run: |
+          git submodule update --init --recursive
+          git clone https://github.com/google/googletest.git
+
+      - name: Build
+        run: |
+          cmake -B build
+          cmake --build build --config Release --parallel
+          
+      - name: Test
+        run: |
           build/pybind11_test
