@@ -159,7 +159,7 @@ public:
 
     list(int n) : object(create(n)) {}
 
-    template <typename... Args>
+    template <typename... Args, std::enable_if_t<(sizeof...(Args) > 1)>* = nullptr>
     list(Args&&... args) : object(create(sizeof...(Args))) {
         int index = 0;
         ((value()[index++] = pybind11::cast(std::forward<Args>(args)).ptr()), ...);
@@ -250,6 +250,11 @@ public:
         void (*destructor)(void*) = [](void* ptr) {
             delete static_cast<std::decay_t<T>*>(ptr);
         }) : object(create(new auto(std::forward<T>(value)), destructor)) {}
+
+    template <typename T>
+    T& cast() const {
+        return *static_cast<T*>(value().ptr);
+    }
 };
 
 class args : public tuple {

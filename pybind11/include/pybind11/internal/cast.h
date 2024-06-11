@@ -101,7 +101,6 @@ struct type_caster<T, std::enable_if_t<is_pyobject_v<T>>> {
     T value;
 
     bool load(const handle& src, bool) {
-
         if(isinstance<T>(src)) {
             value = src;
             return true;
@@ -110,10 +109,7 @@ struct type_caster<T, std::enable_if_t<is_pyobject_v<T>>> {
         return false;
     }
 
-    template <typename U>
-    static handle cast(U&& src, return_value_policy, handle) {
-        return std::forward<U>(src);
-    }
+    static handle cast(const handle& src, return_value_policy, handle) { return src; }
 };
 
 template <typename T, typename>
