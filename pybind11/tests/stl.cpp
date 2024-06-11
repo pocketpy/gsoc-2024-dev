@@ -27,7 +27,7 @@ struct Point {
     bool operator== (const Point& p) const { return x == p.x && y == p.y; }
 };
 
-TEST_F(PYBIND11_TEST, std_vector) {
+TEST_F(PYBIND11_TEST, list_like) {
     py::class_<Point>(py::module_::__main__(), "Point")
         .def(py::init<int, int>())
         .def_readwrite("x", &Point::x)
@@ -37,10 +37,10 @@ TEST_F(PYBIND11_TEST, std_vector) {
     {
         std::array<Point, 2> a = {Point(1, 2), Point(3, 4)};
         py::object obj = py::eval("[Point(1, 2), Point(3, 4)]");
-        // EXPECT_EVAL_EQ("[Point(1, 2), Point(3, 4)]", obj);
+        EXPECT_EVAL_EQ("[Point(1, 2), Point(3, 4)]", obj);
 
         std::array<Point, 2> a2 = obj.cast<std::array<Point, 2>>();
-        //  EXPECT_EQ(a, a2);
+        EXPECT_EQ(a, a2);
     }
     // vector
     {
@@ -73,7 +73,7 @@ TEST_F(PYBIND11_TEST, std_vector) {
     }
 }
 
-TEST_F(PYBIND11_TEST, std_map) {
+TEST_F(PYBIND11_TEST, dict_like) {
     py::class_<Point>(py::module_::__main__(), "Point")
         .def(py::init<int, int>())
         .def_readwrite("x", &Point::x)

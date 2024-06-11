@@ -23,7 +23,6 @@ struct type_caster<std::array<T, N>> {
     wrapper value;
 
     bool load(const handle& src, bool convert) {
-        print(src);
         if(!isinstance<list>(src)) { return false; }
         auto list = src.cast<pybind11::list>();
 

@@ -232,7 +232,6 @@ public:
     cpp_function(Fn&& f, const Extras&... extras) {
         pkpy::any userdata = function_record(std::forward<Fn>(f), "anonymous", extras...);
         m_ptr = vm->bind_func(nullptr, "", -1, _wrapper, std::move(userdata));
-        inc_ref();
     }
 };
 

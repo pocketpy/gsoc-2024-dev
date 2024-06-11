@@ -130,6 +130,7 @@ object interface<Derived>::operator() (Args&&... args) const {
     // TODO: implement, resolve named arguments
 
     // vm->vectorcall()
+    return vm->None;
 }
 
 inline tuple_accessor tuple::operator[] (int i) const { return tuple_accessor(this->ptr(), i); }
