@@ -72,7 +72,7 @@ TEST_F(PYBIND11_TEST, list) {
     EXPECT_EQ(list, py::eval("[7, 3, 2, 1, 4, 5, 6]"));
 }
 
-void test_dict() {
+TEST_F(PYBIND11_TEST, dict) {
     // test constructors
     py::dict dict = py::dict();
     EXPECT_EQ(dict, py::eval("{}"));
@@ -88,4 +88,18 @@ void test_dict() {
     // test other apis
     dict.clear();
     EXPECT_EQ(dict, py::eval("{}"));
+}
+
+TEST_F(PYBIND11_TEST, capsule) {
+    static int times = 0;
+
+    struct NotTrivial {
+        ~NotTrivial() { times++; }
+    };
+
+    NotTrivial obj;
+    py::handle x = py::capsule(obj);
+
+    py::finalize();
+    EXPECT_EQ(times, 1);
 }

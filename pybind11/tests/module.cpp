@@ -13,8 +13,8 @@ PYBIND11_EMBEDDED_MODULE(sub, m) {
 
 TEST_F(PYBIND11_TEST, module) {
     py::exec("import sub");
-    py::print(py::eval("sub.add(1, 2)"));
+    EXPECT_EVAL_EQ("sub.add(1, 2)", 3);
 
     py::exec("from sub import sub2");
-    py::print(py::eval("sub2.add(1, 2)"));
+    EXPECT_EVAL_EQ("sub2.add(1, 2)", 3);
 }

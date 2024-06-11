@@ -74,12 +74,15 @@ public:
 struct type_visitor {
 
     template <typename T>
+    constexpr static bool is_type = std::is_same_v<pkpy::Type, std::decay_t<decltype(T::type_or_check())>>;
+
+    template <typename T>
     static pkpy::Type type() {
         if constexpr(is_pyobject_v<T>) {
-            if constexpr(std::is_same_v<std::decay_t<decltype(T::type_or_check)>, pkpy::Type>) {
+            if constexpr(is_type<T>) {
                 // for some type, they have according type in python, e.g. bool, int, float
                 // so just return the according type
-                return T::type_or_check;
+                return T::type_or_check();
             } else {
                 // for other type, they don't have according type in python, like iterable, iterator
                 static_assert(dependent_false<T>, "type_or_check not defined");
@@ -97,8 +100,8 @@ struct type_visitor {
     template <typename T>
     static bool check(const handle& obj) {
         if constexpr(is_pyobject_v<T>) {
-            if constexpr(std::is_same_v<std::decay_t<decltype(T::type_or_check)>, pkpy::Type>) {
-                return vm->isinstance(obj.ptr(), T::type_or_check);
+            if constexpr(is_type<T>) {
+                return vm->isinstance(obj.ptr(), T::type_or_check());
             } else {
                 // some type, like iterable, iterator, they don't have according type in python
                 // but they have a function to check the type, then just call the function
@@ -114,16 +117,21 @@ struct type_visitor {
                                                                                                                        \
 private:                                                                                                               \
     using underlying_type = name;                                                                                      \
-    constexpr inline static auto type_or_check = tp;                                                                   \
+    inline static auto type_or_check = [] {                                                                            \
+        return tp;                                                                                                      \
+    };                                                                                                                 \
     decltype(auto) value() const { return _as<underlying_type>(); }                                                    \
     template <typename... Args>                                                                                        \
     static handle create(Args&&... args) {                                                                             \
-        return vm->new_object<underlying_type>(type_or_check, std::forward<Args>(args)...);                            \
+        return vm->new_object<underlying_type>(type_or_check(), std::forward<Args>(args)...);                          \
     }                                                                                                                  \
     friend type_visitor;                                                                                               \
     using parent::parent;
 
-/// pkpy does not use reference counts, so object is just fot API compatibility
+/*=============================================================================//
+// pkpy does not use reference counts, so object is just fot API compatibility //
+//=============================================================================*/
+
 class object : public handle {
     PYBIND11_TYPE_IMPLEMENT(handle, pkpy::PyObject, vm->tp_object);
 

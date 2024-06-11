@@ -6,6 +6,13 @@ namespace pybind11 {
 template <typename T>
 handle cast(T&& value, return_value_policy policy = return_value_policy::automatic_reference, handle parent = {});
 
+#define PYBIND11_REGISTER_INIT(func)                                                                                   \
+    static inline int _register = [] {                                                                                 \
+        if(_init == nullptr) _init = new std::vector<void (*)()>();                                                    \
+        _init->push_back(func);                                                                                        \
+        return 0;                                                                                                      \
+    }();
+
 class none : public object {
     PYBIND11_TYPE_IMPLEMENT(object, empty, vm->tp_none_type);
 
@@ -219,11 +226,31 @@ class function : public object {
 //    using object::object;
 //};
 //
-// class capsule : public object {
-// public:
-//    using object::object;
-//};
-//
+class capsule : public object {
+    struct capsule_impl {
+        void* ptr;
+        void (*destructor)(void*);
+
+        capsule_impl(void* ptr, void (*destructor)(void*)) : ptr(ptr), destructor(destructor) {}
+
+        ~capsule_impl() { destructor(ptr); }
+    };
+
+    PYBIND11_REGISTER_INIT([] {
+        handle type = vm->new_type_object<capsule_impl>(vm->builtins, "capsule", vm->tp_object, false);
+        vm->builtins->attr().set("capsule", type.ptr());
+    });
+
+    PYBIND11_TYPE_IMPLEMENT(object, capsule_impl, handle(vm->builtins->attr("capsule"))._as<pkpy::Type>());
+
+public:
+    template <typename T>
+    capsule(
+        T&& value,
+        void (*destructor)(void*) = [](void* ptr) {
+            delete static_cast<std::decay_t<T>*>(ptr);
+        }) : object(create(new auto(std::forward<T>(value)), destructor)) {}
+};
 
 class args : public tuple {
     PYBIND11_TYPE_IMPLEMENT(tuple, struct empty, vm->tp_tuple);
@@ -234,6 +261,7 @@ class kwargs : public dict {
 };
 
 #undef PYBIND11_TYPE_IMPLEMENT
+#undef PYBIND11_REGISTER_INIT
 
 // implement iterator methods for interface
 template <typename Derived>
