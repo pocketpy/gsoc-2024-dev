@@ -108,3 +108,32 @@ assert l.end.stringfy() == '(4, 5, 6)'
     EXPECT_EQ(Point::copy_constructor_calls, 0);
     EXPECT_EQ(Point::move_constructor_calls, 0);
 }
+
+enum class Color { RED, Yellow, GREEN, BLUE };
+
+TEST_F(PYBIND11_TEST, enum) {
+    py::module_ m = py::module_::import("__main__");
+
+    py::enum_<Color> color(m, "Color");
+
+    color.value("RED", Color::RED)
+        .value("Yellow", Color::Yellow)
+        .value("GREEN", Color::GREEN)
+        .value("BLUE", Color::BLUE);
+
+    EXPECT_EVAL_EQ("Color.RED", Color::RED);
+    EXPECT_EVAL_EQ("Color.Yellow", Color::Yellow);
+    EXPECT_EVAL_EQ("Color.GREEN", Color::GREEN);
+    EXPECT_EVAL_EQ("Color.BLUE", Color::BLUE);
+
+    EXPECT_EVAL_EQ("Color.RED.value", static_cast<int>(Color::RED));
+    EXPECT_EVAL_EQ("Color.Yellow.value", static_cast<int>(Color::Yellow));
+    EXPECT_EVAL_EQ("Color.GREEN.value", static_cast<int>(Color::GREEN));
+    EXPECT_EVAL_EQ("Color.BLUE.value", static_cast<int>(Color::BLUE));
+
+    color.export_values();
+    EXPECT_EVAL_EQ("RED", Color::RED);
+    EXPECT_EVAL_EQ("Yellow", Color::Yellow);
+    EXPECT_EVAL_EQ("GREEN", Color::GREEN);
+    EXPECT_EVAL_EQ("BLUE", Color::BLUE);
+}

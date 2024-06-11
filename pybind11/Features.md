@@ -19,7 +19,7 @@ This is a feature list of pybind11 for pocketpy. It lists all completed and pend
 - [x] Binding lambda functions
 - [ ] Dynamic attributes
 - [ ] Inheritance and automatic downcasting
-- [ ] Enumerations and internal types
+- [x] Enumerations and internal types
 - [ ] Instance and static fields
 
 > Binding static fields may never be implemented in pocketpy because it requires a metaclass, which is a heavy and infrequently used feature.

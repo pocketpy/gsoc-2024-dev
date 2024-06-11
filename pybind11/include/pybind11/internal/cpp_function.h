@@ -296,7 +296,7 @@ handle
                 }
 
             } else {
-                using Self = std::tuple_element_t<0, callable_args_t<Getter>>;
+                using Self = remove_cvref_t<std::tuple_element_t<0, callable_args_t<Getter>>>;
                 auto& self = handle(view[0])._as<instance>()._as<Self>();
 
                 return type_caster<callable_return_t<Getter>>::cast(getter(self),
@@ -332,7 +332,7 @@ handle
                         }
                     }
                 } else {
-                    using Self = std::tuple_element_t<0, callable_args_t<Setter>>;
+                    using Self = remove_cvref_t<std::tuple_element_t<0, callable_args_t<Setter>>>;
                     auto& self = handle(view[0])._as<instance>()._as<Self>();
 
                     type_caster<std::tuple_element_t<1, callable_args_t<Setter>>> caster;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cpp_function.h"
+#include <vector>
 
 namespace pybind11 {
 
@@ -33,13 +34,22 @@ public:
 
 template <typename T, typename... Others>
 class class_ : public type {
+protected:
+    handle m_scope;
+
+    static handle new_type(const handle& scope, const char* name) {
+        return vm->new_type_object(scope.ptr().get(),
+                                   name,
+                                   vm->tp_object,
+                                   false,
+                                   pkpy::PyTypeInfo::Vt::get<instance>());
+    }
+
 public:
     using type::type;
 
     template <typename... Args>
-    class_(const handle& scope, const char* name, Args&&... args) :
-        type(
-            vm->new_type_object(scope.ptr().get(), name, vm->tp_object, false, pkpy::PyTypeInfo::Vt::get<instance>())) {
+    class_(const handle& scope, const char* name, Args&&... args) : m_scope(scope), type(new_type(scope, name)) {
 
         // set __module__
         pkpy::PyVar mod = scope.ptr();
@@ -166,30 +176,35 @@ public:
     }
 };
 
-// template <typename T, typename... Others>
-// class enum_ : public class_<T, Others...> {
-//     std::map<const char*, pkpy::PyVar> m_values;
-//
-// public:
-//    using class_<T, Others...>::class_;
-//
-//    template <typename... Args>
-//    enum_(const handle& scope, const char* name, Args&&... args) :
-//        class_<T, Others...>(scope, name, std::forward<Args>(args)...) {}
-//
-//    enum_& value(const char* name, T value) {
-//        handle var = type_caster<T>::cast(value, return_value_policy::copy);
-//        this->m_ptr->attr().set(name, var.ptr());
-//        m_values[name] = var.ptr();
-//        return *this;
-//    }
-//
-//    enum_& export_values() {
-//        pkpy::PyVar mod = this->m_ptr->attr("__module__");
-//        for(auto& [name, value]: m_values) {
-//            mod->attr().set(name, value);
-//        }
-//        return *this;
-//    }
-//};
+template <typename T, typename... Others>
+class enum_ : public class_<T, Others...> {
+    std::vector<std::pair<const char*, handle>> m_values;
+
+public:
+    using Base = class_<T, Others...>;
+    using class_<T, Others...>::class_;
+
+    template <typename... Args>
+    enum_(const handle& scope, const char* name, Args&&... args) :
+        class_<T, Others...>(scope, name, std::forward<Args>(args)...) {
+        Base::def_property_readonly("value", [](T& self) {
+            return int_(static_cast<std::underlying_type_t<T>>(self));
+        });
+    }
+
+    enum_& value(const char* name, T value) {
+        handle var = type_caster<T>::cast(value, return_value_policy::copy);
+        this->m_ptr->attr().set(name, var.ptr());
+        m_values.emplace_back(name, var);
+        return *this;
+    }
+
+    enum_& export_values() {
+        for(auto& [name, value]: m_values) {
+            Base::m_scope.ptr()->attr().set(name, value.ptr());
+        }
+        return *this;
+    }
+};
 }  // namespace pybind11
+
