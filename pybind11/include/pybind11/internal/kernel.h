@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 #include <pocketpy.h>
 
 #include "type_traits.h"
@@ -6,8 +7,15 @@
 namespace pybind11 {
 
 inline pkpy::VM* vm = nullptr;
+inline std::vector<void (*)()>* _init = nullptr;
 
-inline void initialize(bool enable_os = true) { vm = new pkpy::VM(); }
+inline void initialize(bool enable_os = true) {
+    if(vm == nullptr) vm = new pkpy::VM();
+    if(_init != nullptr) {
+        for(auto& fn: *_init)
+            fn();
+    }
+}
 
 inline void finalize() {
     delete vm;

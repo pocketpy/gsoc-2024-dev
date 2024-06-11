@@ -1,31 +1,9 @@
 #pragma once
 
-#include "cpp_function.h"
+#include "module.h"
 #include <vector>
 
 namespace pybind11 {
-
-class module_ : public object {
-
-public:
-    using object::object;
-
-    static module_ __main__() { return vm->_main; }
-
-    static module_ import(const char* name) {
-        if(name == std::string_view{"__main__"}) {
-            return vm->_main;
-        } else {
-            return vm->py_import(name, false);
-        }
-    }
-
-    template <typename Fn, typename... Extras>
-    module_& def(const char* name, Fn&& fn, const Extras... extras) {
-        bind_function(*this, name, std::forward<Fn>(fn), pkpy::BindType::DEFAULT, extras...);
-        return *this;
-    }
-};
 
 // TODO:
 // 1. inheritance
