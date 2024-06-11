@@ -44,8 +44,9 @@ jobs:
 
       # Windows
       - name: Configure CMake on Windows
+        uses: ilammy/msvc-dev-cmd@v1
         if: matrix.os == 'windows-latest'
         run: |
-          cmake -G "Visual Studio 16 2019" -A x64 -S . -B build
+          cmake -A x64 -S . -B build
           cmake --build build --config Release --parallel
           build/Release/pybind11_test.exe
