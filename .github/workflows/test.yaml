@@ -16,6 +16,9 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         cmake-version: [3.18.4]
+        include:
+          - os: windows-latest
+            visual-studio-version: "2019"
 
     steps:
       - name: Checkout code
@@ -36,6 +39,7 @@ jobs:
         run: |
           cmake -S . -B build -DENABLE_TEST=ON
           cmake --build build --parallel
+          chmod +x build/pybind11_test
           build/pybind11_test
 
       # Windows
