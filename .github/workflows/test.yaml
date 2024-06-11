@@ -1,0 +1,53 @@
+name: CMake Build and Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        cmake-version: [3.18.4]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          git submodule update --init --recursive
+          git clone https://github.com/google/googletest.git
+
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v1
+        with:
+          cmake-version: ${{ matrix.cmake-version }}
+
+      - name: Configure CMake
+        run: cmake -S . -B build -DENABLE_TEST=ON
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Run tests
+        run: build/pybind11_test
+
+      # Windows
+      - name: Configure CMake on Windows
+        if: matrix.os == 'windows-latest'
+        run: cmake -G "Visual Studio 16 2019" -A x64 -S . -B build
+
+      - name: Build on Windows
+        if: matrix.os == 'windows-latest'
+        run: cmake --build build --config Release
+
+      - name: Run tests on Windows
+        if: matrix.os == 'windows-latest'
+        run: build/pybind11_test.exe
