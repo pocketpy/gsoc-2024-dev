@@ -93,8 +93,8 @@ struct callable_traits<T, std::enable_if_t<is_member_function_pointer_v<T>>> {
 
 template <typename T>
 struct callable_traits<T, std::enable_if_t<is_function_pointer_v<T>>> {
-    using args_type = function_args_t<std::remove_pointer<T>>;
-    using return_type = function_return_t<std::remove_pointer<T>>;
+    using args_type = function_args_t<std::remove_pointer_t<T>>;
+    using return_type = function_return_t<std::remove_pointer_t<T>>;
 };
 
 template <typename T>

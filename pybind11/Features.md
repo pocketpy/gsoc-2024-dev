@@ -70,3 +70,4 @@ Need further discussion.
 
 - [ ] Global Interpreter Lock (GIL)
 - [ ] Binding sequence data types, iterators, the slicing protocol, etc.
+- [x] Convenient operators binding

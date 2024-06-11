@@ -150,7 +150,8 @@ struct type_caster {
 
 template <typename T>
 struct type_caster<T, std::enable_if_t<is_pointer_v<T> || std::is_reference_v<T>>> {
-    using underlying = std::conditional_t<is_pointer_v<T>, std::remove_pointer_t<T>, std::remove_reference_t<T>>;
+    using underlying =
+        std::remove_cv_t<std::conditional_t<is_pointer_v<T>, std::remove_pointer_t<T>, std::remove_reference_t<T>>>;
 
     struct wrapper {
         type_caster<underlying> caster;

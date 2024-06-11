@@ -47,6 +47,7 @@ protected:
 
 public:
     using type::type;
+    using underlying_type = T;
 
     template <typename... Args>
     class_(const handle& scope, const char* name, Args&&... args) : m_scope(scope), type(new_type(scope, name)) {
