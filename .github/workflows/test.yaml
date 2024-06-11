@@ -30,24 +30,17 @@ jobs:
         with:
           cmake-version: ${{ matrix.cmake-version }}
 
-      - name: Configure CMake
-        run: cmake -S . -B build -DENABLE_TEST=ON
-
-      - name: Build
-        run: cmake --build build
-
-      - name: Run tests
-        run: build/pybind11_test
+      - name: Configure CMake on Linux and macOS
+        if: matrix.os != 'windows-latest'
+        run: |
+          cmake -S . -B build -DENABLE_TEST=ON
+          cmake --build build --parallel
+          build/pybind11_test
 
       # Windows
       - name: Configure CMake on Windows
         if: matrix.os == 'windows-latest'
-        run: cmake -G "Visual Studio 16 2019" -A x64 -S . -B build
-
-      - name: Build on Windows
-        if: matrix.os == 'windows-latest'
-        run: cmake --build build --config Release
-
-      - name: Run tests on Windows
-        if: matrix.os == 'windows-latest'
-        run: build/pybind11_test.exe
+        run: |
+          cmake -G "Visual Studio 16 2019" -A x64 -S . -B build
+          cmake --build build --config Release --parallel
+          build/pybind11_test.exe
