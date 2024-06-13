@@ -1,5 +1,5 @@
 #pragma once
-#include "kernel.h"
+#include "instance.h"
 
 namespace pybind11 {
 
@@ -118,7 +118,7 @@ struct type_visitor {
 private:                                                                                                               \
     using underlying_type = name;                                                                                      \
     inline static auto type_or_check = [] {                                                                            \
-        return tp;                                                                                                      \
+        return tp;                                                                                                     \
     };                                                                                                                 \
     decltype(auto) value() const { return _as<underlying_type>(); }                                                    \
     template <typename... Args>                                                                                        \

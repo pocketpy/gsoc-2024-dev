@@ -227,34 +227,47 @@ class function : public object {
 //};
 //
 class capsule : public object {
-    struct capsule_impl {
-        void* ptr;
+    struct pack {
+        void* data;
         void (*destructor)(void*);
 
-        capsule_impl(void* ptr, void (*destructor)(void*)) : ptr(ptr), destructor(destructor) {}
+        template <typename T>
+        pack(T&& value) {
+            data = new auto(std::forward<T>(value));
+            destructor = [](void* ptr) {
+                delete static_cast<std::decay_t<T>*>(ptr);
+            };
+        }
 
-        ~capsule_impl() { destructor(ptr); }
+        ~pack() { destructor(data); }
     };
 
     PYBIND11_REGISTER_INIT([] {
-        handle type = vm->new_type_object<capsule_impl>(vm->builtins, "capsule", vm->tp_object, false);
+        handle type = vm->new_type_object<pack>(vm->builtins, "capsule", vm->tp_object, false);
         vm->builtins->attr().set("capsule", type.ptr());
     });
 
-    PYBIND11_TYPE_IMPLEMENT(object, capsule_impl, handle(vm->builtins->attr("capsule"))._as<pkpy::Type>());
+    PYBIND11_TYPE_IMPLEMENT(object, pack, handle(vm->builtins->attr("capsule"))._as<pkpy::Type>());
 
 public:
     template <typename T>
-    capsule(
-        T&& value,
-        void (*destructor)(void*) = [](void* ptr) {
-            delete static_cast<std::decay_t<T>*>(ptr);
-        }) : object(create(new auto(std::forward<T>(value)), destructor)) {}
+    capsule(T&& value) : object(create(std::forward<T>(value))) {}
 
     template <typename T>
     T& cast() const {
-        return *static_cast<T*>(value().ptr);
+        return *static_cast<T*>(value().data);
     }
+};
+
+class property : public object {
+    PYBIND11_TYPE_IMPLEMENT(object, pkpy::Property, vm->tp_property);
+
+public:
+    property(handle getter, handle setter) : object(create(getter.ptr(), setter.ptr())) {}
+
+    handle getter() const { return value().getter; }
+
+    handle setter() const { return value().setter; }
 };
 
 class args : public tuple {

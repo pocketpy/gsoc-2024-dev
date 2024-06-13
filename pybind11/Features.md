@@ -71,3 +71,11 @@ Need further discussion.
 - [ ] Global Interpreter Lock (GIL)
 - [ ] Binding sequence data types, iterators, the slicing protocol, etc.
 - [x] Convenient operators binding
+
+# Differences between CPython and pocketpy
+
+- only `add`, `sub` and `mul` have corresponding right versions in pocketpy. So if you bind `int() >> py::self`, it will has no effect in pocketpy.
+
+- in-place operators, such as `+=`, `-=`, `*=`, etc., are not supported in pocketpy.
+
+- thre return value of `globals` is immutable in pocketpy.

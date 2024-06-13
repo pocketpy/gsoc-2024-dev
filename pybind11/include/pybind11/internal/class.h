@@ -29,6 +29,8 @@ public:
 
     template <typename... Args>
     class_(const handle& scope, const char* name, Args&&... args) : m_scope(scope), type(new_type(scope, name)) {
+        auto& info = type_info::of<T>();
+        info.name = name;
 
         // set __module__
         pkpy::PyVar mod = scope.ptr();
@@ -54,7 +56,7 @@ public:
         if constexpr(!std::is_constructible_v<T, Args...>) {
             static_assert(std::is_constructible_v<T, Args...>, "Invalid constructor arguments");
         } else {
-            bind_function(
+            impl::bind_function(
                 *this,
                 "__init__",
                 [](T* self, Args... args) {
@@ -76,7 +78,7 @@ public:
             static_assert(is_first_base_of_v,
                           "If you want to bind member function, the first argument must be the base class");
         } else {
-            bind_function(*this, name, std::forward<Fn>(f), pkpy::BindType::DEFAULT, extra...);
+            impl::bind_function(*this, name, std::forward<Fn>(f), pkpy::BindType::DEFAULT, extra...);
         }
 
         return *this;
@@ -94,7 +96,7 @@ public:
     /// bind static function
     template <typename Fn, typename... Extra>
     class_& def_static(const char* name, Fn&& f, const Extra&... extra) {
-        bind_function(*this, name, std::forward<Fn>(f), pkpy::BindType::STATICMETHOD, extra...);
+        impl::bind_function(*this, name, std::forward<Fn>(f), pkpy::BindType::STATICMETHOD, extra...);
         return *this;
     }
 
@@ -103,7 +105,7 @@ public:
         if constexpr(!std::is_member_object_pointer_v<MP>) {
             static_assert(std::is_member_object_pointer_v<MP>, "def_readwrite only supports pointer to data member");
         } else {
-            bind_property(*this, name, mp, mp, extras...);
+            impl::bind_property(*this, name, mp, mp, extras...);
         }
         return *this;
     }
@@ -113,20 +115,20 @@ public:
         if constexpr(!std::is_member_object_pointer_v<MP>) {
             static_assert(std::is_member_object_pointer_v<MP>, "def_readonly only supports pointer to data member");
         } else {
-            bind_property(*this, name, mp, nullptr, extras...);
+            impl::bind_property(*this, name, mp, nullptr, extras...);
         }
         return *this;
     }
 
     template <typename Getter, typename Setter, typename... Extras>
     class_& def_property(const char* name, Getter&& g, Setter&& s, const Extras&... extras) {
-        bind_property(*this, name, std::forward<Getter>(g), std::forward<Setter>(s), extras...);
+        impl::bind_property(*this, name, std::forward<Getter>(g), std::forward<Setter>(s), extras...);
         return *this;
     }
 
     template <typename Getter, typename... Extras>
     class_& def_property_readonly(const char* name, Getter&& mp, const Extras&... extras) {
-        bind_property(*this, name, std::forward<Getter>(mp), nullptr, extras...);
+        impl::bind_property(*this, name, std::forward<Getter>(mp), nullptr, extras...);
         return *this;
     }
 

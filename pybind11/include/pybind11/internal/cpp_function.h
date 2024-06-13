@@ -34,6 +34,9 @@ struct init {};
 //    const char* description;
 //    const char* value;
 // };
+}  // namespace pybind11
+
+namespace pybind11::impl {
 
 template <typename Fn,
           typename Extra,
@@ -61,7 +64,7 @@ public:
     template <typename Fn, typename... Extras>
     function_record(Fn&& f, const char* name, const Extras&... extras) : name(name), next(nullptr) {
 
-        if constexpr(sizeof(f) <= sizeof(buffer)) {
+        if constexpr(std::is_trivially_copyable_v<Fn> && sizeof(Fn) <= sizeof(buffer)) {
             new (buffer) auto(std::forward<Fn>(f));
             destructor = [](function_record* self) {
                 reinterpret_cast<Fn*>(self->buffer)->~Fn();
@@ -78,11 +81,21 @@ public:
         wrapper = Generator::generate();
     }
 
-    ~function_record() { destructor(this); }
+    function_record(const function_record&) = delete;
+
+    function_record(function_record&& other) noexcept :
+        name(other.name), next(other.next), destructor(other.destructor), policy(other.policy), wrapper(other.wrapper) {
+        std::memcpy(buffer, other.buffer, sizeof(buffer));
+        other.destructor = nullptr;
+    }
+
+    ~function_record() {
+        if(destructor) { destructor(this); }
+    }
 
     template <typename Fn>
     auto& cast() {
-        if constexpr(sizeof(Fn) <= sizeof(buffer)) {
+        if constexpr(std::is_trivially_copyable_v<Fn> && sizeof(Fn) <= sizeof(buffer)) {
             return *reinterpret_cast<Fn*>(buffer);
         } else {
             return *static_cast<Fn*>(data);
@@ -221,19 +234,19 @@ struct generator<Fn, std::tuple<Extras...>, std::tuple<Args...>, std::index_sequ
     }
 };
 
-constexpr inline static auto _wrapper = +[](pkpy::VM*, pkpy::ArgsView view) {
-    auto& record = pkpy::lambda_get_userdata<function_record>(view.begin());
-    return record(view).ptr();
-};
+// class cpp_function : public function {
+// public:
+//     template <typename Fn, typename... Extras>
+//     cpp_function(Fn&& f, const Extras&... extras) {
+//         pkpy::any userdata = function_record(std::forward<Fn>(f), "anonymous", extras...);
+//         m_ptr = vm->bind_func(nullptr, "", -1, _wrapper, std::move(userdata));
+//     }
+// };
 
-class cpp_function : public function {
-public:
-    template <typename Fn, typename... Extras>
-    cpp_function(Fn&& f, const Extras&... extras) {
-        pkpy::any userdata = function_record(std::forward<Fn>(f), "anonymous", extras...);
-        m_ptr = vm->bind_func(nullptr, "", -1, _wrapper, std::move(userdata));
-    }
-};
+inline auto _wrapper(pkpy::VM* vm, pkpy::ArgsView view) {
+    auto& record = unpack<function_record>(view);
+    return record(view).ptr();
+}
 
 template <typename Fn, typename... Extras>
 handle bind_function(const handle& obj, const char* name, Fn&& fn, pkpy::BindType type, const Extras&... extras) {
@@ -243,8 +256,9 @@ handle bind_function(const handle& obj, const char* name, Fn&& fn, pkpy::BindTyp
 
     // if the function is not bound yet, bind it
     if(!callable) {
-        pkpy::any userdata = function_record(std::forward<Fn>(fn), name, extras...);
-        callable = vm->bind_func(var.get(), name, -1, _wrapper, std::move(userdata));
+        auto record = function_record(std::forward<Fn>(fn), name, extras...);
+        void* data = add_capsule(std::move(record));
+        callable = vm->bind_func(var.get(), name, -1, _wrapper, data);
     } else {
         auto& userdata = callable.obj_get<pkpy::NativeFunc>()._userdata;
         function_record* record = new function_record(std::forward<Fn>(fn), name, extras...);
@@ -264,92 +278,99 @@ handle bind_function(const handle& obj, const char* name, Fn&& fn, pkpy::BindTyp
     return callable;
 }
 
-template <typename Getter_, typename Setter_, typename... Extras>
-handle
-    bind_property(const handle& obj, const char* name, Getter_&& getter_, Setter_&& setter_, const Extras&... extras) {
-    pkpy::PyVar var = obj.ptr();
-    pkpy::PyVar getter = vm->None;
-    pkpy::PyVar setter = vm->None;
-    using Getter = std::decay_t<Getter_>;
-    using Setter = std::decay_t<Setter_>;
+template <typename Getter>
+pkpy::PyVar getter_wrapper(pkpy::VM* vm, pkpy::ArgsView view) {
+    handle result = vm->None;
+    auto& getter = unpack<Getter>(view);
+    constexpr auto policy = return_value_policy::reference_internal;
 
-    getter = vm->new_object<pkpy::NativeFunc>(
-        vm->tp_native_func,
-        [](pkpy::VM* vm, pkpy::ArgsView view) -> pkpy::PyVar {
-            auto& getter = pkpy::lambda_get_userdata<Getter>(view.begin());
+    if constexpr(std::is_member_pointer_v<Getter>) {
+        using Self = class_type_t<Getter>;
+        auto& self = handle(view[0])._as<instance>()._as<Self>();
 
-            if constexpr(std::is_member_pointer_v<Getter>) {
-                using Self = class_type_t<Getter>;
-                auto& self = handle(view[0])._as<instance>()._as<Self>();
+        if constexpr(std::is_member_object_pointer_v<Getter>) {
+            // specialize for pointer to data member
+            result = cast(self.*getter, policy, view[0]);
+        } else {
+            // specialize for pointer to member function
+            result = cast((self.*getter)(), policy, view[0]);
+        }
+    } else {
+        // specialize for function pointer and lambda
+        using Self = remove_cvref_t<std::tuple_element_t<0, callable_args_t<Getter>>>;
+        auto& self = handle(view[0])._as<instance>()._as<Self>();
 
-                if constexpr(std::is_member_object_pointer_v<Getter>) {
-                    return type_caster<member_type_t<Getter>>::cast(self.*getter,
-                                                                    return_value_policy::reference_internal,
-                                                                    view[0])
-                        .ptr();
-                } else {
-                    return type_caster<callable_return_t<Getter>>::cast((self.*getter)(),
-                                                                        return_value_policy::reference_internal,
-                                                                        view[0])
-                        .ptr();
-                }
-
-            } else {
-                using Self = remove_cvref_t<std::tuple_element_t<0, callable_args_t<Getter>>>;
-                auto& self = handle(view[0])._as<instance>()._as<Self>();
-
-                return type_caster<callable_return_t<Getter>>::cast(getter(self),
-                                                                    return_value_policy::reference_internal,
-                                                                    view[0])
-                    .ptr();
-            }
-        },
-        1,
-        std::forward<Getter_>(getter_));
-
-    if constexpr(!std::is_same_v<Setter, std::nullptr_t>) {
-        setter = vm->new_object<pkpy::NativeFunc>(
-            vm->tp_native_func,
-            [](pkpy::VM* vm, pkpy::ArgsView view) -> pkpy::PyVar {
-                auto& setter = pkpy::lambda_get_userdata<Setter>(view.begin());
-
-                if constexpr(std::is_member_pointer_v<Setter>) {
-                    using Self = class_type_t<Setter>;
-                    auto& self = handle(view[0])._as<instance>()._as<Self>();
-
-                    if constexpr(std::is_member_object_pointer_v<Setter>) {
-                        type_caster<member_type_t<Setter>> caster;
-                        if(caster.load(view[1], true)) {
-                            self.*setter = caster.value;
-                            return vm->None;
-                        }
-                    } else {
-                        type_caster<std::tuple_element_t<1, callable_args_t<Setter>>> caster;
-                        if(caster.load(view[1], true)) {
-                            (self.*setter)(caster.value);
-                            return vm->None;
-                        }
-                    }
-                } else {
-                    using Self = remove_cvref_t<std::tuple_element_t<0, callable_args_t<Setter>>>;
-                    auto& self = handle(view[0])._as<instance>()._as<Self>();
-
-                    type_caster<std::tuple_element_t<1, callable_args_t<Setter>>> caster;
-                    if(caster.load(view[1], true)) {
-                        setter(self, caster.value);
-                        return vm->None;
-                    }
-                }
-
-                vm->TypeError("invalid argument");
-            },
-            2,
-            std::forward<Setter_>(setter_));
+        result = cast(getter(self), policy, view[0]);
     }
 
-    pkpy::PyVar property = vm->new_object<pkpy::Property>(vm->tp_property, getter, setter);
-    var->attr().set(name, property);
+    return result.ptr();
+}
+
+template <typename Setter>
+pkpy::PyVar setter_wrapper(pkpy::VM* vm, pkpy::ArgsView view) {
+    auto& setter = unpack<Setter>(view);
+
+    if constexpr(std::is_member_pointer_v<Setter>) {
+        using Self = class_type_t<Setter>;
+        auto& self = handle(view[0])._as<instance>()._as<Self>();
+
+        if constexpr(std::is_member_object_pointer_v<Setter>) {
+            // specialize for pointer to data member
+            type_caster<member_type_t<Setter>> caster;
+            if(caster.load(view[1], true)) {
+                self.*setter = caster.value;
+                return vm->None;
+            }
+        } else {
+            // specialize for pointer to member function
+            type_caster<std::tuple_element_t<1, callable_args_t<Setter>>> caster;
+            if(caster.load(view[1], true)) {
+                (self.*setter)(caster.value);
+                return vm->None;
+            }
+        }
+    } else {
+        // specialize for function pointer and lambda
+        using Self = remove_cvref_t<std::tuple_element_t<0, callable_args_t<Setter>>>;
+        auto& self = handle(view[0])._as<instance>()._as<Self>();
+
+        type_caster<std::tuple_element_t<1, callable_args_t<Setter>>> caster;
+        if(caster.load(view[1], true)) {
+            setter(self, caster.value);
+            return vm->None;
+        }
+    }
+
+    vm->TypeError("Unexpected argument type");
+}
+
+template <typename Getter, typename Setter, typename... Extras>
+handle bind_property(const handle& obj, const char* name, Getter&& getter_, Setter&& setter_, const Extras&... extras) {
+    handle getter = none();
+    handle setter = none();
+    using Wrapper = pkpy::PyVar (*)(pkpy::VM*, pkpy::ArgsView);
+
+    constexpr auto create = [](Wrapper wrapper, int argc, auto&& f) {
+        if constexpr(need_host<remove_cvref_t<decltype(f)>>) {
+            // otherwise, store it in the type_info
+            void* data = add_capsule(std::forward<decltype(f)>(f));
+            // store the index in the object
+            return vm->new_object<pkpy::NativeFunc>(vm->tp_native_func, wrapper, argc, data);
+        } else {
+            // if the function is trivially copyable and the size is less than 16 bytes, store it in the object directly
+            return vm->new_object<pkpy::NativeFunc>(vm->tp_native_func, wrapper, argc, f);
+        }
+    };
+
+    getter = create(impl::getter_wrapper<std::decay_t<Getter>>, 1, std::forward<Getter>(getter_));
+
+    if constexpr(!std::is_same_v<Setter, std::nullptr_t>) {
+        setter = create(impl::setter_wrapper<std::decay_t<Setter>>, 2, std::forward<Setter>(setter_));
+    }
+
+    handle property = pybind11::property(getter, setter);
+    setattr(obj, name, property);
     return property;
 }
 
-}  // namespace pybind11
+}  // namespace pybind11::impl

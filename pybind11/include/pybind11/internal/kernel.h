@@ -9,6 +9,9 @@ namespace pybind11 {
 inline pkpy::VM* vm = nullptr;
 inline std::vector<void (*)()>* _init = nullptr;
 
+/// capsules are used to store some long-lived data that can be accessed by the python side
+inline std::vector<std::pair<void*, void (*)(void*)>>* _capsules = nullptr;
+
 inline void initialize(bool enable_os = true) {
     if(vm == nullptr) vm = new pkpy::VM();
     if(_init != nullptr) {
@@ -18,8 +21,39 @@ inline void initialize(bool enable_os = true) {
 }
 
 inline void finalize() {
-    delete vm;
-    vm = nullptr;
+    if(_capsules != nullptr) {
+        for(auto& [ptr, fn]: *_capsules)
+            fn(ptr);
+        _capsules = nullptr;
+    }
+
+    if(vm != nullptr) {
+        delete vm;
+        vm = nullptr;
+    }
+}
+
+template <typename T>
+inline void* add_capsule(T&& value) {
+    if(_capsules == nullptr) _capsules = new std::vector<std::pair<void*, void (*)(void*)>>();
+    void* ptr = new auto(std::forward<T>(value));
+    _capsules->emplace_back(ptr, [](void* ptr) {
+        delete static_cast<std::decay_t<T>*>(ptr);
+    });
+    return ptr;
+}
+
+template <typename T>
+constexpr inline bool need_host = !(std::is_trivially_copyable_v<T> && (sizeof(T) <= 8));
+
+template <typename T>
+T& unpack(pkpy::ArgsView view) {
+    if constexpr(need_host<T>) {
+        void* data = pkpy::lambda_get_userdata<void*>(view.begin());
+        return *static_cast<T*>(data);
+    } else {
+        return pkpy::lambda_get_userdata<T>(view.begin());
+    }
 }
 
 class handle;

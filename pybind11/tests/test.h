@@ -7,9 +7,7 @@ class PYBIND11_TEST : public ::testing::Test {
 protected:
     void SetUp() override { py::initialize(); }
 
-    void TearDown() override {
-        if(py::vm) { py::finalize(); }
-    }
+    void TearDown() override { py::finalize(); }
 };
 
 #define EXPECT_CAST_EQ(expr, expected) EXPECT_EQ(py::cast(expr), py::cast(expected))
