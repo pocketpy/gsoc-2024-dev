@@ -1,16 +1,18 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.12)
+project(numpy_bindings)
 
-project(numpy)
-
-set(CMAKE_C_STANDARD 11)
+# Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
-include_directories(${CMAKE_CURRENT_LIST_DIR}/../pocketpy/include)
-include_directories(${CMAKE_CURRENT_LIST_DIR}/../pybind11/include)
+# Include pybind11
+add_subdirectory(include/pybind11)
 
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+# Define your module
+pybind11_add_module(numpy_bindings src/numpy.cpp)
 
-aux_source_directory(${CMAKE_CURRENT_LIST_DIR}/src SRC)
+# Include directories for numpy headers
+target_include_directories(numpy_bindings PRIVATE include)
 
-add_library(${PROJECT_NAME} STATIC ${SRC})
+# Link any additional libraries if needed
+# target_link_libraries(numpy_bindings PRIVATE ...)
