@@ -12,6 +12,20 @@ inline void exec(std::string_view code, const handle& global = none{}, handle lo
     vm->py_exec(code, global.ptr(), local.ptr());
 }
 
+/// globas() in pkpy is immutable, your changes will not be reflected in the Python interpreter
+inline dict globals() {
+    auto& proxy = eval("globals()")._as<pkpy::MappingProxy>().attr();
+    dict result;
+    proxy.apply(
+        [](pkpy::StrName key, pkpy::PyVar value, void* data) {
+            auto& dict = static_cast<pybind11::dict*>(data)->_as<pkpy::Dict>();
+            auto key_ = pybind11::str(key.sv()).ptr();
+            dict.set(vm, key_, value);
+        },
+        &result);
+    return result;
+}
+
 // wrapper for builtin functions in Python
 inline bool hasattr(const handle& obj, const handle& name) {
     return vm->getattr(obj.ptr(), name._as<pkpy::Str>(), false) != nullptr;
