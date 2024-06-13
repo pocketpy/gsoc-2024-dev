@@ -263,8 +263,8 @@ public:
     // Boolean Functions
     bool all() const { return xt::all(_array); }
     bool any() const { return xt::any(_array); }
-    
-    // Aggregate Function
+
+    // Aggregate Functions
     ndarray<T> sum() const {
         return ndarray<T>(xt::sum(_array));
     }
@@ -408,7 +408,7 @@ public:
         xt::xarray<T> result = xt::transpose(_array, {args...});
         return ndarray<T>(result);
     }
-    
+
     ndarray<T> repeat(int repeats, int axis) const {
         return ndarray<T>(xt::repeat(_array, repeats, axis));
     }
