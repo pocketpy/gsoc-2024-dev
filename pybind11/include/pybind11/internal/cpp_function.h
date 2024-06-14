@@ -286,7 +286,8 @@ struct template_parser<Callable, std::tuple<Extras...>, std::tuple<Args...>, std
         constexpr auto kwargs_pos = arguments_info.kwargs_pos;
         constexpr auto normal_argc = argc - (args_pos != -1) - (kwargs_pos != -1);
 
-        handle stack[argc] = {};
+        // add 1 to avoid zero-size array when argc is 0
+        handle stack[argc + 1] = {};
 
         // ensure the number of passed arguments is no greater than the number of parameters
         if(args_pos == -1 && view.size() > normal_argc) { return handle(); }

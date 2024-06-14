@@ -129,7 +129,7 @@ constexpr inline std::size_t types_count_v<T> = 0;
 
 template <typename T, typename... Ts>
 constexpr inline int type_index_v = [] {
-    bool arr[sizeof...(Ts)] = {std::is_same_v<T, Ts>...};
+    bool arr[sizeof...(Ts) + 1] = {std::is_same_v<T, Ts>...};
     for(int i = 0; i < sizeof...(Ts); ++i) {
         if(arr[i]) return i;
     }
