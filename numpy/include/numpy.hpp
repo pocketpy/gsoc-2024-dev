@@ -1,15 +1,20 @@
 #pragma once
 
+#include <any>
+#include <cstdint>
+#include <complex>
+#include <iostream>
+#include <string>
+#include <tuple>
+#include <type_traits>
+#include <utility>
+#include <vector>
 #include <xtensor/xarray.hpp>
 #include <xtensor/xio.hpp>
 #include <xtensor/xmath.hpp>
 #include <xtensor/xsort.hpp> 
 #include <xtensor/xview.hpp> 
 #include <xtensor-blas/xlinalg.hpp>
-#include <cstdint>
-#include <complex>
-#include <type_traits>
-#include <variant>
 
 namespace pkpy {
 
@@ -58,7 +63,6 @@ REGISTER_DTYPE(std::complex<float64>, "complex128");
 
 using _Dtype = std::string;
 using _ShapeLike = std::vector<int_>;
-using _Number = std::variant<int_, float_, bool_>;
 
 template <typename T>
 class ndarray {
@@ -140,12 +144,6 @@ public:
     }
     template <typename U>
     auto binary_operator_mul_impl(const U& other) const {
-        using result_type = std::common_type_t<T, U>;
-        xt::xarray<result_type> result = xt::cast<result_type>(_array) * other;
-        return ndarray<result_type>(result);
-    }
-    template <>
-    auto binary_operator_mul_impl(const float_& other) const {
         xt::xarray<float_> result = xt::cast<float_>(_array) * other;
         return ndarray<float_>(result);
     }
@@ -162,12 +160,6 @@ public:
     }
     template <typename U>
     auto binary_operator_truediv_impl(const U& other) const {
-        using result_type = std::common_type_t<T, U>;
-        xt::xarray<result_type> result = xt::cast<result_type>(_array) / other;
-        return ndarray<result_type>(result);
-    }
-    template <>
-    auto binary_operator_truediv_impl(const float_& other) const {
         xt::xarray<float_> result = xt::cast<float_>(_array) / other;
         return ndarray<float_>(result);
     }
@@ -184,6 +176,12 @@ public:
     }
     template <typename U>
     auto pow_impl(const U& other) const {
+        using result_type = std::common_type_t<T, U>;
+        xt::xarray<result_type> result = xt::pow(xt::cast<result_type>(_array), other);
+        return ndarray<result_type>(result);
+    }
+    template <>
+    auto pow_impl(const float_& other) const {
         xt::xarray<float_> result = xt::pow(xt::cast<float_>(_array), other);
         return ndarray<float_>(result);
     }
@@ -229,17 +227,37 @@ public:
     }
 
     ndarray operator~() const { return ndarray(~(_array)); }
-
-    T operator[](int index) const { return _array[index]; }
+    
+    ndarray operator[](int index) const { return ndarray(xt::view(_array, index, xt::all())); }
+    ndarray operator[](const std::vector<int>& indices) const { return ndarray(xt::view(_array, xt::keep(indices))); }
+    ndarray operator[](const std::tuple<int, int, int>& slice) const {
+        return ndarray(xt::view(_array, xt::range(std::get<0>(slice), std::get<1>(slice), std::get<2>(slice))));
+    }
     template <typename... Args>
     T operator()(Args... args) const {
         return _array(args...);
     }
 
-    T& operator[](int index) { return _array[index]; }
-    template <typename... Args>
-    T& operator()(Args... args) {
-        return _array(args...);
+    void set_item(int index, const ndarray<T>& value) {
+        xt::view(_array, index, xt::all()) = value.get_array();
+    }
+    void set_item(const std::vector<int>& indices, const ndarray<T>& value) {
+        xt::view(_array, xt::keep(indices)) = value.get_array();
+    }
+    void set_item(const std::tuple<int, int, int>& slice, const ndarray<T>& value) {
+        xt::view(_array, xt::range(std::get<0>(slice), std::get<1>(slice), std::get<2>(slice))) = value.get_array();
+    }
+    void set_item_2d(int i1, int i2, T value) {
+        _array(i1, i2) = value;
+    }
+    void set_item_3d(int i1, int i2, int i3, T value) {
+        _array(i1, i2, i3) = value;
+    }
+    void set_item_4d(int i1, int i2, int i3, int i4, T value) {
+        _array(i1, i2, i3, i4) = value;
+    }
+    void set_item_5d(int i1, int i2, int i3, int i4, int i5, T value) {
+        _array(i1, i2, i3, i4, i5) = value;
     }
 
     // Boolean Functions
@@ -254,9 +272,8 @@ public:
         xt::xarray<T> result = xt::sum(_array, {axis});
         return ndarray<T>(result);
     }
-    template <typename... Args>
-    ndarray<T> sum(Args... args) const {
-        xt::xarray<T> result = xt::sum(_array, {args...});
+    ndarray<T> sum(const _ShapeLike& axis) const {
+        xt::xarray<T> result = xt::sum(_array, axis);
         return ndarray<T>(result);
     }
 
@@ -267,9 +284,8 @@ public:
         xt::xarray<T> result = xt::prod(_array, {axis});
         return ndarray<T>(result);
     }
-    template <typename... Args>
-    ndarray<T> prod(Args... args) const {
-        xt::xarray<T> result = xt::prod(_array, {args...});
+    ndarray<T> prod(const _ShapeLike& axes) const {
+        xt::xarray<T> result = xt::prod(_array, axes);
         return ndarray<T>(result);
     }
 
@@ -280,9 +296,8 @@ public:
         xt::xarray<T> result = xt::amin(_array, {axis});
         return ndarray<T>(result);
     }
-    template <typename... Args>
-    ndarray<T> min(Args... args) const {
-        xt::xarray<T> result = xt::amin(_array, {args...});
+    ndarray<T> min(const _ShapeLike& axes) const {
+        xt::xarray<T> result = xt::amin(_array, axes);
         return ndarray<T>(result);
     }
 
@@ -293,9 +308,8 @@ public:
         xt::xarray<T> result = xt::amax(_array, {axis});
         return ndarray<T>(result);
     }
-    template <typename... Args>
-    ndarray<T> max(Args... args) const {
-        xt::xarray<T> result = xt::amax(_array, {args...});
+    ndarray<T> max(const _ShapeLike& axes) const {
+        xt::xarray<T> result = xt::amax(_array, axes);
         return ndarray<T>(result);
     }
 
@@ -306,9 +320,8 @@ public:
         xt::xarray<T> result = xt::mean(_array, {axis});
         return ndarray<T>(result);
     }
-    template <typename... Args>
-    ndarray<T> mean(Args... args) const {
-        xt::xarray<T> result = xt::mean(_array, {args...});
+    ndarray<T> mean(const _ShapeLike& axes) const {
+        xt::xarray<T> result = xt::mean(_array, axes);
         return ndarray<T>(result);
     }
 
@@ -319,9 +332,8 @@ public:
         xt::xarray<T> result = xt::stddev(_array, {axis});
         return ndarray<T>(result);
     }
-    template <typename... Args>
-    ndarray<T> std(Args... args) const {
-        xt::xarray<T> result = xt::stddev(_array, {args...});
+    ndarray<T> std(const _ShapeLike& axes) const {
+        xt::xarray<T> result = xt::stddev(_array, axes);
         return ndarray<T>(result);
     }
 
@@ -332,13 +344,12 @@ public:
         xt::xarray<T> result = xt::variance(_array, {axis});
         return ndarray<T>(result);
     }
-    template <typename... Args>
-    ndarray<T> var(Args... args) const {
-        xt::xarray<T> result = xt::variance(_array, {args...});
+    ndarray<T> var(const _ShapeLike& axes) const {
+        xt::xarray<T> result = xt::variance(_array, axes);
         return ndarray<T>(result);
     }
 
-    // Searching and Sorting Methods
+    // Searching and Sorting Functions
     ndarray<T> argmin() const {
         return ndarray<T>(xt::argmin(_array));
     }
@@ -371,13 +382,11 @@ public:
         return ndarray<T>(result);
     }
 
-    // Shape Manipulation
-    void reshape(const _ShapeLike& shape) {
-        _array.reshape(shape);
-    }
-
-    void resize(const _ShapeLike& shape) {
-        _array.resize(shape);
+    // Shape Manipulation Functions
+    ndarray<T> reshape(const _ShapeLike& shape) const {
+        xt::xarray<T> dummy = _array; 
+        dummy.reshape(shape);
+        return ndarray<T>(dummy);
     }
 
     ndarray<T> squeeze() const {
@@ -403,7 +412,7 @@ public:
     ndarray<T> repeat(int repeats, int axis) const {
         return ndarray<T>(xt::repeat(_array, repeats, axis));
     }
-    ndarray<T> repeat(const std::vector<size_t>& repeats, int axis) const {
+    ndarray<T> repeat(const std::vector<size_t>& repeats, int axis ) const {
         return ndarray<T>(xt::repeat(_array, repeats, axis));
     }
 
@@ -411,7 +420,7 @@ public:
         return ndarray<T>(xt::flatten(_array));
     }
 
-    // Miscellanous
+    // Miscellaneous Functions
     template <typename U>
     ndarray<U> astype() const {
         xt::xarray<U> result = xt::cast<U>(_array);
@@ -425,8 +434,72 @@ public:
 
     private:
         xt::xarray<T> _array;
-
 };
+
+template <typename T>
+ndarray<T> adapt(const std::vector<T>& init_list) {
+    return ndarray<T>(xt::adapt(init_list));
+}
+
+template <typename T>
+ndarray<T> adapt(const std::vector<std::vector<T>>& init_list) {
+    std::vector<T> flat_list;
+    for(auto row : init_list) {
+        for(auto elem : row) {
+            flat_list.push_back(elem);
+        }
+    }
+    std::vector<size_t> sh = {init_list.size(), init_list[0].size()};
+    return ndarray<T>(xt::adapt(flat_list, sh));
+}
+
+template<typename T>
+ndarray<T> adapt(const std::vector<std::vector<std::vector<T>>>& init_list) {
+    std::vector<T> flat_list;
+    for(auto row : init_list) {
+        for(auto elem : row) {
+            for(auto val : elem) {
+                flat_list.push_back(val);
+            }
+        }
+    }
+    std::vector<size_t> sh = {init_list.size(), init_list[0].size(), init_list[0][0].size()};
+    return ndarray<T>(xt::adapt(flat_list, sh));
+}
+
+template<typename T>
+ndarray<T> adapt(const std::vector<std::vector<std::vector<std::vector<T>>>>& init_list) {
+    std::vector<T> flat_list;
+    for(auto row : init_list) {
+        for(auto elem : row) {
+            for(auto val : elem) {
+                for(auto v : val) {
+                    flat_list.push_back(v);
+                }
+            }
+        }
+    }
+    std::vector<size_t> sh = {init_list.size(), init_list[0].size(), init_list[0][0].size(), init_list[0][0][0].size()};
+    return ndarray<T>(xt::adapt(flat_list, sh));
+}
+
+template<typename T>
+ndarray<T> adapt(const std::vector<std::vector<std::vector<std::vector<std::vector<T>>>>>& init_list) {
+    std::vector<T> flat_list;
+    for(auto row : init_list) {
+        for(auto elem : row) {
+            for(auto val : elem) {
+                for(auto v : val) {
+                    for(auto v1 : v) {
+                        flat_list.push_back(v1);
+                    }
+                }
+            }
+        }
+    }
+    std::vector<size_t> sh = {init_list.size(), init_list[0].size(), init_list[0][0].size(), init_list[0][0][0].size(), init_list[0][0][0][0].size()};
+    return ndarray<T>(xt::adapt(flat_list, sh));
+}
 
 // Array Creation
 template <typename U, typename T>
@@ -582,18 +655,18 @@ ndarray<float_> log10(const ndarray<T>& arr) {
 
 // Miscellanous
 template <typename T>
-ndarray<float_> round(const ndarray<T>& arr) {
-    return ndarray<float_>(xt::round(arr.get_array()));
+ndarray<T> round(const ndarray<T>& arr) {
+    return ndarray<T>(xt::round(arr.get_array()));
 }
 
 template <typename T>
-ndarray<float_> floor(const ndarray<T>& arr) {
-    return ndarray<float_>(xt::floor(arr.get_array()));
+ndarray<T> floor(const ndarray<T>& arr) {
+    return ndarray<T>(xt::floor(arr.get_array()));
 }
 
 template <typename T>
-ndarray<float_> ceil(const ndarray<T>& arr) {
-    return ndarray<float_>(xt::ceil(arr.get_array()));
+ndarray<T> ceil(const ndarray<T>& arr) {
+    return ndarray<T>(xt::ceil(arr.get_array()));
 }
 
 template <typename T>
@@ -605,11 +678,12 @@ auto abs(const ndarray<T>& arr) {
     }
 }
 
-template <typename T>
-ndarray<T> concatenate(const std::vector<ndarray<T>>& arrays, int axis = 0) {
-    xt::xarray<T> xarr1 = arrays[0].get_array();
-    xt::xarray<T> xarr2 = arrays[1].get_array();
-    return ndarray<T>(xt::concatenate(xt::xtuple(xarr1, xarr2), axis));
+template <typename T, typename U>
+auto concatenate(const ndarray<T>& arr1, const ndarray<U>& arr2, int axis = 0) {
+    using result_type = std::common_type_t<T, U>;
+    xt::xarray<result_type> xarr1 = xt::cast<result_type>(arr1.get_array());
+    xt::xarray<result_type> xarr2 = xt::cast<result_type>(arr2.get_array());
+    return ndarray<result_type>(xt::concatenate(xt::xtuple(xarr1, xarr2), axis));
 }
 
 // Reverse Dunder Methods
