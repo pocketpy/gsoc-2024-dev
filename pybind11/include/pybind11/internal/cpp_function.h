@@ -298,7 +298,8 @@ struct template_parser<Callable, std::tuple<Extras...>, std::tuple<Args...>, std
         }
 
         // load arguments from call arguments
-        std::memcpy(stack, view.begin(), view.size() * sizeof(handle));
+        const auto size = std::min(view.size(), normal_argc);
+        std::memcpy(stack, view.begin(), size * sizeof(handle));
 
         // pack the args
         if constexpr(args_pos != -1) {
