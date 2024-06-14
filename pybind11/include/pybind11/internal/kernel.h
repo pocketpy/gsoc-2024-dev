@@ -13,10 +13,12 @@ inline std::vector<void (*)()>* _init = nullptr;
 inline std::vector<std::pair<void*, void (*)(void*)>>* _capsules = nullptr;
 
 inline void initialize(bool enable_os = true) {
-    if(vm == nullptr) vm = new pkpy::VM();
-    if(_init != nullptr) {
-        for(auto& fn: *_init)
-            fn();
+    if(vm == nullptr) {
+        vm = new pkpy::VM();
+        if(_init != nullptr) {
+            for(auto& fn: *_init)
+                fn();
+        }
     }
 }
 

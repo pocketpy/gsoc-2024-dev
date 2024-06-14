@@ -24,10 +24,11 @@ struct init {};
 //
 // struct default_arg {};
 //
-// struct arg {
-//    const char* name;
-//    const char* description;
-// };
+struct arg {
+    const char* name;
+    const char* description;
+};
+
 //
 // struct default_arg {
 //    const char* name;
@@ -44,6 +45,12 @@ struct arguments_info {
     int kwargs = -1;
 };
 
+struct extras_info {
+    int doc = -1;
+    int named_argc = 0;
+    int return_value_policy = -1;
+};
+
 template <typename Args>
 struct helper;
 
@@ -52,6 +59,7 @@ struct helper<std::tuple<Args...>> {
     constexpr static auto parse_arguments() {
         arguments_info info;
         info.argc = sizeof...(Args);
+
         constexpr auto args_ = types_count_v<args, Args...>;
         if constexpr(args_ == 1) {
             info.args = type_index_v<args, Args...>;
@@ -64,6 +72,29 @@ struct helper<std::tuple<Args...>> {
             info.kwargs = type_index_v<kwargs, Args...>;
         } else if constexpr(kwargs_ > 1) {
             info.kwargs = -2;
+        }
+
+        return info;
+    }
+
+    constexpr static auto parse_extras() {
+        extras_info info;
+
+        constexpr auto doc_ = types_count_v<const char*, Args...>;
+        if constexpr(doc_ == 1) {
+            info.doc = type_index_v<const char*, Args...>;
+        } else if constexpr(doc_ > 1) {
+            info.doc = -2;
+        }
+
+        info.named_argc = types_count_v<arg, Args...>;
+
+        constexpr auto return_value_policy_ = types_count_v<return_value_policy, Args...>;
+
+        if constexpr(return_value_policy_ == 1) {
+            info.return_value_policy = type_index_v<return_value_policy, Args...>;
+        } else if constexpr(return_value_policy_ > 1) {
+            info.return_value_policy = -2;
         }
 
         return info;
@@ -93,8 +124,9 @@ class function_record {
     friend struct generator;
 
 public:
-    template <typename Fn, typename... Extras>
-    function_record(Fn&& f, const char* name, const Extras&... extras) : name(name), next(nullptr) {
+    template <typename Fn_, typename... Extras>
+    function_record(Fn_&& f, const char* name, const Extras&... extras) : name(name), next(nullptr) {
+        using Fn = std::decay_t<Fn_>;
 
         if constexpr(std::is_trivially_copyable_v<Fn> && sizeof(Fn) <= sizeof(buffer)) {
             new (buffer) auto(std::forward<Fn>(f));
@@ -200,7 +232,24 @@ handle invoke(Fn&& fn,
 
 template <typename Fn, typename... Args, std::size_t... Is, typename... Extras>
 struct generator<Fn, std::tuple<Extras...>, std::tuple<Args...>, std::index_sequence<Is...>> {
-    static void initialize(function_record& record, const Extras&... extras) {}
+    static void initialize(function_record& record, const Extras&... extras) {
+        constexpr auto arguments_info = helper<std::tuple<Args...>>::parse_arguments();
+        constexpr auto extras_info = helper<std::tuple<Extras...>>::parse_extras();
+
+        constexpr auto argc = arguments_info.argc;
+        constexpr auto args = arguments_info.args;
+        constexpr auto kwargs = arguments_info.kwargs;
+
+        constexpr auto doc = extras_info.doc;
+        constexpr auto named_argc = extras_info.named_argc;
+        constexpr auto return_value_policy = extras_info.return_value_policy;
+
+        auto extras_tuple = std::make_tuple(extras...);
+
+        if constexpr(return_value_policy != -1) { record.policy = std::get<return_value_policy>(extras_tuple); }
+
+        // TODO:
+    }
 
     static auto generate() {
         return +[](function_record& self, pkpy::ArgsView view, bool convert, handle parent) {
@@ -310,8 +359,8 @@ handle bind_function_impl(const handle& obj, const char* name, Fn&& fn, pkpy::Bi
     return callable;
 }
 
-template <typename Fn, typename... Extras>
-handle bind_function(const handle& obj, const char* name, Fn&& fn, pkpy::BindType type, const Extras&... extras) {
+template <typename Fn>
+constexpr bool check_arguments() {
     using Args = callable_args_t<std::decay_t<Fn>>;
     constexpr auto arguments_info = helper<Args>::parse_arguments();
 
@@ -328,7 +377,33 @@ handle bind_function(const handle& obj, const char* name, Fn&& fn, pkpy::BindTyp
     constexpr bool _2 = kwargs >= 0 && kwargs != argc - 1;
     static_assert(!_2, "kwargs must be the last argument");
 
-    if constexpr(!(_0 || _1 || _2)) { return bind_function_impl(obj, name, std::forward<Fn>(fn), type, extras...); }
+    if(!(_0 || _1 || _2)) { return true; }
+}
+
+template <typename Fn, typename... Extras>
+constexpr bool check_extras() {
+    using Args = callable_args_t<std::decay_t<Fn>>;
+    constexpr auto arguments_info = helper<Args>::parse_arguments();
+    constexpr auto extras_info = helper<std::tuple<Extras...>>::parse_extras();
+
+    constexpr auto doc = extras_info.doc;
+    constexpr auto named_argc = extras_info.named_argc;
+    constexpr auto return_value_policy = extras_info.return_value_policy;
+
+    constexpr bool _0 = doc == -2 || return_value_policy == -2;
+    static_assert(!_0, "doc or return_value_policy can occur at most once");
+
+    constexpr bool _1 = named_argc > 0 && named_argc != arguments_info.argc;
+    static_assert(!_1, "named arguments must be the same as the number of function arguments");
+
+    if(!(_0 || _1)) { return true; }
+}
+
+template <typename Fn, typename... Extras>
+handle bind_function(const handle& obj, const char* name, Fn&& fn, pkpy::BindType type, const Extras&... extras) {
+    if constexpr(check_arguments<Fn>() && check_extras<Fn, Extras...>()) {
+        return bind_function_impl(obj, name, std::forward<Fn>(fn), type, extras...);
+    }
 }
 
 template <typename Getter>
@@ -410,7 +485,8 @@ handle bind_property(const handle& obj, const char* name, Getter&& getter_, Sett
             // store the index in the object
             return vm->new_object<pkpy::NativeFunc>(vm->tp_native_func, wrapper, argc, data);
         } else {
-            // if the function is trivially copyable and the size is less than 16 bytes, store it in the object directly
+            // if the function is trivially copyable and the size is less than 16 bytes, store it in the object
+            // directly
             return vm->new_object<pkpy::NativeFunc>(vm->tp_native_func, wrapper, argc, f);
         }
     };

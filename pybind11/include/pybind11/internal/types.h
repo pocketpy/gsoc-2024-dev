@@ -29,6 +29,8 @@ public:
     static handle handle_of() {
         return type_visitor::type<T>();
     }
+
+    static type of(const handle& obj) { return type(vm->_t(obj.ptr())); }
 };
 
 /// corresponding to bool in Python

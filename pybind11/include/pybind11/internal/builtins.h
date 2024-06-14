@@ -93,6 +93,8 @@ T cast(const handle& obj, bool convert) {
 
     if(caster.load(obj, convert)) { return caster.value; }
 
+    // TODO: improve error message
+
     vm->TypeError("Unable to cast Python instance to C++ type");
 }
 
