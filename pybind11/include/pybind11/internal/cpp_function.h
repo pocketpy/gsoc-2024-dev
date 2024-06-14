@@ -38,6 +38,38 @@ struct init {};
 
 namespace pybind11::impl {
 
+struct arguments_info {
+    int argc = 0;
+    int args = -1;
+    int kwargs = -1;
+};
+
+template <typename Args>
+struct helper;
+
+template <typename... Args>
+struct helper<std::tuple<Args...>> {
+    constexpr static auto parse_arguments() {
+        arguments_info info;
+        info.argc = sizeof...(Args);
+        constexpr auto args_ = types_count_v<args, Args...>;
+        if constexpr(args_ == 1) {
+            info.args = type_index_v<args, Args...>;
+        } else if constexpr(args_ > 1) {
+            info.args = -2;
+        }
+
+        constexpr auto kwargs_ = types_count_v<kwargs, Args...>;
+        if constexpr(kwargs_ == 1) {
+            info.kwargs = type_index_v<kwargs, Args...>;
+        } else if constexpr(kwargs_ > 1) {
+            info.kwargs = -2;
+        }
+
+        return info;
+    }
+};
+
 template <typename Fn,
           typename Extra,
           typename Args = callable_args_t<std::decay_t<Fn>>,
@@ -249,7 +281,7 @@ inline auto _wrapper(pkpy::VM* vm, pkpy::ArgsView view) {
 }
 
 template <typename Fn, typename... Extras>
-handle bind_function(const handle& obj, const char* name, Fn&& fn, pkpy::BindType type, const Extras&... extras) {
+handle bind_function_impl(const handle& obj, const char* name, Fn&& fn, pkpy::BindType type, const Extras&... extras) {
     // do not use cpp_function directly to avoid unnecessary reference count change
     pkpy::PyVar var = obj.ptr();
     pkpy::PyVar callable = var->attr().try_get(name);
@@ -276,6 +308,27 @@ handle bind_function(const handle& obj, const char* name, Fn&& fn, pkpy::BindTyp
         }
     }
     return callable;
+}
+
+template <typename Fn, typename... Extras>
+handle bind_function(const handle& obj, const char* name, Fn&& fn, pkpy::BindType type, const Extras&... extras) {
+    using Args = callable_args_t<std::decay_t<Fn>>;
+    constexpr auto arguments_info = helper<Args>::parse_arguments();
+
+    constexpr auto argc = arguments_info.argc;
+    constexpr auto args = arguments_info.args;
+    constexpr auto kwargs = arguments_info.kwargs;
+
+    constexpr bool _0 = args == -2 || kwargs == -2;
+    static_assert(!_0, "args or kwargs can occur at most once");
+
+    constexpr bool _1 = args >= 0 && kwargs >= 0 && args > kwargs;
+    static_assert(!_1, "args must be before kwargs");
+
+    constexpr bool _2 = kwargs >= 0 && kwargs != argc - 1;
+    static_assert(!_2, "kwargs must be the last argument");
+
+    if constexpr(!(_0 || _1 || _2)) { return bind_function_impl(obj, name, std::forward<Fn>(fn), type, extras...); }
 }
 
 template <typename Getter>

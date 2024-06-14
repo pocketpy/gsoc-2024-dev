@@ -126,4 +126,18 @@ constexpr inline std::size_t types_count_v = (std::is_same_v<T, Ts> + ...);
 template <typename T>
 constexpr inline std::size_t types_count_v<T> = 0;
 
+template <typename T, typename... Ts>
+constexpr inline std::size_t type_index_v = [] {
+    bool arr[sizeof...(Ts)] = {std::is_same_v<T, Ts>...};
+    for(std::size_t i = 0; i < sizeof...(Ts); ++i) {
+        if(arr[i]) return i;
+    }
+    return sizeof...(Ts);
+}();
+
+static_assert(types_count_v<int, int, float, int> == 2);
+static_assert(types_count_v<int, float, double> == 0);
+static_assert(type_index_v<int, int, float, int> == 0);
+static_assert(type_index_v<float, int, float, int> == 1);
+
 }  // namespace pybind11
