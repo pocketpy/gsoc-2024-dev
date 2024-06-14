@@ -31,16 +31,6 @@ if(ENABLE_TEST)
     file(GLOB_RECURSE PYBIND11_TEST_SOURCES "pybind11/tests/*.cpp")
     add_executable(pybind11_test ${PYBIND11_TEST_SOURCES})
 
-    if(MSVC)
-        target_compile_options(pybind11_test PRIVATE
-            /O2
-        )
-    else()
-        target_compile_options(pybind11_test PRIVATE
-            -O3
-        )
-    endif()
-
     target_link_libraries(pybind11_test PRIVATE
         pocketpy
         GTest::gtest_main
