@@ -6,6 +6,7 @@ namespace pybind11 {
 template <typename T>
 handle cast(T&& value, return_value_policy policy = return_value_policy::automatic_reference, handle parent = {});
 
+// undef in pybind11.h
 #define PYBIND11_REGISTER_INIT(func)                                                                                   \
     static inline int _register = [] {                                                                                 \
         if(_init == nullptr) _init = new std::vector<void (*)()>();                                                    \
@@ -118,7 +119,8 @@ public:
 
     // explicit str(const bytes& b);
     explicit str(handle h);
-    operator std::string () const;
+
+    operator std::string_view () const { return value().sv(); }
 
     template <typename... Args>
     str format(Args&&... args) const;
@@ -279,19 +281,4 @@ class args : public tuple {
 class kwargs : public dict {
     PYBIND11_TYPE_IMPLEMENT(dict, struct empty, vm->tp_dict);
 };
-
-#undef PYBIND11_TYPE_IMPLEMENT
-#undef PYBIND11_REGISTER_INIT
-
-// implement iterator methods for interface
-template <typename Derived>
-inline iterator interface<Derived>::begin() const {
-    return handle(vm->py_iter(this->ptr()));
-}
-
-template <typename Derived>
-inline iterator interface<Derived>::end() const {
-    return iterator::sentinel();
-}
-
 }  // namespace pybind11

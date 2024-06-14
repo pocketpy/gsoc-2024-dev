@@ -3,6 +3,22 @@
 
 namespace pybind11 {
 
+// implement iterator methods for interface
+template <typename Derived>
+inline iterator interface<Derived>::begin() const {
+    return handle(vm->py_iter(this->ptr()));
+}
+
+template <typename Derived>
+inline iterator interface<Derived>::end() const {
+    return iterator::sentinel();
+}
+
+template <typename Derived>
+inline str interface<Derived>::name() const {
+    return handle(vm->getattr(this->ptr(), "__name__"));
+}
+
 template <typename policy>
 class accessor : public interface<accessor<policy>> {
 

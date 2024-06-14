@@ -36,6 +36,8 @@ public:
 
     object operator- () const;
     object operator~() const;
+
+    str name() const;
 };
 
 /// a lightweight wrapper for python objects
@@ -113,6 +115,7 @@ struct type_visitor {
     }
 };
 
+// undef in pybind11.h
 #define PYBIND11_TYPE_IMPLEMENT(parent, name, tp)                                                                      \
                                                                                                                        \
 private:                                                                                                               \
@@ -139,7 +142,7 @@ public:
     object(const handle& h) : handle(h) {}
 };
 
-// implement some global functions
+// undef after usage
 #define PYBIND11_BINARY_OPERATOR(OP, NAME)                                                                             \
     inline object operator OP (const handle& lhs, const handle& rhs) {                                                 \
         return vm->call(vm->py_op(NAME), lhs.ptr(), rhs.ptr());                                                        \

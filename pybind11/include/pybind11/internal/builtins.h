@@ -89,13 +89,23 @@ handle cast(T&& value, return_value_policy policy, handle parent) {
 
 template <typename T>
 T cast(const handle& obj, bool convert) {
+    if(!obj) { vm->TypeError("Unable to cast null handle to C++ type."); }
+
     type_caster<T> caster;
 
     if(caster.load(obj, convert)) { return caster.value; }
 
     // TODO: improve error message
-
-    vm->TypeError("Unable to cast Python instance to C++ type");
+    std::string msg = "Unable to cast Python instance to C++ type.";
+    // msg += " obj type: ";
+    // print(type::of(obj).name());
+    // msg += type::of(obj).name();
+    // msg += ", target type: ";
+    // msg += type_name<T>();
+    // msg += ".";
+    print(msg);
+    vm->TypeError(msg);
+    // print("objtype::of(obj));
 }
 
 template <typename T>

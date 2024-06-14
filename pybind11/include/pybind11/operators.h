@@ -101,19 +101,23 @@ struct op_ {
         static auto execute(const L& l, const R& r) -> decltype(expr) { return (expr); }                               \
         static B execute_cast(const L& l, const R& r) { return B(expr); }                                              \
     };                                                                                                                 \
+                                                                                                                       \
     template <typename B, typename L, typename R>                                                                      \
     struct op_impl<op_##id, op_r, B, L, R> {                                                                           \
         static char const* name() { return "__" #rid "__"; }                                                           \
         static auto execute(const R& r, const L& l) -> decltype(expr) { return (expr); }                               \
         static B execute_cast(const R& r, const L& l) { return B(expr); }                                              \
     };                                                                                                                 \
+                                                                                                                       \
     inline op_<op_##id, op_l, self_t, self_t> op(const self_t&, const self_t&) {                                       \
         return op_<op_##id, op_l, self_t, self_t>();                                                                   \
     }                                                                                                                  \
+                                                                                                                       \
     template <typename T>                                                                                              \
     op_<op_##id, op_l, self_t, T> op(const self_t&, const T&) {                                                        \
         return op_<op_##id, op_l, self_t, T>();                                                                        \
     }                                                                                                                  \
+                                                                                                                       \
     template <typename T>                                                                                              \
     op_<op_##id, op_r, T, self_t> op(const T&, const self_t&) {                                                        \
         return op_<op_##id, op_r, T, self_t>();                                                                        \
@@ -126,6 +130,7 @@ struct op_ {
         static auto execute(L& l, const R& r) -> decltype(expr) { return expr; }                                       \
         static B execute_cast(L& l, const R& r) { return B(expr); }                                                    \
     };                                                                                                                 \
+                                                                                                                       \
     template <typename T>                                                                                              \
     op_<op_##id, op_l, self_t, T> op(const self_t&, const T&) {                                                        \
         return op_<op_##id, op_l, self_t, T>();                                                                        \
@@ -138,6 +143,7 @@ struct op_ {
         static auto execute(const L& l) -> decltype(expr) { return expr; }                                             \
         static B execute_cast(const L& l) { return B(expr); }                                                          \
     };                                                                                                                 \
+                                                                                                                       \
     inline op_<op_##id, op_u, self_t, undefined_t> op(const self_t&) {                                                 \
         return op_<op_##id, op_u, self_t, undefined_t>();                                                              \
     }

@@ -27,6 +27,24 @@ TEST_F(PYBIND11_TEST, kwargs) {
     EXPECT_EVAL_EQ("cal(a=1, b=2, c=3)", 7);
 }
 
+TEST_F(PYBIND11_TEST, defaults) {
+    auto m = py::module_::__main__();
+
+    // test for binding function with defaults
+    m.def(
+        "cal",
+        [](int a, int b = 2, int c = 3) {
+            return a + b * c;
+        },
+        py::arg("a"),
+        py::arg("b") = 2,
+        py::arg("c") = 3);
+
+    EXPECT_EVAL_EQ("cal(1)", 7);
+    EXPECT_EVAL_EQ("cal(1, 4)", 13);
+    EXPECT_EVAL_EQ("cal(1, 4, 5)", 21);
+}
+
 TEST_F(PYBIND11_TEST, return_value_policy) {
     static int copy_constructor_calls = 0;
     static int move_constructor_calls = 0;

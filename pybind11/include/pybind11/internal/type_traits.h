@@ -1,5 +1,6 @@
 #pragma once
 #include <tuple>
+#include <string_view>
 #include <type_traits>
 
 namespace pybind11 {
@@ -127,17 +128,36 @@ template <typename T>
 constexpr inline std::size_t types_count_v<T> = 0;
 
 template <typename T, typename... Ts>
-constexpr inline std::size_t type_index_v = [] {
+constexpr inline int type_index_v = [] {
     bool arr[sizeof...(Ts)] = {std::is_same_v<T, Ts>...};
-    for(std::size_t i = 0; i < sizeof...(Ts); ++i) {
+    for(int i = 0; i < sizeof...(Ts); ++i) {
         if(arr[i]) return i;
     }
-    return sizeof...(Ts);
+    return -1;
 }();
 
 static_assert(types_count_v<int, int, float, int> == 2);
 static_assert(types_count_v<int, float, double> == 0);
 static_assert(type_index_v<int, int, float, int> == 0);
 static_assert(type_index_v<float, int, float, int> == 1);
+static_assert(type_index_v<int, float, double> == -1);
+
+template <typename T>
+constexpr auto type_name() {
+    std::string_view name = __PRETTY_FUNCTION__;
+#if __GNUC__ || __clang__
+    std::size_t start = name.find('=') + 2;
+    std::size_t end = name.size() - 1;
+    return std::string_view{name.data() + start, end - start};
+#elif _MSC_VER
+    std::size_t start = name.find('<') + 1;
+    std::size_t end = name.rfind(">(");
+    name = std::string_view{name.data() + start, end - start};
+    start = name.find(' ');
+    return start == std::string_view::npos ? name : std::string_view{name.data() + start + 1, name.size() - start - 1};
+#else
+    static_assert(false, "Unsupported compiler");
+#endif
+}
 
 }  // namespace pybind11

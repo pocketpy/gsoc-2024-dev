@@ -1,5 +1,6 @@
 #pragma once
 #include "cast.h"
+#include <map>
 
 namespace pybind11 {
 
@@ -17,152 +18,111 @@ struct prepend {};
 template <typename... Args>
 struct init {};
 
+struct arg {
+    const char* name;
+    handle default_ = {};
+
+    arg(const char* name) : name(name) {}
+
+    template <typename T>
+    arg& operator= (T&& value) {
+        default_ = cast(std::forward<T>(value));
+        return *this;
+    }
+};
+
 // TODO: support more customized tags
 // struct kw_only {};
 //
 // struct pos_only {};
 //
-// struct default_arg {};
-//
-struct arg {
-    const char* name;
-    const char* description;
+
+class cpp_function : public function {
+    PYBIND11_TYPE_IMPLEMENT(function, pkpy::NativeFunc, vm->tp_native_func);
+
+public:
+    template <typename Fn, typename... Extras>
+    cpp_function(Fn&& f, const Extras&... extras) {}
 };
 
-//
-// struct default_arg {
-//    const char* name;
-//    const char* description;
-//    const char* value;
-// };
 }  // namespace pybind11
 
 namespace pybind11::impl {
 
-struct arguments_info {
-    int argc = 0;
-    int args = -1;
-    int kwargs = -1;
-};
-
-struct extras_info {
-    int doc = -1;
-    int named_argc = 0;
-    int return_value_policy = -1;
-};
-
-template <typename Args>
-struct helper;
-
-template <typename... Args>
-struct helper<std::tuple<Args...>> {
-    constexpr static auto parse_arguments() {
-        arguments_info info;
-        info.argc = sizeof...(Args);
-
-        constexpr auto args_ = types_count_v<args, Args...>;
-        if constexpr(args_ == 1) {
-            info.args = type_index_v<args, Args...>;
-        } else if constexpr(args_ > 1) {
-            info.args = -2;
-        }
-
-        constexpr auto kwargs_ = types_count_v<kwargs, Args...>;
-        if constexpr(kwargs_ == 1) {
-            info.kwargs = type_index_v<kwargs, Args...>;
-        } else if constexpr(kwargs_ > 1) {
-            info.kwargs = -2;
-        }
-
-        return info;
-    }
-
-    constexpr static auto parse_extras() {
-        extras_info info;
-
-        constexpr auto doc_ = types_count_v<const char*, Args...>;
-        if constexpr(doc_ == 1) {
-            info.doc = type_index_v<const char*, Args...>;
-        } else if constexpr(doc_ > 1) {
-            info.doc = -2;
-        }
-
-        info.named_argc = types_count_v<arg, Args...>;
-
-        constexpr auto return_value_policy_ = types_count_v<return_value_policy, Args...>;
-
-        if constexpr(return_value_policy_ == 1) {
-            info.return_value_policy = type_index_v<return_value_policy, Args...>;
-        } else if constexpr(return_value_policy_ > 1) {
-            info.return_value_policy = -2;
-        }
-
-        return info;
-    }
-};
-
-template <typename Fn,
+template <typename Callable,
           typename Extra,
-          typename Args = callable_args_t<std::decay_t<Fn>>,
+          typename Args = callable_args_t<Callable>,
           typename IndexSequence = std::make_index_sequence<std::tuple_size_v<Args>>>
-struct generator;
+struct template_parser;
 
 class function_record {
+private:
+    template <typename C, typename E, typename A, typename I>
+    friend struct template_parser;
+
+    struct arguments_t {
+        std::map<pkpy::StrName, std::size_t> names;
+        std::vector<handle> defaults;
+    };
+
+    using destructor_t = void (*)(function_record*);
+    using wrapper_t = handle (*)(function_record&, pkpy::ArgsView, bool convert, handle parent);
+
+    static_assert(std::is_trivially_copyable_v<pkpy::StrName>);
+
+private:
     union {
         void* data;
         char buffer[16];
     };
 
-    // TODO: optimize the function_record size to reduce memory usage
-    const char* name;
-    function_record* next;
-    void (*destructor)(function_record*);
+    wrapper_t wrapper = nullptr;
+    function_record* next = nullptr;
+    arguments_t* arguments = nullptr;
+    destructor_t destructor = nullptr;
+    pkpy::StrName name = "anonymous";
     return_value_policy policy = return_value_policy::automatic;
-    handle (*wrapper)(function_record&, pkpy::ArgsView, bool convert, handle parent);
-
-    template <typename Fn, typename Extra, typename Args, typename IndexSequence>
-    friend struct generator;
 
 public:
-    template <typename Fn_, typename... Extras>
-    function_record(Fn_&& f, const char* name, const Extras&... extras) : name(name), next(nullptr) {
-        using Fn = std::decay_t<Fn_>;
+    template <typename Fn, typename... Extras>
+    function_record(Fn&& f, const char* name, const Extras&... extras) : name(name) {
+        using Callable = std::decay_t<Fn>;
 
-        if constexpr(std::is_trivially_copyable_v<Fn> && sizeof(Fn) <= sizeof(buffer)) {
+        if constexpr(std::is_trivially_copyable_v<Callable> && sizeof(Callable) <= sizeof(buffer)) {
+            // if the callable object is trivially copyable and the size is less than 16 bytes, store it in the
+            // buffer
             new (buffer) auto(std::forward<Fn>(f));
             destructor = [](function_record* self) {
-                reinterpret_cast<Fn*>(self->buffer)->~Fn();
+                reinterpret_cast<Callable*>(self->buffer)->~Callable();
             };
         } else {
+            // otherwise, store it in the heap
             data = new auto(std::forward<Fn>(f));
             destructor = [](function_record* self) {
-                delete static_cast<Fn*>(self->data);
+                delete static_cast<Callable*>(self->data);
             };
         }
 
-        using Generator = generator<std::decay_t<Fn>, std::tuple<Extras...>>;
-        Generator::initialize(*this, extras...);
-        wrapper = Generator::generate();
+        using Parser = template_parser<Callable, std::tuple<Extras...>>;
+        Parser::initialize(*this, extras...);
+        wrapper = Parser::wrapper;
     }
 
     function_record(const function_record&) = delete;
 
-    function_record(function_record&& other) noexcept :
-        name(other.name), next(other.next), destructor(other.destructor), policy(other.policy), wrapper(other.wrapper) {
-        std::memcpy(buffer, other.buffer, sizeof(buffer));
+    function_record(function_record&& other) noexcept {
+        std::memcpy(this, &other, sizeof(function_record));
+        other.arguments = nullptr;
         other.destructor = nullptr;
     }
 
     ~function_record() {
         if(destructor) { destructor(this); }
-    }
-
-    template <typename Fn>
-    auto& cast() {
-        if constexpr(std::is_trivially_copyable_v<Fn> && sizeof(Fn) <= sizeof(buffer)) {
-            return *reinterpret_cast<Fn*>(buffer);
-        } else {
-            return *static_cast<Fn*>(data);
+        if(arguments) { delete arguments; }
+        while(next) {
+            auto* p = next;
+            next = next->next;
+            delete p;
         }
     }
 
@@ -172,6 +132,15 @@ public:
             p = p->next;
         }
         p->next = record;
+    }
+
+    template <typename T>
+    T& _as() {
+        if constexpr(std::is_trivially_copyable_v<T> && sizeof(T) <= sizeof(buffer)) {
+            return *reinterpret_cast<T*>(buffer);
+        } else {
+            return *static_cast<T*>(data);
+        }
     }
 
     handle operator() (pkpy::ArgsView view) {
@@ -230,99 +199,163 @@ handle invoke(Fn&& fn,
     }
 }
 
-template <typename Fn, typename... Args, std::size_t... Is, typename... Extras>
-struct generator<Fn, std::tuple<Extras...>, std::tuple<Args...>, std::index_sequence<Is...>> {
-    static void initialize(function_record& record, const Extras&... extras) {
-        constexpr auto arguments_info = helper<std::tuple<Args...>>::parse_arguments();
-        constexpr auto extras_info = helper<std::tuple<Extras...>>::parse_extras();
-
-        constexpr auto argc = arguments_info.argc;
-        constexpr auto args = arguments_info.args;
-        constexpr auto kwargs = arguments_info.kwargs;
-
-        constexpr auto doc = extras_info.doc;
-        constexpr auto named_argc = extras_info.named_argc;
-        constexpr auto return_value_policy = extras_info.return_value_policy;
-
-        auto extras_tuple = std::make_tuple(extras...);
-
-        if constexpr(return_value_policy != -1) { record.policy = std::get<return_value_policy>(extras_tuple); }
-
-        // TODO:
-    }
-
-    static auto generate() {
-        return +[](function_record& self, pkpy::ArgsView view, bool convert, handle parent) {
-            // FIXME:
-            // Temporarily, args and kwargs must be at the end of the arguments list
-            // Named arguments are not supported yet
-            constexpr bool has_args = types_count_v<args, remove_cvref_t<Args>...> != 0;
-            constexpr bool has_kwargs = types_count_v<kwargs, remove_cvref_t<Args>...> != 0;
-            constexpr std::size_t count = sizeof...(Args) - has_args - has_kwargs;
-
-            handle stack[sizeof...(Args)];
-
-            // initialize the stack
-
-            if(!has_args && (view.size() != count)) { return handle(); }
-
-            if(has_args && (view.size() < count)) { return handle(); }
-
-            for(std::size_t i = 0; i < count; ++i) {
-                stack[i] = view[i];
-            }
-
-            // pack the args and kwargs
-            if constexpr(has_args) {
-                const auto n = view.size() - count;
-                pkpy::PyVar var = vm->new_object<pkpy::Tuple>(vm->tp_tuple, n);
-                auto& tuple = var.obj_get<pkpy::Tuple>();
-                for(std::size_t i = 0; i < n; ++i) {
-                    tuple[i] = view[count + i];
-                }
-                stack[count] = var;
-            }
-
-            if constexpr(has_kwargs) {
-                const auto n = vm->s_data._sp - view.end();
-                pkpy::PyVar var = vm->new_object<pkpy::Dict>(vm->tp_dict);
-                auto& dict = var.obj_get<pkpy::Dict>();
-
-                for(std::size_t i = 0; i < n; i += 2) {
-                    pkpy::i64 index = pkpy::_py_cast<pkpy::i64>(vm, view[count + i]);
-                    pkpy::PyVar str = vm->new_object<pkpy::Str>(vm->tp_str, pkpy::StrName(index).sv());
-                    dict.set(vm, str, view[count + i + 1]);
-                }
-
-                stack[count + has_args] = var;
-            }
-
-            // check if all the arguments are not valid
-            for(std::size_t i = 0; i < sizeof...(Args); ++i) {
-                if(!stack[i]) { return handle(); }
-            }
-
-            // ok, all the arguments are valid, call the function
-            std::tuple<type_caster<Args>...> casters;
-
-            // check type compatibility
-            if(((std::get<Is>(casters).load(stack[Is], convert)) && ...)) {
-                return invoke(self.cast<Fn>(), std::index_sequence<Is...>{}, casters, self.policy, parent);
-            }
-
-            return handle();
-        };
-    }
+struct arguments_info {
+    int argc = 0;
+    int args_pos = -1;
+    int kwargs_pos = -1;
 };
 
-// class cpp_function : public function {
-// public:
-//     template <typename Fn, typename... Extras>
-//     cpp_function(Fn&& f, const Extras&... extras) {
-//         pkpy::any userdata = function_record(std::forward<Fn>(f), "anonymous", extras...);
-//         m_ptr = vm->bind_func(nullptr, "", -1, _wrapper, std::move(userdata));
-//     }
-// };
+struct extras_info {
+    int doc_pos = -1;
+    int named_argc = 0;
+    int policy_pos = -1;
+};
+
+template <typename Callable, typename... Extras, typename... Args, std::size_t... Is>
+struct template_parser<Callable, std::tuple<Extras...>, std::tuple<Args...>, std::index_sequence<Is...>> {
+    constexpr static arguments_info parse_arguments() {
+        constexpr auto args_count = types_count_v<args, Args...>;
+        constexpr auto kwargs_count = types_count_v<kwargs, Args...>;
+
+        static_assert(args_count <= 1, "py::args can occur at most once");
+        static_assert(kwargs_count <= 1, "py::kwargs can occur at most once");
+
+        constexpr auto args_pos = type_index_v<args, Args...>;
+        constexpr auto kwargs_pos = type_index_v<kwargs, Args...>;
+
+        if constexpr(kwargs_count == 1) {
+            static_assert(kwargs_pos == sizeof...(Args) - 1, "py::kwargs must be the last argument");
+
+            // FIXME: temporarily, args and kwargs must be at the end of the arguments list
+            if constexpr(args_count == 1) {
+                static_assert(args_pos == kwargs_pos - 1, "py::args must be before py::kwargs");
+            }
+        }
+
+        return {sizeof...(Args), args_pos, kwargs_pos};
+    }
+
+    constexpr static extras_info parse_extras() {
+        constexpr auto doc_count = types_count_v<const char*, Extras...>;
+        constexpr auto policy_count = types_count_v<return_value_policy, Extras...>;
+
+        static_assert(doc_count <= 1, "doc can occur at most once");
+        static_assert(policy_count <= 1, "return_value_policy can occur at most once");
+
+        constexpr auto doc_pos = type_index_v<const char*, Extras...>;
+        constexpr auto policy_pos = type_index_v<return_value_policy, Extras...>;
+
+        constexpr auto named_argc = types_count_v<arg, Extras...>;
+        static_assert(named_argc == 0 || named_argc == sizeof...(Args),
+                      "named arguments must be the same as the number of function arguments");
+
+        return {doc_pos, named_argc, policy_pos};
+    }
+
+    constexpr inline static auto arguments_info = parse_arguments();
+    constexpr inline static auto extras_info = parse_extras();
+
+    static void initialize(function_record& record, const Extras&... extras) {
+        auto extras_tuple = std::make_tuple(extras...);
+
+        // set return value policy
+        if constexpr(extras_info.policy_pos != -1) { record.policy = std::get<extras_info.policy_pos>(extras_tuple); }
+
+        // TODO: set others
+
+        // set default arguments
+        if constexpr(extras_info.named_argc > 0) {
+            record.arguments = new function_record::arguments_t();
+
+            auto add_arguments = [&](const auto& arg) {
+                if constexpr(std::is_same_v<pybind11::arg, remove_cvref_t<decltype(arg)>>) {
+                    auto& arguments = *record.arguments;
+                    arguments.names[arg.name] = arguments.defaults.size();
+                    arguments.defaults.push_back(arg.default_);
+                }
+            };
+
+            (add_arguments(extras), ...);
+        }
+    }
+
+    static handle wrapper(function_record& record, pkpy::ArgsView view, bool convert, handle parent) {
+        constexpr auto argc = arguments_info.argc;
+        constexpr auto named_argc = extras_info.named_argc;
+        constexpr auto args_pos = arguments_info.args_pos;
+        constexpr auto kwargs_pos = arguments_info.kwargs_pos;
+        constexpr auto normal_argc = argc - (args_pos != -1) - (kwargs_pos != -1);
+
+        handle stack[argc] = {};
+
+        // ensure the number of passed arguments is no greater than the number of parameters
+        if(args_pos == -1 && view.size() > normal_argc) { return handle(); }
+
+        // if have default arguments, load them
+        if constexpr(named_argc > 0) {
+            auto& defaults = record.arguments->defaults;
+            std::memcpy(stack, defaults.data(), defaults.size() * sizeof(handle));
+        }
+
+        // load arguments from call arguments
+        std::memcpy(stack, view.begin(), view.size() * sizeof(handle));
+
+        // pack the args
+        if constexpr(args_pos != -1) {
+            const auto n = view.size() - normal_argc;
+            tuple args = tuple(n);
+            for(std::size_t i = 0; i < n; ++i) {
+                args[i] = view[normal_argc + i];
+            }
+            stack[args_pos] = args;
+        }
+
+        // resolve keyword arguments
+        const auto n = vm->s_data._sp - view.end();
+        std::size_t index = 0;
+
+        if constexpr(named_argc > 0) {
+            while(index < n) {
+                const auto key = pkpy::_py_cast<pkpy::i64>(vm, view.end()[index]);
+                const auto name = pkpy::StrName(key);
+                auto it = record.arguments->names.find(name);
+                if(it != record.arguments->names.end()) {
+                    stack[it->second] = view.end()[index + 1];
+                    index += 2;
+                } else {
+                    break;
+                }
+            }
+        }
+
+        // pack the kwargs
+        if constexpr(kwargs_pos != -1) {
+            dict kwargs;
+            while(index < n) {
+                const auto key = pkpy::_py_cast<pkpy::i64>(vm, view.end()[index]);
+                const str name = str(pkpy::StrName(key).sv());
+                kwargs[name] = view.end()[index + 1];
+                index += 2;
+            }
+            stack[kwargs_pos] = kwargs;
+        }
+
+        // check if all the arguments are valid
+        for(std::size_t i = 0; i < argc; ++i) {
+            if(!stack[i]) { return handle(); }
+        }
+
+        // ok, all the arguments are valid, call the function
+        std::tuple<type_caster<Args>...> casters;
+
+        // check type compatibility
+        if(((std::get<Is>(casters).load(stack[Is], convert)) && ...)) {
+            return invoke(record._as<Callable>(), std::index_sequence<Is...>{}, casters, record.policy, parent);
+        }
+
+        return handle();
+    }
+};
 
 inline auto _wrapper(pkpy::VM* vm, pkpy::ArgsView view) {
     auto& record = unpack<function_record>(view);
@@ -330,7 +363,7 @@ inline auto _wrapper(pkpy::VM* vm, pkpy::ArgsView view) {
 }
 
 template <typename Fn, typename... Extras>
-handle bind_function_impl(const handle& obj, const char* name, Fn&& fn, pkpy::BindType type, const Extras&... extras) {
+handle bind_function(const handle& obj, const char* name, Fn&& fn, pkpy::BindType type, const Extras&... extras) {
     // do not use cpp_function directly to avoid unnecessary reference count change
     pkpy::PyVar var = obj.ptr();
     pkpy::PyVar callable = var->attr().try_get(name);
@@ -356,55 +389,13 @@ handle bind_function_impl(const handle& obj, const char* name, Fn&& fn, pkpy::Bi
             last->append(record);
         }
     }
+
     return callable;
 }
 
-template <typename Fn>
-constexpr bool check_arguments() {
-    using Args = callable_args_t<std::decay_t<Fn>>;
-    constexpr auto arguments_info = helper<Args>::parse_arguments();
+}  // namespace pybind11::impl
 
-    constexpr auto argc = arguments_info.argc;
-    constexpr auto args = arguments_info.args;
-    constexpr auto kwargs = arguments_info.kwargs;
-
-    constexpr bool _0 = args == -2 || kwargs == -2;
-    static_assert(!_0, "args or kwargs can occur at most once");
-
-    constexpr bool _1 = args >= 0 && kwargs >= 0 && args > kwargs;
-    static_assert(!_1, "args must be before kwargs");
-
-    constexpr bool _2 = kwargs >= 0 && kwargs != argc - 1;
-    static_assert(!_2, "kwargs must be the last argument");
-
-    if(!(_0 || _1 || _2)) { return true; }
-}
-
-template <typename Fn, typename... Extras>
-constexpr bool check_extras() {
-    using Args = callable_args_t<std::decay_t<Fn>>;
-    constexpr auto arguments_info = helper<Args>::parse_arguments();
-    constexpr auto extras_info = helper<std::tuple<Extras...>>::parse_extras();
-
-    constexpr auto doc = extras_info.doc;
-    constexpr auto named_argc = extras_info.named_argc;
-    constexpr auto return_value_policy = extras_info.return_value_policy;
-
-    constexpr bool _0 = doc == -2 || return_value_policy == -2;
-    static_assert(!_0, "doc or return_value_policy can occur at most once");
-
-    constexpr bool _1 = named_argc > 0 && named_argc != arguments_info.argc;
-    static_assert(!_1, "named arguments must be the same as the number of function arguments");
-
-    if(!(_0 || _1)) { return true; }
-}
-
-template <typename Fn, typename... Extras>
-handle bind_function(const handle& obj, const char* name, Fn&& fn, pkpy::BindType type, const Extras&... extras) {
-    if constexpr(check_arguments<Fn>() && check_extras<Fn, Extras...>()) {
-        return bind_function_impl(obj, name, std::forward<Fn>(fn), type, extras...);
-    }
-}
+namespace pybind11::impl {
 
 template <typename Getter>
 pkpy::PyVar getter_wrapper(pkpy::VM* vm, pkpy::ArgsView view) {
