@@ -199,13 +199,13 @@ handle invoke(Fn&& fn,
     }
 }
 
-struct arguments_info {
+struct arguments_info_t {
     int argc = 0;
     int args_pos = -1;
     int kwargs_pos = -1;
 };
 
-struct extras_info {
+struct extras_info_t {
     int doc_pos = -1;
     int named_argc = 0;
     int policy_pos = -1;
@@ -213,7 +213,7 @@ struct extras_info {
 
 template <typename Callable, typename... Extras, typename... Args, std::size_t... Is>
 struct template_parser<Callable, std::tuple<Extras...>, std::tuple<Args...>, std::index_sequence<Is...>> {
-    constexpr static arguments_info parse_arguments() {
+    constexpr static arguments_info_t parse_arguments() {
         constexpr auto args_count = types_count_v<args, Args...>;
         constexpr auto kwargs_count = types_count_v<kwargs, Args...>;
 
@@ -235,7 +235,7 @@ struct template_parser<Callable, std::tuple<Extras...>, std::tuple<Args...>, std
         return {sizeof...(Args), args_pos, kwargs_pos};
     }
 
-    constexpr static extras_info parse_extras() {
+    constexpr static extras_info_t parse_extras() {
         constexpr auto doc_count = types_count_v<const char*, Extras...>;
         constexpr auto policy_count = types_count_v<return_value_policy, Extras...>;
 
