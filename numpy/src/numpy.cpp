@@ -107,15 +107,15 @@ public:
 template<typename T>
 class ndarray : public ndarray_base {
 public:
-    pkpy::ndarray<T> data;
+    pkpy::numpy::ndarray<T> data;
     // Constructors
     ndarray() = default;
-    ndarray(const pkpy::ndarray<T>& _arr) : data(_arr) {}
-    ndarray(const std::vector<T>& init_list) : data(pkpy::adapt<T>(init_list)) {}
-    ndarray(const std::vector<std::vector<T>>& init_list) : data(pkpy::adapt<T>(init_list)) {}
-    ndarray(const std::vector<std::vector<std::vector<T>>>& init_list) : data(pkpy::adapt<T>(init_list)) {}
-    ndarray(const std::vector<std::vector<std::vector<std::vector<T>>>>& init_list) : data(pkpy::adapt<T>(init_list)) {}
-    ndarray(const std::vector<std::vector<std::vector<std::vector<std::vector<T>>>>>& init_list) : data(pkpy::adapt<T>(init_list)) {}
+    ndarray(const pkpy::numpy::ndarray<T>& _arr) : data(_arr) {}
+    ndarray(const std::vector<T>& init_list) : data(pkpy::numpy::adapt<T>(init_list)) {}
+    ndarray(const std::vector<std::vector<T>>& init_list) : data(pkpy::numpy::adapt<T>(init_list)) {}
+    ndarray(const std::vector<std::vector<std::vector<T>>>& init_list) : data(pkpy::numpy::adapt<T>(init_list)) {}
+    ndarray(const std::vector<std::vector<std::vector<std::vector<T>>>>& init_list) : data(pkpy::numpy::adapt<T>(init_list)) {}
+    ndarray(const std::vector<std::vector<std::vector<std::vector<std::vector<T>>>>>& init_list) : data(pkpy::numpy::adapt<T>(init_list)) {}
 
     // Properties
     int ndim() const override { return data.ndim(); }
@@ -179,7 +179,7 @@ public:
         if (dtype == "int") {
             return new ndarray<int>(data.template astype<int>());
         } else if (dtype == "float64") {
-            return new ndarray<pkpy::float64>(data.template astype<pkpy::float64>());
+            return new ndarray<float64>(data.template astype<float64>());
         } else {
             throw std::invalid_argument("Invalid dtype");
         }
@@ -188,16 +188,16 @@ public:
     // Dunder Methods
     ndarray_base* add(const ndarray_base& other) const override {
         if constexpr(std::is_same_v<T, int>) {
-            if(auto p = dynamic_cast<const ndarray<pkpy::float64>*>(&other)){ /* int + float */ 
-                return new ndarray<pkpy::float64>(data + p->data);
-            } else if(auto p = dynamic_cast<const ndarray<int>*>(&other)){ /* int + int */ 
+            if(auto p = dynamic_cast<const ndarray<float64>*>(&other)){ /* int + float */
+                return new ndarray<float64>(data + p->data);
+            } else if(auto p = dynamic_cast<const ndarray<int>*>(&other)){ /* int + int */
                 return new ndarray<int>(data + p->data);
             }
-        } else if constexpr(std::is_same_v<T, pkpy::float64>) {
-            if(auto p = dynamic_cast<const ndarray<int>*>(&other)){ /* float + int */ 
-                return new ndarray<pkpy::float64>(data + p->data);
-            } else if(auto p = dynamic_cast<const ndarray<pkpy::float64>*>(&other)){ /* float + float */ 
-                return new ndarray<pkpy::float64>(data + p->data);
+        } else if constexpr(std::is_same_v<T, float64>) {
+            if(auto p = dynamic_cast<const ndarray<int>*>(&other)){ /* float + int */
+                return new ndarray<float64>(data + p->data);
+            } else if(auto p = dynamic_cast<const ndarray<float64>*>(&other)){ /* float + float */
+                return new ndarray<float64>(data + p->data);
             }
         }  
 
@@ -208,20 +208,20 @@ public:
         return new ndarray<T>(data + other);
     }
     ndarray_base* add_float(float64 other) const override {
-        return new ndarray<pkpy::float64>(data + other);
+        return new ndarray<float64>(data + other);
     }
     ndarray_base* sub(const ndarray_base& other) const override {
         if constexpr(std::is_same_v<T, int>) {
-            if(auto p = dynamic_cast<const ndarray<pkpy::float64>*>(&other)){ /* int - float */ 
-                return new ndarray<pkpy::float64>(data - p->data);
-            } else if(auto p = dynamic_cast<const ndarray<int>*>(&other)){ /* int - int */ 
+            if(auto p = dynamic_cast<const ndarray<float64>*>(&other)){ /* int - float */
+                return new ndarray<float64>(data - p->data);
+            } else if(auto p = dynamic_cast<const ndarray<int>*>(&other)){ /* int - int */
                 return new ndarray<int>(data - p->data);
             }
-        } else if constexpr(std::is_same_v<T, pkpy::float64>) {
-            if(auto p = dynamic_cast<const ndarray<int>*>(&other)){ /* float - int */ 
-                return new ndarray<pkpy::float64>(data - p->data);
-            } else if(auto p = dynamic_cast<const ndarray<pkpy::float64>*>(&other)){ /* float - float */ 
-                return new ndarray<pkpy::float64>(data - p->data);
+        } else if constexpr(std::is_same_v<T, float64>) {
+            if(auto p = dynamic_cast<const ndarray<int>*>(&other)){ /* float - int */
+                return new ndarray<float64>(data - p->data);
+            } else if(auto p = dynamic_cast<const ndarray<float64>*>(&other)){ /* float - float */
+                return new ndarray<float64>(data - p->data);
             }
         }  
 
@@ -232,20 +232,20 @@ public:
         return new ndarray<T>(data - other);
     }
     ndarray_base* sub_float(float64 other) const override {
-        return new ndarray<pkpy::float64>(data - other);
+        return new ndarray<float64>(data - other);
     }
     ndarray_base* mul(const ndarray_base& other) const override {
         if constexpr(std::is_same_v<T, int>) {
-            if(auto p = dynamic_cast<const ndarray<pkpy::float64>*>(&other)){ /* int * float */ 
-                return new ndarray<pkpy::float64>(data * p->data);
-            } else if(auto p = dynamic_cast<const ndarray<int>*>(&other)){ /* int * int */ 
+            if(auto p = dynamic_cast<const ndarray<float64>*>(&other)){ /* int * float */
+                return new ndarray<float64>(data * p->data);
+            } else if(auto p = dynamic_cast<const ndarray<int>*>(&other)){ /* int * int */
                 return new ndarray<int>(data * p->data);
             }
-        } else if constexpr(std::is_same_v<T, pkpy::float64>) {
-            if(auto p = dynamic_cast<const ndarray<int>*>(&other)){ /* float * int */ 
-                return new ndarray<pkpy::float64>(data * p->data);
-            } else if(auto p = dynamic_cast<const ndarray<pkpy::float64>*>(&other)){ /* float * float */ 
-                return new ndarray<pkpy::float64>(data * p->data);
+        } else if constexpr(std::is_same_v<T, float64>) {
+            if(auto p = dynamic_cast<const ndarray<int>*>(&other)){ /* float * int */
+                return new ndarray<float64>(data * p->data);
+            } else if(auto p = dynamic_cast<const ndarray<float64>*>(&other)){ /* float * float */
+                return new ndarray<float64>(data * p->data);
             }
         }  
 
@@ -253,23 +253,23 @@ public:
         return new ndarray<T>(data * other_.data);
     }
     ndarray_base* mul_int(int other) const override {
-        return new ndarray<pkpy::float64>(data * other);
+        return new ndarray<float64>(data * other);
     }
     ndarray_base* mul_float(float64 other) const override {
-        return new ndarray<pkpy::float64>(data * other);
+        return new ndarray<float64>(data * other);
     }
     ndarray_base* div(const ndarray_base& other) const override {
         if constexpr(std::is_same_v<T, int>) {
-            if(auto p = dynamic_cast<const ndarray<pkpy::float64>*>(&other)){ /* int / float */ 
-                return new ndarray<pkpy::float64>(data / p->data);
-            } else if(auto p = dynamic_cast<const ndarray<int>*>(&other)){ /* int / int */ 
+            if(auto p = dynamic_cast<const ndarray<float64>*>(&other)){ /* int / float */
+                return new ndarray<float64>(data / p->data);
+            } else if(auto p = dynamic_cast<const ndarray<int>*>(&other)){ /* int / int */
                 return new ndarray<int>(data / p->data);
             }
-        } else if constexpr(std::is_same_v<T, pkpy::float64>) {
-            if(auto p = dynamic_cast<const ndarray<int>*>(&other)){ /* float / int */ 
-                return new ndarray<pkpy::float64>(data / p->data);
-            } else if(auto p = dynamic_cast<const ndarray<pkpy::float64>*>(&other)){ /* float / float */ 
-                return new ndarray<pkpy::float64>(data / p->data);
+        } else if constexpr(std::is_same_v<T, float64>) {
+            if(auto p = dynamic_cast<const ndarray<int>*>(&other)){ /* float / int */
+                return new ndarray<float64>(data / p->data);
+            } else if(auto p = dynamic_cast<const ndarray<float64>*>(&other)){ /* float / float */
+                return new ndarray<float64>(data / p->data);
             }
         }  
 
@@ -277,23 +277,23 @@ public:
         return new ndarray<T>(data / other_.data);
     }
     ndarray_base* div_int(int other) const override {
-        return new ndarray<pkpy::float64>(data / other);
+        return new ndarray<float64>(data / other);
     }
     ndarray_base* div_float(float64 other) const override {
-        return new ndarray<pkpy::float64>(data / other);
+        return new ndarray<float64>(data / other);
     }
     ndarray_base* pow(const ndarray_base& other) const override {
         if constexpr(std::is_same_v<T, int>) {
-            if(auto p = dynamic_cast<const ndarray<pkpy::float64>*>(&other)){ /* int ** float */ 
-                return new ndarray<pkpy::float64>(data.pow(p->data));
-            } else if(auto p = dynamic_cast<const ndarray<int>*>(&other)){ /* int ** int */ 
+            if(auto p = dynamic_cast<const ndarray<float64>*>(&other)){ /* int ** float */
+                return new ndarray<float64>(data.pow(p->data));
+            } else if(auto p = dynamic_cast<const ndarray<int>*>(&other)){ /* int ** int */
                 return new ndarray<int>(data.pow(p->data));
             }
-        } else if constexpr(std::is_same_v<T, pkpy::float64>) {
-            if(auto p = dynamic_cast<const ndarray<int>*>(&other)){ /* float ** int */ 
-                return new ndarray<pkpy::float64>(data.pow(p->data));
-            } else if(auto p = dynamic_cast<const ndarray<pkpy::float64>*>(&other)){ /* float ** float */ 
-                return new ndarray<pkpy::float64>(data.pow(p->data));
+        } else if constexpr(std::is_same_v<T, float64>) {
+            if(auto p = dynamic_cast<const ndarray<int>*>(&other)){ /* float ** int */
+                return new ndarray<float64>(data.pow(p->data));
+            } else if(auto p = dynamic_cast<const ndarray<float64>*>(&other)){ /* float ** float */
+                return new ndarray<float64>(data.pow(p->data));
             }
         }  
 
@@ -304,20 +304,20 @@ public:
         return new ndarray<T>(data.pow(other));
     }
     ndarray_base* pow_float(float64 other) const override {
-        return new ndarray<pkpy::float64>(data.pow(other));
+        return new ndarray<float64>(data.pow(other));
     }
     ndarray_base* matmul(const ndarray_base& other) const override {
         if constexpr(std::is_same_v<T, int>){
-            if(auto p = dynamic_cast<const ndarray<pkpy::float64>*>(&other)){ /* int @ float */ 
-                return new ndarray<pkpy::float64>(data.matmul(p->data));
-            } else if(auto p = dynamic_cast<const ndarray<int>*>(&other)){ /* int @ int */ 
+            if(auto p = dynamic_cast<const ndarray<float64>*>(&other)){ /* int @ float */
+                return new ndarray<float64>(data.matmul(p->data));
+            } else if(auto p = dynamic_cast<const ndarray<int>*>(&other)){ /* int @ int */
                 return new ndarray<int>(data.matmul(p->data));
             }
-        } else if constexpr(std::is_same_v<T, pkpy::float64>){
-            if(auto p = dynamic_cast<const ndarray<int>*>(&other)){ /* float @ int */ 
-                return new ndarray<pkpy::float64>(data.matmul(p->data));
-            } else if(auto p = dynamic_cast<const ndarray<pkpy::float64>*>(&other)){ /* float @ float */ 
-                return new ndarray<pkpy::float64>(data.matmul(p->data));
+        } else if constexpr(std::is_same_v<T, float64>){
+            if(auto p = dynamic_cast<const ndarray<int>*>(&other)){ /* float @ int */
+                return new ndarray<float64>(data.matmul(p->data));
+            } else if(auto p = dynamic_cast<const ndarray<float64>*>(&other)){ /* float @ float */
+                return new ndarray<float64>(data.matmul(p->data));
             }
         }
 
@@ -327,14 +327,14 @@ public:
     int len() const override { return data.shape()[0]; }
     ndarray_base* get_item_int(int index) const override { return new ndarray<T>(data[index]); }
     ndarray_base* get_item_tuple(py::tuple args) const override {
-        pkpy::ndarray<T> store = data;
+        pkpy::numpy::ndarray<T> store = data;
         std::vector<int> indices;
 
         for (auto item : args) {
             indices.push_back(py::cast<int>(item));
         }
         for(int i = 0; i < indices.size() - 1; i++){
-            pkpy::ndarray<T> temp = store[indices[i]];
+            pkpy::numpy::ndarray<T> temp = store[indices[i]];
             store = temp;
         }
 
@@ -359,58 +359,58 @@ public:
     }
     void set_item_int(int index, int value) override {
         if constexpr(std::is_same_v<T, int>) {
-            data.set_item(index, pkpy::adapt<int>({value}));
-        } else if constexpr(std::is_same_v<T, pkpy::float64>) {
-            data.set_item(index, (pkpy::adapt<int>({value})).astype<pkpy::float64>());
+            data.set_item(index, pkpy::numpy::adapt<int>({value}));
+        } else if constexpr(std::is_same_v<T, float64>) {
+            data.set_item(index, (pkpy::numpy::adapt<int>({value})).astype<float64>());
         }
     }
     void set_item_index_int(int index, const std::vector<int>& value) override {
         if constexpr(std::is_same_v<T, int>) {
-            data.set_item(index, pkpy::adapt<int>(value));
-        } else if constexpr(std::is_same_v<T, pkpy::float64>) {
-            data.set_item(index, (pkpy::adapt<int>(value)).astype<pkpy::float64>());
+            data.set_item(index, pkpy::numpy::adapt<int>(value));
+        } else if constexpr(std::is_same_v<T, float64>) {
+            data.set_item(index, (pkpy::numpy::adapt<int>(value)).astype<float64>());
         }
     }
     void set_item_float(int index, float64 value) override {
-        if constexpr(std::is_same_v<T, pkpy::float64>) {
-            data.set_item(index, pkpy::adapt<pkpy::float64>({value}));
+        if constexpr(std::is_same_v<T, float64>) {
+            data.set_item(index, pkpy::numpy::adapt<float64>({value}));
         } else if constexpr(std::is_same_v<T, int>) {
-            data.set_item(index, (pkpy::adapt<pkpy::float64>({value})).astype<int>());
+            data.set_item(index, (pkpy::numpy::adapt<float64>({value})).astype<int>());
         }
     }
     void set_item_index_float(int index, const std::vector<float64>& value) override {
-        if constexpr(std::is_same_v<T, pkpy::float64>) {
-            data.set_item(index, pkpy::adapt<pkpy::float64>(value));
+        if constexpr(std::is_same_v<T, float64>) {
+            data.set_item(index, pkpy::numpy::adapt<float64>(value));
         } else if constexpr(std::is_same_v<T, int>) {
-            data.set_item(index, (pkpy::adapt<pkpy::float64>(value)).astype<int>());
+            data.set_item(index, (pkpy::numpy::adapt<float64>(value)).astype<int>());
         }
     }
     void set_item_vector_int1(const std::vector<int>& indices, int value) override {
         if constexpr(std::is_same_v<T, int>) {
-            data.set_item(indices, pkpy::adapt<int>({value}));
-        } else if constexpr(std::is_same_v<T, pkpy::float64>) {
-            data.set_item(indices, (pkpy::adapt<int>({value})).astype<pkpy::float64>());
+            data.set_item(indices, pkpy::numpy::adapt<int>({value}));
+        } else if constexpr(std::is_same_v<T, float64>) {
+            data.set_item(indices, (pkpy::numpy::adapt<int>({value})).astype<float64>());
         }
     }
     void set_item_vector_int2(const std::vector<int>& indices, const std::vector<int>& value) override {
         if constexpr(std::is_same_v<T, int>) {
-            data.set_item(indices, pkpy::adapt<int>(value));
-        } else if constexpr(std::is_same_v<T, pkpy::float64>) {
-            data.set_item(indices, (pkpy::adapt<int>(value)).astype<pkpy::float64>());
+            data.set_item(indices, pkpy::numpy::adapt<int>(value));
+        } else if constexpr(std::is_same_v<T, float64>) {
+            data.set_item(indices, (pkpy::numpy::adapt<int>(value)).astype<float64>());
         }
     }
     void set_item_vector_float1(const std::vector<int>& indices, float64 value) override {
-        if constexpr(std::is_same_v<T, pkpy::float64>) {
-            data.set_item(indices, pkpy::adapt<pkpy::float64>({value}));
+        if constexpr(std::is_same_v<T, float64>) {
+            data.set_item(indices, pkpy::numpy::adapt<float64>({value}));
         } else if constexpr(std::is_same_v<T, int>) {
-            data.set_item(indices, (pkpy::adapt<pkpy::float64>({value})).astype<int>());
+            data.set_item(indices, (pkpy::numpy::adapt<float64>({value})).astype<int>());
         }
     }
     void set_item_vector_float2(const std::vector<int>& indices, const std::vector<float64>& value) override {
-        if constexpr(std::is_same_v<T, pkpy::float64>) {
-            data.set_item(indices, pkpy::adapt<pkpy::float64>(value));
+        if constexpr(std::is_same_v<T, float64>) {
+            data.set_item(indices, pkpy::numpy::adapt<float64>(value));
         } else if constexpr(std::is_same_v<T, int>) {
-            data.set_item(indices, (pkpy::adapt<pkpy::float64>(value)).astype<int>());
+            data.set_item(indices, (pkpy::numpy::adapt<float64>(value)).astype<int>());
         }
     }
     void set_item_tuple(py::tuple args, float64 value) override {
@@ -437,9 +437,9 @@ public:
             if(stop == INT_MAX) stop = -(1 + data.shape()[0]);
         }
         if constexpr(std::is_same_v<T, int>) {
-            data.set_item(std::make_tuple(start, stop, step), pkpy::adapt<int>({value}));
-        } else if constexpr(std::is_same_v<T, pkpy::float64>) {
-            data.set_item(std::make_tuple(start, stop, step), (pkpy::adapt<int>({value})).astype<pkpy::float64>());
+            data.set_item(std::make_tuple(start, stop, step), pkpy::numpy::adapt<int>({value}));
+        } else if constexpr(std::is_same_v<T, float64>) {
+            data.set_item(std::make_tuple(start, stop, step), (pkpy::numpy::adapt<int>({value})).astype<float64>());
         }
     }
     void set_item_slice_int2(py::slice slice, const std::vector<int>& value) override {
@@ -456,9 +456,9 @@ public:
             if(stop == INT_MAX) stop = -(1 + data.shape()[0]);
         }
         if constexpr(std::is_same_v<T, int>) {
-            data.set_item(std::make_tuple(start, stop, step), pkpy::adapt<int>(value));
-        } else if constexpr(std::is_same_v<T, pkpy::float64>) {
-            data.set_item(std::make_tuple(start, stop, step), (pkpy::adapt<int>(value)).astype<pkpy::float64>());
+            data.set_item(std::make_tuple(start, stop, step), pkpy::numpy::adapt<int>(value));
+        } else if constexpr(std::is_same_v<T, float64>) {
+            data.set_item(std::make_tuple(start, stop, step), (pkpy::numpy::adapt<int>(value)).astype<float64>());
         }
     }
     void set_item_slice_float1(py::slice slice, float64 value) override {
@@ -474,10 +474,10 @@ public:
             if(start == INT_MAX) start = data.shape()[0] - 1;
             if(stop == INT_MAX) stop = -(1 + data.shape()[0]);
         }
-        if constexpr(std::is_same_v<T, pkpy::float64>) {
-            data.set_item(std::make_tuple(start, stop, step), pkpy::adapt<pkpy::float64>({value}));
+        if constexpr(std::is_same_v<T, float64>) {
+            data.set_item(std::make_tuple(start, stop, step), pkpy::numpy::adapt<float64>({value}));
         } else if constexpr(std::is_same_v<T, int>) {
-            data.set_item(std::make_tuple(start, stop, step), (pkpy::adapt<pkpy::float64>({value})).astype<int>());
+            data.set_item(std::make_tuple(start, stop, step), (pkpy::numpy::adapt<float64>({value})).astype<int>());
         }
     }
     void set_item_slice_float2(py::slice slice, const std::vector<float64>& value) override {
@@ -493,10 +493,10 @@ public:
             if(start == INT_MAX) start = data.shape()[0] - 1;
             if(stop == INT_MAX) stop = -(1 + data.shape()[0]);
         }
-        if constexpr(std::is_same_v<T, pkpy::float64>) {
-            data.set_item(std::make_tuple(start, stop, step), pkpy::adapt<pkpy::float64>(value));
+        if constexpr(std::is_same_v<T, float64>) {
+            data.set_item(std::make_tuple(start, stop, step), pkpy::numpy::adapt<float64>(value));
         } else if constexpr(std::is_same_v<T, int>) {
-            data.set_item(std::make_tuple(start, stop, step), (pkpy::adapt<pkpy::float64>(value)).astype<int>());
+            data.set_item(std::make_tuple(start, stop, step), (pkpy::numpy::adapt<float64>(value)).astype<int>());
         }
     }
     std::string to_string() const override {
@@ -507,10 +507,10 @@ public:
 };
 
 using ndarray_int = ndarray<int>;
-using ndarray_float = ndarray<pkpy::float64>;
+using ndarray_float = ndarray<float64>;
 
 PYBIND11_MODULE(numpy_bindings, m) {
-    m.doc() = "Python bindings for pkpy::ndarray using pybind11";
+    m.doc() = "Python bindings for pkpy::numpy::ndarray using pybind11";
 
     py::class_<ndarray_base>(m, "ndarray")
         .def("ndim", &ndarray_base::ndim)
@@ -632,12 +632,12 @@ PYBIND11_MODULE(numpy_bindings, m) {
             return ndarray<int>(~v.data);
         });
 
-    py::class_<ndarray<pkpy::float64>, ndarray_base>(m, "ndarray_float")
-        .def(py::init<const std::vector<pkpy::float64>&>())
-        .def(py::init<const std::vector<std::vector<pkpy::float64>>&>())
-        .def(py::init<const std::vector<std::vector<std::vector<pkpy::float64>>>&>())
-        .def(py::init<const std::vector<std::vector<std::vector<std::vector<pkpy::float64>>>>&>())
-        .def(py::init<const std::vector<std::vector<std::vector<std::vector<std::vector<pkpy::float64>>>>>&>());
+    py::class_<ndarray<float64>, ndarray_base>(m, "ndarray_float")
+        .def(py::init<const std::vector<float64>&>())
+        .def(py::init<const std::vector<std::vector<float64>>&>())
+        .def(py::init<const std::vector<std::vector<std::vector<float64>>>&>())
+        .def(py::init<const std::vector<std::vector<std::vector<std::vector<float64>>>>&>())
+        .def(py::init<const std::vector<std::vector<std::vector<std::vector<std::vector<float64>>>>>&>());
 
     m.def("array", [](const std::vector<int>& values) {
         return std::unique_ptr<ndarray_base>(new ndarray_int(values));
@@ -655,112 +655,112 @@ PYBIND11_MODULE(numpy_bindings, m) {
         return std::unique_ptr<ndarray_base>(new ndarray_int(values));
     });
 
-    m.def("array", [](const std::vector<pkpy::float64>& values) {
+    m.def("array", [](const std::vector<float64>& values) {
         return std::unique_ptr<ndarray_base>(new ndarray_float(values));
     });
-    m.def("array", [](const std::vector<std::vector<pkpy::float64>>& values) {
+    m.def("array", [](const std::vector<std::vector<float64>>& values) {
         return std::unique_ptr<ndarray_base>(new ndarray_float(values));
     });
-    m.def("array", [](const std::vector<std::vector<std::vector<pkpy::float64>>>& values) {
+    m.def("array", [](const std::vector<std::vector<std::vector<float64>>>& values) {
         return std::unique_ptr<ndarray_base>(new ndarray_float(values));
     });
-    m.def("array", [](const std::vector<std::vector<std::vector<std::vector<pkpy::float64>>>>& values) {
+    m.def("array", [](const std::vector<std::vector<std::vector<std::vector<float64>>>>& values) {
         return std::unique_ptr<ndarray_base>(new ndarray_float(values));
     });
-    m.def("array", [](const std::vector<std::vector<std::vector<std::vector<std::vector<pkpy::float64>>>>>& values) {
+    m.def("array", [](const std::vector<std::vector<std::vector<std::vector<std::vector<float64>>>>>& values) {
         return std::unique_ptr<ndarray_base>(new ndarray_float(values));
     });
 
     // Array Creation Functions
     m.def("array", [](const std::vector<int>& init_list, const std::vector<int>& shape) {
-        return std::unique_ptr<ndarray_base>(new ndarray_int(pkpy::array<int>(init_list, shape)));
+        return std::unique_ptr<ndarray_base>(new ndarray_int(pkpy::numpy::array<int>(init_list, shape)));
     });
-    m.def("array", [](const std::vector<pkpy::float64>& init_list, const std::vector<int>& shape) {
-        return std::unique_ptr<ndarray_base>(new ndarray_float(pkpy::array<pkpy::float64>(init_list, shape)));
+    m.def("array", [](const std::vector<float64>& init_list, const std::vector<int>& shape) {
+        return std::unique_ptr<ndarray_base>(new ndarray_float(pkpy::numpy::array<float64>(init_list, shape)));
     });
     m.def("ones", [](const std::vector<int>& shape) {
-        return std::unique_ptr<ndarray_base>(new ndarray_float(pkpy::ones<pkpy::float64>(shape)));
+        return std::unique_ptr<ndarray_base>(new ndarray_float(pkpy::numpy::ones<float64>(shape)));
     });
     m.def("zeros", [](const std::vector<int>& shape) {
-        return std::unique_ptr<ndarray_base>(new ndarray_float(pkpy::zeros<pkpy::float64>(shape)));
+        return std::unique_ptr<ndarray_base>(new ndarray_float(pkpy::numpy::zeros<float64>(shape)));
     });
     m.def("full", [](const std::vector<int>& shape, int value) {
-        return std::unique_ptr<ndarray_base>(new ndarray_int(pkpy::full<int>(shape, value)));
+        return std::unique_ptr<ndarray_base>(new ndarray_int(pkpy::numpy::full<int>(shape, value)));
     });
-    m.def("full", [](const std::vector<int>& shape, pkpy::float64 value) {
-        return std::unique_ptr<ndarray_base>(new ndarray_float(pkpy::full<pkpy::float64>(shape, value)));
+    m.def("full", [](const std::vector<int>& shape, float64 value) {
+        return std::unique_ptr<ndarray_base>(new ndarray_float(pkpy::numpy::full<float64>(shape, value)));
     });
     m.def("identity", [](int n) {
-        return std::unique_ptr<ndarray_base>(new ndarray_float(pkpy::identity<pkpy::float64>(n)));
+        return std::unique_ptr<ndarray_base>(new ndarray_float(pkpy::numpy::identity<float64>(n)));
     });
     m.def("arange", [](int stop) {
-        return std::unique_ptr<ndarray_base>(new ndarray_int(pkpy::arange<int>(0, stop)));
+        return std::unique_ptr<ndarray_base>(new ndarray_int(pkpy::numpy::arange<int>(0, stop)));
     });
     m.def("arange", [](int start, int stop) {
-        return std::unique_ptr<ndarray_base>(new ndarray_int(pkpy::arange<int>(start, stop)));
+        return std::unique_ptr<ndarray_base>(new ndarray_int(pkpy::numpy::arange<int>(start, stop)));
     });
     m.def("arange", [](int start, int stop, int step) {
-        return std::unique_ptr<ndarray_base>(new ndarray_int(pkpy::arange<int>(start, stop, step)));
+        return std::unique_ptr<ndarray_base>(new ndarray_int(pkpy::numpy::arange<int>(start, stop, step)));
     });
-    m.def("arange", [](pkpy::float64 stop) {
-        return std::unique_ptr<ndarray_base>(new ndarray_float(pkpy::arange<pkpy::float64>(0, stop)));
+    m.def("arange", [](float64 stop) {
+        return std::unique_ptr<ndarray_base>(new ndarray_float(pkpy::numpy::arange<float64>(0, stop)));
     });
-    m.def("arange", [](pkpy::float64 start, pkpy::float64 stop) {
-        return std::unique_ptr<ndarray_base>(new ndarray_float(pkpy::arange<pkpy::float64>(start, stop)));
+    m.def("arange", [](float64 start, float64 stop) {
+        return std::unique_ptr<ndarray_base>(new ndarray_float(pkpy::numpy::arange<float64>(start, stop)));
     });
-    m.def("arange", [](pkpy::float64 start, pkpy::float64 stop, pkpy::float64 step) {
-        return std::unique_ptr<ndarray_base>(new ndarray_float(pkpy::arange<pkpy::float64>(start, stop, step)));
+    m.def("arange", [](float64 start, float64 stop, float64 step) {
+        return std::unique_ptr<ndarray_base>(new ndarray_float(pkpy::numpy::arange<float64>(start, stop, step)));
     });
-    m.def("linspace", [](pkpy::float64 start, pkpy::float64 stop, int num, bool endpoint) {
-        return std::unique_ptr<ndarray_base>(new ndarray_float(pkpy::linspace(start, stop, num, endpoint)));
+    m.def("linspace", [](float64 start, float64 stop, int num, bool endpoint) {
+        return std::unique_ptr<ndarray_base>(new ndarray_float(pkpy::numpy::linspace(start, stop, num, endpoint)));
     }, py::arg("start"), py::arg("stop"), py::arg("num") = 50, py::arg("endpoint") = true);
 
     // Trigonometric Functions
     m.def("sin", [](const ndarray_base& arr) {
         if(auto p = dynamic_cast<const ndarray<int>*>(&arr)){
-            return std::unique_ptr<ndarray_base>(new ndarray<pkpy::float64>(pkpy::sin(p->data)));
-        } else if(auto p = dynamic_cast<const ndarray<pkpy::float64>*>(&arr)){
-            return std::unique_ptr<ndarray_base>(new ndarray<pkpy::float64>(pkpy::sin(p->data)));
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::sin(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<float64>*>(&arr)){
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::sin(p->data)));
         }
         throw std::invalid_argument("Invalid dtype");
     });
     m.def("cos", [](const ndarray_base& arr) {
         if(auto p = dynamic_cast<const ndarray<int>*>(&arr)){
-            return std::unique_ptr<ndarray_base>(new ndarray<pkpy::float64>(pkpy::cos(p->data)));
-        } else if(auto p = dynamic_cast<const ndarray<pkpy::float64>*>(&arr)){
-            return std::unique_ptr<ndarray_base>(new ndarray<pkpy::float64>(pkpy::cos(p->data)));
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::cos(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<float64>*>(&arr)){
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::cos(p->data)));
         }
         throw std::invalid_argument("Invalid dtype");
     });
     m.def("tan", [](const ndarray_base& arr) {
         if(auto p = dynamic_cast<const ndarray<int>*>(&arr)){
-            return std::unique_ptr<ndarray_base>(new ndarray<pkpy::float64>(pkpy::tan(p->data)));
-        } else if(auto p = dynamic_cast<const ndarray<pkpy::float64>*>(&arr)){
-            return std::unique_ptr<ndarray_base>(new ndarray<pkpy::float64>(pkpy::tan(p->data)));
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::tan(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<float64>*>(&arr)){
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::tan(p->data)));
         }
         throw std::invalid_argument("Invalid dtype");
     });
     m.def("arcsin", [](const ndarray_base& arr) {
         if(auto p = dynamic_cast<const ndarray<int>*>(&arr)){
-            return std::unique_ptr<ndarray_base>(new ndarray<pkpy::float64>(pkpy::arcsin(p->data)));
-        } else if(auto p = dynamic_cast<const ndarray<pkpy::float64>*>(&arr)){
-            return std::unique_ptr<ndarray_base>(new ndarray<pkpy::float64>(pkpy::arcsin(p->data)));
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::arcsin(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<float64>*>(&arr)){
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::arcsin(p->data)));
         }
         throw std::invalid_argument("Invalid dtype");
     });
     m.def("arccos", [](const ndarray_base& arr) {
         if(auto p = dynamic_cast<const ndarray<int>*>(&arr)){
-            return std::unique_ptr<ndarray_base>(new ndarray<pkpy::float64>(pkpy::arccos(p->data)));
-        } else if(auto p = dynamic_cast<const ndarray<pkpy::float64>*>(&arr)){
-            return std::unique_ptr<ndarray_base>(new ndarray<pkpy::float64>(pkpy::arccos(p->data)));
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::arccos(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<float64>*>(&arr)){
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::arccos(p->data)));
         }
         throw std::invalid_argument("Invalid dtype");
     });
     m.def("arctan", [](const ndarray_base& arr) {
         if(auto p = dynamic_cast<const ndarray<int>*>(&arr)){
-            return std::unique_ptr<ndarray_base>(new ndarray<pkpy::float64>(pkpy::arctan(p->data)));
-        } else if(auto p = dynamic_cast<const ndarray<pkpy::float64>*>(&arr)){
-            return std::unique_ptr<ndarray_base>(new ndarray<pkpy::float64>(pkpy::arctan(p->data)));
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::arctan(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<float64>*>(&arr)){
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::arctan(p->data)));
         }
         throw std::invalid_argument("Invalid dtype");
     });
@@ -768,33 +768,33 @@ PYBIND11_MODULE(numpy_bindings, m) {
     // Exponential and Logarithmic Functions
     m.def("exp", [](const ndarray_base& arr) {
         if(auto p = dynamic_cast<const ndarray<int>*>(&arr)){
-            return std::unique_ptr<ndarray_base>(new ndarray<pkpy::float64>(pkpy::exp(p->data)));
-        } else if(auto p = dynamic_cast<const ndarray<pkpy::float64>*>(&arr)){
-            return std::unique_ptr<ndarray_base>(new ndarray<pkpy::float64>(pkpy::exp(p->data)));
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::exp(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<float64>*>(&arr)){
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::exp(p->data)));
         }
         throw std::invalid_argument("Invalid dtype");
     });
     m.def("log", [](const ndarray_base& arr) {
         if(auto p = dynamic_cast<const ndarray<int>*>(&arr)){
-            return std::unique_ptr<ndarray_base>(new ndarray<pkpy::float64>(pkpy::log(p->data)));
-        } else if(auto p = dynamic_cast<const ndarray<pkpy::float64>*>(&arr)){
-            return std::unique_ptr<ndarray_base>(new ndarray<pkpy::float64>(pkpy::log(p->data)));
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::log(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<float64>*>(&arr)){
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::log(p->data)));
         }
         throw std::invalid_argument("Invalid dtype");
     });
     m.def("log2", [](const ndarray_base& arr) {
         if(auto p = dynamic_cast<const ndarray<int>*>(&arr)){
-            return std::unique_ptr<ndarray_base>(new ndarray<pkpy::float64>(pkpy::log2(p->data)));
-        } else if(auto p = dynamic_cast<const ndarray<pkpy::float64>*>(&arr)){
-            return std::unique_ptr<ndarray_base>(new ndarray<pkpy::float64>(pkpy::log2(p->data)));
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::log2(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<float64>*>(&arr)){
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::log2(p->data)));
         }
         throw std::invalid_argument("Invalid dtype");
     });
     m.def("log10", [](const ndarray_base& arr) {
         if(auto p = dynamic_cast<const ndarray<int>*>(&arr)){
-            return std::unique_ptr<ndarray_base>(new ndarray<pkpy::float64>(pkpy::log10(p->data)));
-        } else if(auto p = dynamic_cast<const ndarray<pkpy::float64>*>(&arr)){
-            return std::unique_ptr<ndarray_base>(new ndarray<pkpy::float64>(pkpy::log10(p->data)));
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::log10(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<float64>*>(&arr)){
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::log10(p->data)));
         }
         throw std::invalid_argument("Invalid dtype");
     });
@@ -802,48 +802,48 @@ PYBIND11_MODULE(numpy_bindings, m) {
     // Miscellaneous Functions
     m.def("round", [](const ndarray_base& arr) {
         if(auto p = dynamic_cast<const ndarray<int>*>(&arr)){
-            return std::unique_ptr<ndarray_base>(new ndarray<int>(pkpy::round(p->data)));
-        } else if(auto p = dynamic_cast<const ndarray<pkpy::float64>*>(&arr)){
-            return std::unique_ptr<ndarray_base>(new ndarray<pkpy::float64>(pkpy::round(p->data)));
+            return std::unique_ptr<ndarray_base>(new ndarray<int>(pkpy::numpy::round(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<float64>*>(&arr)){
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::round(p->data)));
         }
         throw std::invalid_argument("Invalid dtype");
     });
     m.def("floor", [](const ndarray_base& arr) {
         if(auto p = dynamic_cast<const ndarray<int>*>(&arr)){
-            return std::unique_ptr<ndarray_base>(new ndarray<int>(pkpy::floor(p->data)));
-        } else if(auto p = dynamic_cast<const ndarray<pkpy::float64>*>(&arr)){
-            return std::unique_ptr<ndarray_base>(new ndarray<pkpy::float64>(pkpy::floor(p->data)));
+            return std::unique_ptr<ndarray_base>(new ndarray<int>(pkpy::numpy::floor(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<float64>*>(&arr)){
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::floor(p->data)));
         }
         throw std::invalid_argument("Invalid dtype");
     });
     m.def("ceil", [](const ndarray_base& arr) {
         if(auto p = dynamic_cast<const ndarray<int>*>(&arr)){
-            return std::unique_ptr<ndarray_base>(new ndarray<int>(pkpy::ceil(p->data)));
-        } else if(auto p = dynamic_cast<const ndarray<pkpy::float64>*>(&arr)){
-            return std::unique_ptr<ndarray_base>(new ndarray<pkpy::float64>(pkpy::ceil(p->data)));
+            return std::unique_ptr<ndarray_base>(new ndarray<int>(pkpy::numpy::ceil(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<float64>*>(&arr)){
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::ceil(p->data)));
         }
         throw std::invalid_argument("Invalid dtype");
     });
     m.def("abs", [](const ndarray_base& arr) {
         if(auto p = dynamic_cast<const ndarray<int>*>(&arr)){
-            return std::unique_ptr<ndarray_base>(new ndarray<int>(pkpy::abs(p->data)));
-        } else if(auto p = dynamic_cast<const ndarray<pkpy::float64>*>(&arr)){
-            return std::unique_ptr<ndarray_base>(new ndarray<pkpy::float64>(pkpy::abs(p->data)));
+            return std::unique_ptr<ndarray_base>(new ndarray<int>(pkpy::numpy::abs(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<float64>*>(&arr)){
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::abs(p->data)));
         }
         throw std::invalid_argument("Invalid dtype");
     });
     m.def("concatenate", [](const ndarray_base& arr1, const ndarray_base& arr2, int axis) {
         if(auto p = dynamic_cast<const ndarray<int>*>(&arr1)){
             if(auto q = dynamic_cast<const ndarray<int>*>(&arr2)){
-                return std::unique_ptr<ndarray_base>(new ndarray<int>(pkpy::concatenate(p->data, q->data, axis)));
-            } else if(auto q = dynamic_cast<const ndarray<pkpy::float64>*>(&arr2)){
-                return std::unique_ptr<ndarray_base>(new ndarray<pkpy::float64>(pkpy::concatenate(p->data, q->data, axis)));
+                return std::unique_ptr<ndarray_base>(new ndarray<int>(pkpy::numpy::concatenate(p->data, q->data, axis)));
+            } else if(auto q = dynamic_cast<const ndarray<float64>*>(&arr2)){
+                return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::concatenate(p->data, q->data, axis)));
             }
-        } else if(auto p = dynamic_cast<const ndarray<pkpy::float64>*>(&arr1)){
+        } else if(auto p = dynamic_cast<const ndarray<float64>*>(&arr1)){
             if(auto q = dynamic_cast<const ndarray<int>*>(&arr2)){
-                return std::unique_ptr<ndarray_base>(new ndarray<pkpy::float64>(pkpy::concatenate(p->data, q->data, axis)));
-            } else if(auto q = dynamic_cast<const ndarray<pkpy::float64>*>(&arr2)){
-                return std::unique_ptr<ndarray_base>(new ndarray<pkpy::float64>(pkpy::concatenate(p->data, q->data, axis)));
+                return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::concatenate(p->data, q->data, axis)));
+            } else if(auto q = dynamic_cast<const ndarray<float64>*>(&arr2)){
+                return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::concatenate(p->data, q->data, axis)));
             }
         }
         throw std::invalid_argument("Invalid dtype");
