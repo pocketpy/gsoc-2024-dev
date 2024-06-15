@@ -26,6 +26,7 @@ inline void finalize() {
     if(_capsules != nullptr) {
         for(auto& [ptr, fn]: *_capsules)
             fn(ptr);
+        delete _capsules;
         _capsules = nullptr;
     }
 

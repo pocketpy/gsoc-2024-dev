@@ -246,7 +246,9 @@ struct template_parser<Callable, std::tuple<Extras...>, std::tuple<Args...>, std
         constexpr auto policy_pos = type_index_v<return_value_policy, Extras...>;
 
         constexpr auto named_argc = types_count_v<arg, Extras...>;
-        static_assert(named_argc == 0 || named_argc == sizeof...(Args),
+        constexpr auto normal_argc =
+            sizeof...(Args) - (arguments_info.args_pos != -1) - (arguments_info.kwargs_pos != -1);
+        static_assert(named_argc == 0 || named_argc == normal_argc,
                       "named arguments must be the same as the number of function arguments");
 
         return {doc_pos, named_argc, policy_pos};
@@ -304,7 +306,7 @@ struct template_parser<Callable, std::tuple<Extras...>, std::tuple<Args...>, std
 
         // pack the args
         if constexpr(args_pos != -1) {
-            const auto n = view.size() - normal_argc;
+            const auto n = std::max(view.size() - normal_argc, 0);
             tuple args = tuple(n);
             for(std::size_t i = 0; i < n; ++i) {
                 args[i] = view[normal_argc + i];
@@ -341,6 +343,9 @@ struct template_parser<Callable, std::tuple<Extras...>, std::tuple<Args...>, std
             }
             stack[kwargs_pos] = kwargs;
         }
+
+        // if have rest keyword arguments, call fails
+        if(index != n) { return handle(); }
 
         // check if all the arguments are valid
         for(std::size_t i = 0; i < argc; ++i) {
