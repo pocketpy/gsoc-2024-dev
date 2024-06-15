@@ -102,14 +102,14 @@ public:
     }
     template <typename U>
     auto binary_operator_add_impl(const U& other) const {
-        using result_type = std::common_type_t<T, U>;
-        xt::xarray<result_type> result = xt::cast<result_type>(_array) + other;
-        return ndarray<result_type>(result);
-    }
-    template <>
-    auto binary_operator_add_impl(const float_& other) const {
-        xt::xarray<float_> result = xt::cast<float_>(_array) + other;
-        return ndarray<float_>(result);
+        if constexpr (std::is_same_v<U, float_>) {
+            xt::xarray<float_> result = xt::cast<float_>(_array) + other;
+            return ndarray<float_>(result);
+        } else {
+            using result_type = std::common_type_t<T, U>;
+            xt::xarray<result_type> result = xt::cast<result_type>(_array) + other;
+            return ndarray<result_type>(result);   
+        }
     }
 
     template <typename U>
@@ -124,14 +124,14 @@ public:
     }
     template <typename U>
     auto binary_operator_sub_impl(const U& other) const {
-        using result_type = std::common_type_t<T, U>;
-        xt::xarray<result_type> result = xt::cast<result_type>(_array) - other;
-        return ndarray<result_type>(result);
-    }
-    template <>
-    auto binary_operator_sub_impl(const float_& other) const {
-        xt::xarray<float_> result = xt::cast<float_>(_array) - other;
-        return ndarray<float_>(result);
+        if constexpr (std::is_same_v<U, float_>) {
+            xt::xarray<float_> result = xt::cast<float_>(_array) - other;
+            return ndarray<float_>(result);
+        } else {
+            using result_type = std::common_type_t<T, U>;
+            xt::xarray<result_type> result = xt::cast<result_type>(_array) - other;
+            return ndarray<result_type>(result);
+        }
     }
 
     template <typename U>
@@ -178,14 +178,14 @@ public:
     }
     template <typename U>
     auto pow_impl(const U& other) const {
-        using result_type = std::common_type_t<T, U>;
-        xt::xarray<result_type> result = xt::pow(xt::cast<result_type>(_array), other);
-        return ndarray<result_type>(result);
-    }
-    template <>
-    auto pow_impl(const float_& other) const {
-        xt::xarray<float_> result = xt::pow(xt::cast<float_>(_array), other);
-        return ndarray<float_>(result);
+        if constexpr (std::is_same_v<U, float_>) {
+            xt::xarray<float_> result = xt::pow(xt::cast<float_>(_array), other);
+            return ndarray<float_>(result);
+        } else {
+            using result_type = std::common_type_t<T, U>;
+            xt::xarray<result_type> result = xt::pow(xt::cast<result_type>(_array), other);
+            return ndarray<result_type>(result);
+        }
     }
 
     template <typename U>
