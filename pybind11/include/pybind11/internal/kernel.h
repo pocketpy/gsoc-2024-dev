@@ -50,7 +50,7 @@ template <typename T>
 constexpr inline bool need_host = !(std::is_trivially_copyable_v<T> && (sizeof(T) <= 8));
 
 template <typename T>
-T& unpack(pkpy::ArgsView view) {
+decltype(auto) unpack(pkpy::ArgsView view) {
     if constexpr(need_host<T>) {
         void* data = pkpy::lambda_get_userdata<void*>(view.begin());
         return *static_cast<T*>(data);

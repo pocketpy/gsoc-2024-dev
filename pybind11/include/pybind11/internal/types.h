@@ -6,6 +6,19 @@ namespace pybind11 {
 template <typename T>
 handle cast(T&& value, return_value_policy policy = return_value_policy::automatic_reference, handle parent = {});
 
+struct arg {
+    const char* name;
+    handle default_ = {};
+
+    arg(const char* name) : name(name) {}
+
+    template <typename T>
+    arg& operator= (T&& value) {
+        default_ = cast(std::forward<T>(value));
+        return *this;
+    }
+};
+
 // undef in pybind11.h
 #define PYBIND11_REGISTER_INIT(func)                                                                                   \
     static inline int _register = [] {                                                                                 \
@@ -191,6 +204,12 @@ public:
     }
 };
 
+class slice : public object {
+    PYBIND11_TYPE_IMPLEMENT(object, pkpy::Slice, vm->tp_slice);
+
+public:
+};
+
 // class set : public object {
 // public:
 //     using object::object;
@@ -203,6 +222,14 @@ class dict : public object {
 
 public:
     dict() : object(create()) {}
+
+    template <typename... Args, typename = std::enable_if_t<(std::is_same_v<remove_cvref_t<Args>, arg> && ...)>>
+    dict(Args&&... args) : object(create()) {
+        auto foreach_ = [&](pybind11::arg& arg) {
+            value().set(vm, str(arg.name).ptr(), arg.default_.ptr());
+        };
+        (foreach_(args), ...);
+    }
 
     int size() const { return value().size(); }
 
@@ -220,24 +247,34 @@ public:
     dict_accessor operator[] (const handle& key) const;
 
     struct iterator {
-        pkpy::Dict::Item* items;
-        int index;
+        pkpy_DictIter iter;
+        std::pair<handle, handle> value;
 
         iterator operator++ () {
-            index = items[index].next;
+            bool is_ended = pkpy_DictIter__next(&iter, (pkpy_Var*)&value.first, (pkpy_Var*)&value.second);
+            if(!is_ended) {
+                iter._dict = nullptr;
+                iter._index = -1;
+            }
             return *this;
         }
 
-        std::pair<handle, handle> operator* () const { return {items[index].first, items[index].second}; }
+        const std::pair<handle, handle>& operator* () const { return value; }
 
-        bool operator== (const iterator& other) const { return items == other.items && index == other.index; }
+        bool operator== (const iterator& other) const {
+            return iter._dict == other.iter._dict && iter._index == other.iter._index;
+        }
 
         bool operator!= (const iterator& other) const { return !(*this == other); }
     };
 
-    iterator begin() const { return {value()._items, value()._head_idx}; }
+    iterator begin() const {
+        iterator iter{value().iter(), {}};
+        ++iter;
+        return iter;
+    }
 
-    iterator end() const { return {value()._items, -1}; }
+    iterator end() const { return {nullptr, -1}; }
 };
 
 class function : public object {

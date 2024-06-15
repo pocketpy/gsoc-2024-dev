@@ -27,7 +27,6 @@ TEST_F(PYBIND11_TEST, str) {
 
     EXPECT_EQ(obj, obj2);
 
-    EXPECT_STREQ(obj.cast<char*>(), "123");
     EXPECT_STREQ(obj.cast<const char*>(), "123");
     EXPECT_EQ(obj.cast<std::string>(), "123");
     EXPECT_EQ(obj.cast<std::string_view>(), "123");

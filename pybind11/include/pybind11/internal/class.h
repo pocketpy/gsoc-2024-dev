@@ -76,7 +76,7 @@ public:
     template <typename Fn, typename... Extra>
     class_& def(const char* name, Fn&& f, const Extra&... extra) {
         using first = std::tuple_element_t<0, callable_args_t<remove_cvref_t<Fn>>>;
-        constexpr bool is_first_base_of_v = std::is_reference_v<first> && std::is_base_of_v<T, remove_cvref_t<first>>;
+        constexpr bool is_first_base_of_v = std::is_base_of_v<remove_cvref_t<first>, T>;
 
         if constexpr(!is_first_base_of_v) {
             static_assert(is_first_base_of_v,

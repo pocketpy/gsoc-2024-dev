@@ -18,19 +18,6 @@ struct prepend {};
 template <typename... Args>
 struct init {};
 
-struct arg {
-    const char* name;
-    handle default_ = {};
-
-    arg(const char* name) : name(name) {}
-
-    template <typename T>
-    arg& operator= (T&& value) {
-        default_ = cast(std::forward<T>(value));
-        return *this;
-    }
-};
-
 // TODO: support more customized tags
 // struct kw_only {};
 //
@@ -365,7 +352,7 @@ struct template_parser<Callable, std::tuple<Extras...>, std::tuple<Args...>, std
 };
 
 inline auto _wrapper(pkpy::VM* vm, pkpy::ArgsView view) {
-    auto& record = unpack<function_record>(view);
+    auto&& record = unpack<function_record>(view);
     return record(view).ptr();
 }
 
@@ -387,12 +374,13 @@ handle bind_function(const handle& obj, const char* name, Fn&& fn, pkpy::BindTyp
         constexpr bool is_prepend = (types_count_v<prepend, Extras...> != 0);
         if constexpr(is_prepend) {
             // if prepend is specified, append the new record to the beginning of the list
-            function_record* last = (function_record*)userdata.data;
-            userdata.data = record;
+            auto& userdata = callable.obj_get<pkpy::NativeFunc>()._userdata;
+            function_record* last = userdata.as<function_record*>();
+            userdata = record;
             record->append(last);
         } else {
             // otherwise, append the new record to the end of the list
-            function_record* last = (function_record*)userdata.data;
+            function_record* last = userdata.as<function_record*>();
             last->append(record);
         }
     }
@@ -407,7 +395,7 @@ namespace pybind11::impl {
 template <typename Getter>
 pkpy::PyVar getter_wrapper(pkpy::VM* vm, pkpy::ArgsView view) {
     handle result = vm->None;
-    auto& getter = unpack<Getter>(view);
+    auto&& getter = unpack<Getter>(view);
     constexpr auto policy = return_value_policy::reference_internal;
 
     if constexpr(std::is_member_pointer_v<Getter>) {
@@ -434,7 +422,7 @@ pkpy::PyVar getter_wrapper(pkpy::VM* vm, pkpy::ArgsView view) {
 
 template <typename Setter>
 pkpy::PyVar setter_wrapper(pkpy::VM* vm, pkpy::ArgsView view) {
-    auto& setter = unpack<Setter>(view);
+    auto&& setter = unpack<Setter>(view);
 
     if constexpr(std::is_member_pointer_v<Setter>) {
         using Self = class_type_t<Setter>;

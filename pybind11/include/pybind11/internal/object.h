@@ -26,6 +26,7 @@ public:
 
     attr_accessor attr(const char* key) const;
     attr_accessor attr(const handle& key) const;
+    attr_accessor doc() const;
 
     item_accessor operator[] (int index) const;
     item_accessor operator[] (const char* key) const;

@@ -8,8 +8,8 @@ using pkpy::is_floating_point_v;
 using pkpy::is_integral_v;
 
 template <typename T>
-constexpr inline bool is_string_v = std::is_same_v<T, char*> || std::is_same_v<T, const char*> ||
-                                    std::is_same_v<T, std::string> || std::is_same_v<T, std::string_view>;
+constexpr inline bool is_string_v =
+    std::is_same_v<T, const char*> || std::is_same_v<T, std::string> || std::is_same_v<T, std::string_view>;
 
 template <typename T>
 constexpr bool is_pointer_v = std::is_pointer_v<T> && !std::is_same_v<T, char*> && !std::is_same_v<T, const char*>;
@@ -82,10 +82,8 @@ struct type_caster<T, std::enable_if_t<is_string_v<T>>> {
                 value = str;
             } else if constexpr(std::is_same_v<T, std::string_view>) {
                 value = str;
-            } else if constexpr(std::is_same_v<T, char*>) {
-                value = str.data;
             } else if constexpr(std::is_same_v<T, const char*>) {
-                value = str.data;
+                value = str.c_str();
             }
             return true;
         }

@@ -126,6 +126,11 @@ inline attr_accessor interface<Derived>::attr(const handle& key) const {
 }
 
 template <typename Derived>
+inline attr_accessor interface<Derived>::doc() const {
+    return attr_accessor(this->ptr(), pkpy::StrName("__doc__"));
+}
+
+template <typename Derived>
 inline item_accessor interface<Derived>::operator[] (int index) const {
     return item_accessor(this->ptr(), int_(index));
 }

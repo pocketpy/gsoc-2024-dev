@@ -114,6 +114,22 @@ TEST_F(PYBIND11_TEST, default_with_args_and_kwargs) {
     EXPECT_EVAL_EQ("cal(1, 4, 5, 6, 7, d=8, e=9)", 40);  // a = 1, b = 4, c = 5, args = (6, 7), kwargs = {d=8, e=9}
 }
 
+TEST_F(PYBIND11_TEST, overload) {
+    auto m = py::module_::__main__();
+
+    // test for binding function with overloads
+    m.def("cal", [](int a, int b) {
+        return a + b;
+    });
+
+    m.def("cal", [](int a, int b, int c) {
+        return a + b + c;
+    });
+
+    EXPECT_EVAL_EQ("cal(1, 2)", 3);
+    EXPECT_EVAL_EQ("cal(1, 2, 3)", 6);
+}
+
 TEST_F(PYBIND11_TEST, return_value_policy) {
     static int copy_constructor_calls = 0;
     static int move_constructor_calls = 0;
