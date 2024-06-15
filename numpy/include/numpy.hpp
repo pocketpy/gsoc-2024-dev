@@ -105,10 +105,11 @@ public:
         if constexpr (std::is_same_v<U, float_>) {
             xt::xarray<float_> result = xt::cast<float_>(_array) + other;
             return ndarray<float_>(result);
+        } else {
+            using result_type = std::common_type_t<T, U>;
+            xt::xarray<result_type> result = xt::cast<result_type>(_array) + other;
+            return ndarray<result_type>(result);   
         }
-        using result_type = std::common_type_t<T, U>;
-        xt::xarray<result_type> result = xt::cast<result_type>(_array) + other;
-        return ndarray<result_type>(result);
     }
 
     template <typename U>
@@ -126,10 +127,11 @@ public:
         if constexpr (std::is_same_v<U, float_>) {
             xt::xarray<float_> result = xt::cast<float_>(_array) - other;
             return ndarray<float_>(result);
+        } else {
+            using result_type = std::common_type_t<T, U>;
+            xt::xarray<result_type> result = xt::cast<result_type>(_array) - other;
+            return ndarray<result_type>(result);
         }
-        using result_type = std::common_type_t<T, U>;
-        xt::xarray<result_type> result = xt::cast<result_type>(_array) - other;
-        return ndarray<result_type>(result);
     }
 
     template <typename U>
@@ -179,10 +181,11 @@ public:
         if constexpr (std::is_same_v<U, float_>) {
             xt::xarray<float_> result = xt::pow(xt::cast<float_>(_array), other);
             return ndarray<float_>(result);
+        } else {
+            using result_type = std::common_type_t<T, U>;
+            xt::xarray<result_type> result = xt::pow(xt::cast<result_type>(_array), other);
+            return ndarray<result_type>(result);
         }
-        using result_type = std::common_type_t<T, U>;
-        xt::xarray<result_type> result = xt::pow(xt::cast<result_type>(_array), other);
-        return ndarray<result_type>(result);
     }
 
     template <typename U>
