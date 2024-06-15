@@ -83,7 +83,7 @@ TEST_F(PYBIND11_TEST, default_with_args_and_kwargs) {
                 sum += arg.cast<int>();
             }
             for(auto item: kwargs) {
-                sum += kwargs[item].cast<int>();
+                sum += item.second.cast<int>();
             }
             return sum;
         },

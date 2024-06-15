@@ -117,12 +117,12 @@ struct type_caster<T, std::enable_if_t<is_py_map_like_v<T>>> {
         if(!isinstance<dict>(src)) { return false; }
         auto dict = src.cast<pybind11::dict>();
 
-        for(auto& item: dict) {
+        for(auto item: dict) {
             type_caster<typename T::key_type> key_caster;
-            if(!key_caster.load(item, convert)) { return false; }
+            if(!key_caster.load(item.first, convert)) { return false; }
 
             type_caster<typename T::mapped_type> value_caster;
-            if(!value_caster.load(dict[item], convert)) { return false; }
+            if(!value_caster.load(item.second, convert)) { return false; }
 
             value.container.try_emplace(key_caster.value, value_caster.value);
         }

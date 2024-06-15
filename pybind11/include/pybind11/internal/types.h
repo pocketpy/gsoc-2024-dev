@@ -210,9 +210,34 @@ public:
 
     void clear() { value().clear(); }
 
+    template <typename Key>
+    bool contains(Key&& key) const {
+        return value().contains(vm, pybind11::cast(std::forward<Key>(key)).ptr());
+    }
+
     dict_accessor operator[] (int index) const;
     dict_accessor operator[] (std::string_view) const;
     dict_accessor operator[] (const handle& key) const;
+
+    struct iterator {
+        pkpy::Dict::Item* items;
+        int index;
+
+        iterator operator++ () {
+            index = items[index].next;
+            return *this;
+        }
+
+        std::pair<handle, handle> operator* () const { return {items[index].first, items[index].second}; }
+
+        bool operator== (const iterator& other) const { return items == other.items && index == other.index; }
+
+        bool operator!= (const iterator& other) const { return !(*this == other); }
+    };
+
+    iterator begin() const { return {value()._items, value()._head_idx}; }
+
+    iterator end() const { return {value()._items, -1}; }
 };
 
 class function : public object {
