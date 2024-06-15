@@ -66,11 +66,10 @@ public:
         other.parent = nullptr;
     }
 
-    template <typename T>
-    static pkpy::PyVar create(pkpy::Type type) {
+    static pkpy::PyVar create(pkpy::Type type, const type_info* info) noexcept {
         instance instance;
-        instance.type = &type_info::of<T>();
-        instance.data = operator new (sizeof(T));
+        instance.type = info;
+        instance.data = operator new (info->size);
         instance.flag = Flag::Own;
         return vm->new_object<pybind11::instance>(type, std::move(instance));
     }

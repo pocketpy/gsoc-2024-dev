@@ -110,6 +110,8 @@ TEST_F(PYBIND11_TEST, default_with_args_and_kwargs) {
 
     EXPECT_EVAL_EQ("cal(1, 4, 5)", 10);             // a = 1, b = 4, c = 5, args = (), kwargs = {}
     EXPECT_EVAL_EQ("cal(1, 4, 5, *[], **{})", 10);  // a = 1, b = 4, c = 5, args = (), kwargs = {}
+
+    EXPECT_EVAL_EQ("cal(1, 4, 5, 6, 7, d=8, e=9)", 40);  // a = 1, b = 4, c = 5, args = (6, 7), kwargs = {d=8, e=9}
 }
 
 TEST_F(PYBIND11_TEST, return_value_policy) {

@@ -10,17 +10,21 @@ namespace pybind11 {
 // 2. virtual function
 // 3. factory function
 
-template <typename T, typename... Others>
+template <typename T, typename Base = void>
 class class_ : public type {
 protected:
     handle m_scope;
 
     static handle new_type(const handle& scope, const char* name) {
-        return vm->new_type_object(scope.ptr().get(),
-                                   name,
-                                   vm->tp_object,
-                                   false,
-                                   pkpy::PyTypeInfo::Vt::get<instance>());
+        pkpy::Type type = vm->tp_object;
+        pkpy::PyTypeInfo::Vt vt = pkpy::PyTypeInfo::Vt::get<instance>();
+        if constexpr(!std::is_same_v<Base, void>) {
+            type = type_visitor::type<Base>();
+            vt = {};
+        }
+        auto mod = scope.ptr().get();
+
+        return vm->new_type_object(mod, name, type, true, vt);
     }
 
 public:
@@ -46,7 +50,7 @@ public:
                 vm->RuntimeError("Bound class must have constructor");
             }
 
-            return instance::create<T>(cls);
+            return instance::create(cls, &type_info::of<T>());
         });
     }
 

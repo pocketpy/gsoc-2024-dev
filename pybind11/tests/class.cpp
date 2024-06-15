@@ -112,9 +112,67 @@ assert l.end.stringfy() == '(4, 5, 6)'
     EXPECT_EQ(Point::move_constructor_calls, 0);
 }
 
-enum class Color { RED, Yellow, GREEN, BLUE };
+TEST_F(PYBIND11_TEST, inheritance) {
+    static int constructor_calls = 0;
+
+    struct Point {
+        int x;
+        int y;
+
+        Point() : x(0), y(0) { constructor_calls++; }
+
+        Point(int x, int y) : x(x), y(y) { constructor_calls++; }
+    };
+
+    struct Point3D : Point {
+        int z;
+
+        Point3D() : Point(), z(0) { constructor_calls++; }
+
+        Point3D(int x, int y, int z) : Point(x, y), z(z) { constructor_calls++; }
+    };
+
+    py::module_ m = py::module_::import("__main__");
+
+    py::class_<Point>(m, "Point")
+        .def(py::init<>())
+        .def(py::init<int, int>())
+        .def_readwrite("x", &Point::x)
+        .def_readwrite("y", &Point::y);
+
+    py::class_<Point3D, Point>(m, "Point3D")
+        .def(py::init<>())
+        .def(py::init<int, int, int>())
+        .def_readwrite("z", &Point3D::z);
+
+    py::exec(R"(
+p = Point3D()
+assert type(p) == Point3D
+assert p.x == 0
+assert p.y == 0
+assert p.z == 0
+
+p = Point3D(1, 2, 3)
+assert p.x == 1
+assert p.y == 2
+assert p.z == 3
+
+p.x = 10
+p.y = 20
+p.z = 30
+assert p.x == 10
+assert p.y == 20
+assert p.z == 30
+)");
+
+    py::finalize();
+
+    EXPECT_EQ(constructor_calls, 4);
+}
 
 TEST_F(PYBIND11_TEST, enum) {
+    enum class Color { RED, Yellow, GREEN, BLUE };
+
     py::module_ m = py::module_::import("__main__");
 
     py::enum_<Color> color(m, "Color");

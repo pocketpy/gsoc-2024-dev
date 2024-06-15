@@ -8,7 +8,7 @@ This is a feature list of pybind11 for pocketpy. It lists all completed and pend
 - [x] `*args` and `**kwargs`
 - [ ] Keep-alive
 - [ ] Call Guard
-- [ ] Default arguments
+- [x] Default arguments
 - [ ] Keyword-Only arguments
 - [ ] Positional-Only arguments
 - [ ] Allow/Prohibiting None arguments
@@ -18,7 +18,7 @@ This is a feature list of pybind11 for pocketpy. It lists all completed and pend
 - [x] Creating bindings for a custom type
 - [x] Binding lambda functions
 - [ ] Dynamic attributes
-- [ ] Inheritance and automatic downcasting
+- [x] Inheritance and automatic downcasting
 - [x] Enumerations and internal types
 - [ ] Instance and static fields
 
@@ -37,7 +37,7 @@ Need further discussion.
 ## [Type conversions](https://pybind11.readthedocs.io/en/stable/advanced/cast/index.html)
 
 - [x] Python built-in types
-- [ ] STL Containers
+- [x] STL Containers
 - [ ] Functional
 - [ ] Chrono
 
@@ -64,7 +64,7 @@ Need further discussion.
 - [ ] `function`
 - [ ] `buffer`
 - [ ] `memoryview`
-- [ ] `capsule`
+- [x] `capsule`
 
 ## [Miscellaneous](https://pybind11.readthedocs.io/en/stable/advanced/misc.html)
 
