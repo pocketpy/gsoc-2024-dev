@@ -91,7 +91,7 @@ template <typename T>
 T cast(const handle& obj, bool convert) {
     if(!obj) { vm->TypeError("Unable to cast null handle to C++ type."); }
 
-    type_caster<T> caster;
+    type_caster<T> caster = {};
 
     if(caster.load(obj, convert)) { return caster.value; }
 

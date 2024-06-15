@@ -1,6 +1,7 @@
 #include "test.h"
 
-// test for simple struct, all member is built-in type.
+namespace {
+
 struct Point {
     int x;
     int y;
@@ -50,6 +51,8 @@ struct Line {
     Point start;
     Point end;
 };
+
+}  // namespace
 
 namespace py = pybind11;
 

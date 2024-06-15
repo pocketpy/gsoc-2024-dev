@@ -1,6 +1,8 @@
 #include "test.h"
 #include <pybind11/operators.h>
 
+namespace {
+    
 struct Int {
     int x;
 
@@ -48,6 +50,8 @@ struct Int {
 
     bool operator!() const { return !x; }
 };
+
+}  // namespace
 
 TEST_F(PYBIND11_TEST, arithmetic_operators) {
     py::module_ m = py::module_::import("__main__");

@@ -1,6 +1,8 @@
 #include "test.h"
 #include <pybind11/stl.h>
 
+namespace {
+
 int constructor_calls = 0;
 int destructor_calls = 0;
 
@@ -27,6 +29,8 @@ struct Point {
     bool operator== (const Point& p) const { return x == p.x && y == p.y; }
 };
 
+}  // namespace
+
 TEST_F(PYBIND11_TEST, list_like) {
     py::class_<Point>(py::module_::__main__(), "Point")
         .def(py::init<int, int>())
@@ -34,6 +38,7 @@ TEST_F(PYBIND11_TEST, list_like) {
         .def_readwrite("y", &Point::y)
         .def("__eq__", &Point::operator==);
 
+    // array
     {
         std::array<Point, 2> a = {Point(1, 2), Point(3, 4)};
         py::object obj = py::eval("[Point(1, 2), Point(3, 4)]");
@@ -42,6 +47,7 @@ TEST_F(PYBIND11_TEST, list_like) {
         std::array<Point, 2> a2 = obj.cast<std::array<Point, 2>>();
         EXPECT_EQ(a, a2);
     }
+
     // vector
     {
         std::vector<Point> v = {Point(1, 2), Point(3, 4)};
