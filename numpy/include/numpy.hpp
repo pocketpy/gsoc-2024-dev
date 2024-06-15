@@ -64,6 +64,8 @@ REGISTER_DTYPE(std::complex<float64>, "complex128");
 using _Dtype = std::string;
 using _ShapeLike = std::vector<int_>;
 
+namespace numpy {
+
 template <typename T>
 class ndarray {
 public:
@@ -728,4 +730,5 @@ std::ostream& operator<<(std::ostream& os, const ndarray<T>& arr) {
     return os;
 }
 
+} // namespace numpy
 } // namespace pkpy
