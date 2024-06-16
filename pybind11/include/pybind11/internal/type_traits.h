@@ -143,13 +143,20 @@ static_assert(type_index_v<float, int, float, int> == 1);
 static_assert(type_index_v<int, float, double> == -1);
 
 template <typename T>
+constexpr inline bool is_multiple_pointer_v = std::is_pointer_v<T> && is_multiple_pointer_v<std::remove_pointer_t<T>>;
+
+template <typename T>
+using pybind11_decay_t = std::decay_t<std::remove_pointer_t<std::decay_t<T>>>;
+
+template <typename T>
 constexpr auto type_name() {
-    std::string_view name = __PRETTY_FUNCTION__;
 #if __GNUC__ || __clang__
+    std::string_view name = __PRETTY_FUNCTION__;
     std::size_t start = name.find('=') + 2;
     std::size_t end = name.size() - 1;
     return std::string_view{name.data() + start, end - start};
 #elif _MSC_VER
+    std::string_view name = __FUNCSIG__;
     std::size_t start = name.find('<') + 1;
     std::size_t end = name.rfind(">(");
     name = std::string_view{name.data() + start, end - start};

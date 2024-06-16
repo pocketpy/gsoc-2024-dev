@@ -80,32 +80,48 @@ struct type_caster;
 
 template <typename T>
 handle cast(T&& value, return_value_policy policy, handle parent) {
-    if constexpr(std::is_convertible_v<remove_cvref_t<T>, handle>) {
+    // decay_t can resolve c-array type, but remove_cv_ref_t can't.
+    using underlying_type = std::decay_t<T>;
+
+    if constexpr(std::is_convertible_v<underlying_type, handle>) {
         return std::forward<T>(value);
     } else {
-        return type_caster<std::decay_t<T>>::cast(std::forward<T>(value), policy, parent);
+        static_assert(!is_multiple_pointer_v<underlying_type>, "multiple pointer is not supported.");
+        static_assert(!std::is_void_v<std::remove_pointer_t<underlying_type>>,
+                      "void* is not supported, consider using py::capsule.");
+
+        // resolve for automatic policy.
+        if(policy == return_value_policy::automatic) {
+            policy = std::is_pointer_v<underlying_type> ? return_value_policy::take_ownership
+                     : std::is_lvalue_reference_v<T&&>  ? return_value_policy::copy
+                                                        : return_value_policy::move;
+        } else if(policy == return_value_policy::automatic_reference) {
+            policy = std::is_pointer_v<underlying_type> ? return_value_policy::reference
+                     : std::is_lvalue_reference_v<T&&>  ? return_value_policy::copy
+                                                        : return_value_policy::move;
+        }
+
+        return type_caster<underlying_type>::cast(std::forward<T>(value), policy, parent);
     }
 }
 
 template <typename T>
 T cast(const handle& obj, bool convert) {
-    if(!obj) { vm->TypeError("Unable to cast null handle to C++ type."); }
+    assert(obj.ptr() != nullptr);
 
     type_caster<T> caster = {};
 
-    if(caster.load(obj, convert)) { return caster.value; }
-
-    // TODO: improve error message
-    std::string msg = "Unable to cast Python instance to C++ type.";
-    // msg += " obj type: ";
-    // print(type::of(obj).name());
-    // msg += type::of(obj).name();
-    // msg += ", target type: ";
-    // msg += type_name<T>();
-    // msg += ".";
-    print(msg);
-    vm->TypeError(msg);
-    // print("objtype::of(obj));
+    if(caster.load(obj, convert)) {
+        return caster.value;
+    } else {
+        std::string msg = "cast python instance to c++ failed, ";
+        msg += "obj type is: {";
+        msg += type::of(obj).name();
+        msg += "}, target type is: {";
+        msg += type_name<T>();
+        msg += "}.";
+        vm->TypeError(msg);
+    }
 }
 
 template <typename T>

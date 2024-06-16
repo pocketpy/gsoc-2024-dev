@@ -76,7 +76,6 @@ struct type_caster<T, std::enable_if_t<is_string_v<T>>> {
 
     bool load(const handle& src, bool) {
         if(isinstance<pybind11::str>(src)) {
-            // FIXME: support other kinds of string
             auto& str = src._as<pkpy::Str>();
             if constexpr(std::is_same_v<T, std::string>) {
                 value = str;
@@ -91,7 +90,10 @@ struct type_caster<T, std::enable_if_t<is_string_v<T>>> {
         return false;
     }
 
-    static handle cast(const std::string& src, return_value_policy, handle) { return pkpy::py_var(vm, src); }
+    template <typename U>
+    static handle cast(U&& src, return_value_policy, handle) {
+        return str(std::forward<U>(src));
+    }
 };
 
 template <typename T>
@@ -134,11 +136,19 @@ struct type_caster {
 
     template <typename U>
     static handle cast(U&& value, return_value_policy policy, const handle& parent = handle()) {
-        // TODO: support implicit cast
         const auto& info = typeid(underlying_type);
         pkpy::Type* type = vm->_cxx_typeid_map.try_get(info);
-        if(type) { return instance::create(std::forward<U>(value), *type, policy, parent.ptr()); }
-        vm->TypeError("type not registered");
+
+        if(type) {
+            return instance::create(std::forward<U>(value), *type, policy, parent.ptr());
+        } else {
+            std::string msg = "can not c++ instance cast to object, type: {";
+            msg += type_name<underlying_type>();
+            msg += "} is not registered.";
+            vm->TypeError(msg);
+        }
+
+        // TODO: support implicit cast
     }
 };
 

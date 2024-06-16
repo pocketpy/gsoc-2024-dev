@@ -4,25 +4,25 @@
 
 namespace pybind11 {
 
-template <std::size_t Nurse, std::size_t... Patients>
-struct keep_alive {};
-
-template <typename T>
-struct call_guard {
-    static_assert(std::is_default_constructible_v<T>, "call_guard must be default constructible");
-};
-
 // append the overload to the beginning of the overload list
 struct prepend {};
 
 template <typename... Args>
 struct init {};
 
-// TODO: support more customized tags
-// struct kw_only {};
+//  TODO: support more customized tags
 //
-// struct pos_only {};
+// template <std::size_t Nurse, std::size_t... Patients>
+// struct keep_alive {};
 //
+// template <typename T>
+// struct call_guard {
+//     static_assert(std::is_default_constructible_v<T>, "call_guard must be default constructible");
+// };
+//
+//  struct kw_only {};
+//
+//  struct pos_only {};
 
 class cpp_function : public function {
     PYBIND11_TYPE_IMPLEMENT(function, pkpy::NativeFunc, vm->tp_native_func);
@@ -48,7 +48,7 @@ private:
     friend struct template_parser;
 
     struct arguments_t {
-        std::map<pkpy::StrName, std::size_t> names;
+        std::vector<pkpy::StrName> names;
         std::vector<handle> defaults;
     };
 
@@ -67,12 +67,12 @@ private:
     function_record* next = nullptr;
     arguments_t* arguments = nullptr;
     destructor_t destructor = nullptr;
-    pkpy::StrName name = "anonymous";
+    const char* signature = nullptr;
     return_value_policy policy = return_value_policy::automatic;
 
 public:
     template <typename Fn, typename... Extras>
-    function_record(Fn&& f, const char* name, const Extras&... extras) : name(name) {
+    function_record(Fn&& f, const Extras&... extras) {
         using Callable = std::decay_t<Fn>;
 
         if constexpr(std::is_trivially_copyable_v<Callable> && sizeof(Callable) <= sizeof(buffer)) {
@@ -99,14 +99,14 @@ public:
 
     function_record(function_record&& other) noexcept {
         std::memcpy(this, &other, sizeof(function_record));
-        other.arguments = nullptr;
-        other.destructor = nullptr;
+        std::memset(&other, 0, sizeof(function_record));
     }
 
     ~function_record() {
         if(destructor) { destructor(this); }
         if(arguments) { delete arguments; }
         if(next) { delete next; }
+        if(signature) { delete[] signature; }
     }
 
     void append(function_record* record) {
@@ -143,7 +143,16 @@ public:
             p = p->next;
         }
 
-        vm->TypeError("no matching function found");
+        std::string msg = "no matching function found, function signature:\n";
+        std::size_t index = 0;
+        p = this;
+        while(p != nullptr) {
+            msg += "    ";
+            msg += p->signature;
+            msg += "\n";
+            p = p->next;
+        }
+        vm->TypeError(msg);
     }
 };
 
@@ -154,30 +163,27 @@ handle invoke(Fn&& fn,
               return_value_policy policy,
               handle parent) {
     using underlying_type = std::decay_t<Fn>;
-    using ret = callable_return_t<underlying_type>;
+    using return_type = callable_return_t<underlying_type>;
+    constexpr bool is_member_function_pointer = std::is_member_function_pointer_v<underlying_type>;
 
-    // if the return type is void, return None
-    if constexpr(std::is_void_v<ret>) {
-        // resolve the member function pointer
-        if constexpr(std::is_member_function_pointer_v<underlying_type>) {
-            [&](class_type_t<underlying_type>& self, auto&... args) {
-                (self.*fn)(args...);
-            }(std::get<Is>(casters).value...);
+    if constexpr(is_member_function_pointer) {
+        // helper function to unpack the arguments to call the member pointer
+        auto unpack = [&](class_type_t<underlying_type>& self, auto&... args) {
+            return (self.*fn)(args...);
+        };
+
+        if constexpr(!std::is_void_v<return_type>) {
+            return pybind11::cast(unpack(std::get<Is>(casters).value...), policy, parent);
+        } else {
+            unpack(std::get<Is>(casters).value...);
+            return vm->None;
+        }
+    } else {
+        if constexpr(!std::is_void_v<return_type>) {
+            return pybind11::cast(fn(std::get<Is>(casters).value...), policy, parent);
         } else {
             fn(std::get<Is>(casters).value...);
-        }
-        return vm->None;
-    } else {
-        // resolve the member function pointer
-        if constexpr(std::is_member_function_pointer_v<remove_cvref_t<Fn>>) {
-            return type_caster<ret>::cast(
-                [&](class_type_t<underlying_type>& self, auto&... args) {
-                    return (self.*fn)(args...);
-                }(std::get<Is>(casters).value...),
-                policy,
-                parent);
-        } else {
-            return type_caster<ret>::cast(fn(std::get<Is>(casters).value...), policy, parent);
+            return vm->None;
         }
     }
 }
@@ -242,25 +248,55 @@ struct template_parser<Callable, std::tuple<Extras...>, std::tuple<Args...>, std
 
     static void initialize(function_record& record, const Extras&... extras) {
         auto extras_tuple = std::make_tuple(extras...);
-
+        constexpr static bool has_named_args = (extras_info.named_argc > 0);
         // set return value policy
         if constexpr(extras_info.policy_pos != -1) { record.policy = std::get<extras_info.policy_pos>(extras_tuple); }
 
         // TODO: set others
 
         // set default arguments
-        if constexpr(extras_info.named_argc > 0) {
+        if constexpr(has_named_args) {
             record.arguments = new function_record::arguments_t();
 
             auto add_arguments = [&](const auto& arg) {
                 if constexpr(std::is_same_v<pybind11::arg, remove_cvref_t<decltype(arg)>>) {
                     auto& arguments = *record.arguments;
-                    arguments.names[arg.name] = arguments.defaults.size();
-                    arguments.defaults.push_back(arg.default_);
+                    arguments.names.emplace_back(arg.name);
+                    arguments.defaults.emplace_back(arg.default_);
                 }
             };
 
             (add_arguments(extras), ...);
+        }
+
+        // set signature
+        {
+            std::string sig = "(";
+            std::size_t index = 0;
+            auto append = [&](auto _t) {
+                using T = pybind11_decay_t<typename decltype(_t)::type>;
+                if constexpr(std::is_same_v<T, args>) {
+                    sig += "*args";
+                } else if constexpr(std::is_same_v<T, kwargs>) {
+                    sig += "**kwargs";
+                } else if constexpr(has_named_args) {
+                    sig += record.arguments->names[index].c_str();
+                    sig += ": ";
+                    sig += type_info::of<T>().name;
+                } else {
+                    sig += "_: ";
+                    sig += type_info::of<T>().name;
+                }
+
+                if(index + 1 < arguments_info.argc) { sig += ", "; }
+                index++;
+            };
+            (append(type_identity<Args>{}), ...);
+            sig += ")";
+            char* buffer = new char[sig.size() + 1];
+            std::memcpy(buffer, sig.data(), sig.size());
+            buffer[sig.size()] = '\0';
+            record.signature = buffer;
         }
     }
 
@@ -305,16 +341,21 @@ struct template_parser<Callable, std::tuple<Extras...>, std::tuple<Args...>, std
         std::size_t index = 0;
 
         if constexpr(named_argc > 0) {
-            while(index < n) {
+            std::size_t arg_index = 0;
+            auto& arguments = *record.arguments;
+
+            while(arg_index < named_argc && index < n) {
                 const auto key = pkpy::_py_cast<pkpy::i64>(vm, view.end()[index]);
+                const auto value = view.end()[index + 1];
                 const auto name = pkpy::StrName(key);
-                auto it = record.arguments->names.find(name);
-                if(it != record.arguments->names.end()) {
-                    stack[it->second] = view.end()[index + 1];
+                auto& arg_name = record.arguments->names[arg_index];
+
+                if(name == arg_name) {
+                    stack[arg_index] = value;
                     index += 2;
-                } else {
-                    break;
                 }
+
+                arg_index += 1;
             }
         }
 
@@ -363,7 +404,7 @@ handle bind_function(const handle& obj, const char* name, Fn&& fn, pkpy::BindTyp
 
     // if the function is not bound yet, bind it
     if(!callable) {
-        auto record = function_record(std::forward<Fn>(fn), name, extras...);
+        auto record = function_record(std::forward<Fn>(fn), extras...);
         void* data = add_capsule(std::move(record));
         callable = vm->bind_func(var.get(), name, -1, _wrapper, data);
     } else {

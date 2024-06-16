@@ -4,12 +4,10 @@
 namespace pybind11 {
 
 struct type_info {
-    const char* name;
+    std::string_view name;
     std::size_t size;
     std::size_t alignment;
     void (*destructor)(void*);
-    void (*copy)(void*, const void*);
-    void (*move)(void*, void*);
     const std::type_info* type;
 
     template <typename T>
@@ -17,18 +15,12 @@ struct type_info {
         static_assert(!std::is_reference_v<T> && !std::is_const_v<std::remove_reference_t<T>>,
                       "T must not be a reference type or const type.");
         static type_info info = {
-            typeid(T).name(),
+            type_name<T>(),
             sizeof(T),
             alignof(T),
             [](void* ptr) {
                 ((T*)ptr)->~T();
                 operator delete (ptr);
-            },
-            [](void* dst, const void* src) {
-                new (dst) T(*(const T*)src);
-            },
-            [](void* dst, void* src) {
-                new (dst) T(std::move(*(T*)src));
             },
             &typeid(T),
         };
@@ -52,7 +44,6 @@ private:
     void* data;
     const type_info* type;
     pkpy::PyVar parent;
-    // pkpy::PyVar
 
 public:
     instance() noexcept : flag(Flag::None), data(nullptr), type(nullptr), parent(nullptr) {}
@@ -81,22 +72,9 @@ public:
                               pkpy::PyVar parent = nullptr) noexcept {
         using underlying_type = remove_cvref_t<T>;
 
-        // resolve for automatic policy.
-        if(policy == return_value_policy::automatic) {
-            policy = std::is_pointer_v<underlying_type> ? return_value_policy::take_ownership
-                     : std::is_lvalue_reference_v<T&&>  ? return_value_policy::copy
-                                                        : return_value_policy::move;
-        } else if(policy == return_value_policy::automatic_reference) {
-            policy = std::is_pointer_v<underlying_type> ? return_value_policy::reference
-                     : std::is_lvalue_reference_v<T&&>  ? return_value_policy::copy
-                                                        : return_value_policy::move;
-        }
-
         auto& _value = [&]() -> auto& {
-            /**
-             * note that, pybind11 will ignore the const qualifier.
-             * in fact, try to modify a const value will result in undefined behavior.
-             */
+            // note that, pybind11 will ignore the const qualifier.
+            // in fact, try to modify a const value will result in undefined behavior.
             if constexpr(std::is_pointer_v<underlying_type>) {
                 return *reinterpret_cast<underlying_type*>(value);
             } else {
@@ -104,18 +82,31 @@ public:
             }
         }();
 
+        using primary = std::remove_pointer_t<underlying_type>;
         instance instance;
-        instance.type = &type_info::of<std::remove_pointer_t<underlying_type>>();
+        instance.type = &type_info::of<primary>();
 
         if(policy == return_value_policy::take_ownership) {
             instance.data = &_value;
             instance.flag = Flag::Own;
         } else if(policy == return_value_policy::copy) {
-            instance.data = ::new auto(_value);
-            instance.flag = Flag::Own;
+            if constexpr(std::is_copy_constructible_v<primary>) {
+                instance.data = ::new auto(_value);
+                instance.flag = Flag::Own;
+            } else {
+                std::string msg = "cannot use copy policy on non-copyable type: ";
+                msg += type_name<primary>();
+                vm->RuntimeError(msg);
+            }
         } else if(policy == return_value_policy::move) {
-            instance.data = ::new auto(std::move(_value));
-            instance.flag = Flag::Own;
+            if constexpr(std::is_move_constructible_v<primary>) {
+                instance.data = ::new auto(std::move(_value));
+                instance.flag = Flag::Own;
+            } else {
+                std::string msg = "cannot use move policy on non-moveable type: ";
+                msg += type_name<primary>();
+                vm->RuntimeError(msg);
+            }
         } else if(policy == return_value_policy::reference) {
             instance.data = &_value;
             instance.flag = Flag::None;

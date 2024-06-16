@@ -9,9 +9,9 @@ private:
     pkpy::PyVar ptr() const { return static_cast<const Derived*>(this)->ptr(); }
 
 public:
-    bool is_none() const { return ptr() == vm->None; }
+    bool is_none() const { return ptr().operator== (vm->None.get()); }
 
-    bool is(const interface& other) const { return ptr() == other.ptr(); }
+    bool is(const interface& other) const { return ptr().operator== (other.ptr().get()); }
 
     bool in(const interface& other) const {
         return pybind11::cast<bool>(vm->call(vm->py_op("contains"), other.ptr(), ptr()));
@@ -69,7 +69,11 @@ public:
     template <typename T>
     decltype(auto) _as() const {
         static_assert(!std::is_reference_v<T>, "T must not be a reference type.");
-        return m_ptr.obj_get<T>();
+        if constexpr(pkpy::is_sso_v<T>) {
+            return pkpy::_py_cast<T>(vm, m_ptr);
+        } else {
+            return m_ptr.obj_get<T>();
+        }
     }
 };
 
@@ -121,21 +125,28 @@ struct type_visitor {
                                                                                                                        \
 private:                                                                                                               \
     using underlying_type = name;                                                                                      \
+                                                                                                                       \
     inline static auto type_or_check = [] {                                                                            \
         return tp;                                                                                                     \
     };                                                                                                                 \
+                                                                                                                       \
     decltype(auto) value() const { return _as<underlying_type>(); }                                                    \
+                                                                                                                       \
     template <typename... Args>                                                                                        \
     static handle create(Args&&... args) {                                                                             \
-        return vm->new_object<underlying_type>(type_or_check(), std::forward<Args>(args)...);                          \
+        if constexpr(pkpy::is_sso_v<underlying_type>) {                                                                \
+            return pkpy::py_var(vm, std::forward<Args>(args)...);                                                      \
+        } else {                                                                                                       \
+            return vm->heap.gcnew<underlying_type>(type_or_check(), std::forward<Args>(args)...);                      \
+        }                                                                                                              \
     }                                                                                                                  \
+                                                                                                                       \
     friend type_visitor;                                                                                               \
     using parent::parent;
 
 /*=============================================================================//
 // pkpy does not use reference counts, so object is just fot API compatibility //
 //=============================================================================*/
-
 class object : public handle {
     PYBIND11_TYPE_IMPLEMENT(handle, empty, vm->tp_object);
 

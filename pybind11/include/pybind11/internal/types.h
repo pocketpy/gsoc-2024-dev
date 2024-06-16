@@ -8,9 +8,9 @@ handle cast(T&& value, return_value_policy policy = return_value_policy::automat
 
 struct arg {
     const char* name;
-    handle default_ = {};
+    handle default_;
 
-    arg(const char* name) : name(name) {}
+    arg(const char* name) : name(name), default_() {}
 
     template <typename T>
     arg& operator= (T&& value) {

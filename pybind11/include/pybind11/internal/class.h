@@ -18,7 +18,6 @@ protected:
             vt = {};
         }
         auto mod = scope.ptr().get();
-
         return vm->new_type_object(mod, name, type, true, vt);
     }
 
@@ -42,7 +41,7 @@ public:
 
             // check if the class has constructor, if not, raise error
             if(args[0]->attr().try_get(pkpy::__init__) == nullptr) {
-                vm->RuntimeError("Bound class must have constructor");
+                vm->RuntimeError("if you want to create instance of bound class, you must bind constructor for it");
             }
 
             return instance::create(cls, &type_info::of<T>());
