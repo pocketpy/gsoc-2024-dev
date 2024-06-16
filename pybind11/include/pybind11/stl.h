@@ -17,7 +17,7 @@ struct type_caster<std::array<T, N>> {
     struct wrapper {
         std::array<T, N> container = {};
 
-        operator std::array<T, N> () { return std::move(container); }
+        operator std::array<T, N>&& () { return std::move(container); }
     };
 
     wrapper value;
@@ -65,7 +65,7 @@ struct type_caster<T, std::enable_if_t<is_py_list_like_v<T>>> {
     struct wrapper {
         T container;
 
-        operator T () { return std::move(container); }
+        operator T&& () { return std::move(container); }
     };
 
     wrapper value;
@@ -108,7 +108,7 @@ struct type_caster<T, std::enable_if_t<is_py_map_like_v<T>>> {
     struct wrapper {
         T container;
 
-        operator T () { return std::move(container); }
+        operator T&& () { return std::move(container); }
     };
 
     wrapper value;

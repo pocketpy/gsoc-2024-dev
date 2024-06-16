@@ -5,11 +5,6 @@
 
 namespace pybind11 {
 
-// TODO:
-// 1. inheritance
-// 2. virtual function
-// 3. factory function
-
 template <typename T, typename Base = void>
 class class_ : public type {
 protected:

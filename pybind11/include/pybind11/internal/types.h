@@ -91,6 +91,8 @@ class iterator : public object {
 
     handle m_value;
 
+    iterator(pkpy::PyVar n, pkpy::PyVar s) : object(n), m_value(s) {}
+
 public:
     iterator(const handle& obj) : object(obj) { m_value = vm->py_next(obj.ptr()); }
 
@@ -110,12 +112,7 @@ public:
 
     friend bool operator!= (const iterator& lhs, const iterator& rhs) { return !(lhs == rhs); }
 
-    static iterator sentinel() {
-        iterator iter;
-        iter.m_ptr = vm->None;
-        iter.m_value = vm->StopIteration;
-        return iter;
-    }
+    static iterator sentinel() { return iterator(vm->None, vm->StopIteration); }
 };
 
 class str : public object {

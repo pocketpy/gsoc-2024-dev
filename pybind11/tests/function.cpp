@@ -204,6 +204,65 @@ TEST_F(PYBIND11_TEST, return_value_policy) {
     });
 }
 
+TEST_F(PYBIND11_TEST, default_return_value_policy) {
+    static int copy_constructor_calls = 0;
+    static int move_constructor_calls = 0;
+    static int destructor_calls = 0;
+
+    struct Point {
+        int x, y;
+
+        Point(int x, int y) : x(x), y(y) {}
+
+        Point(const Point& p) : x(p.x), y(p.y) { copy_constructor_calls++; }
+
+        Point(Point&& p) : x(p.x), y(p.y) { move_constructor_calls++; }
+
+        ~Point() { destructor_calls++; }
+
+        bool operator== (const Point& p) const { return x == p.x && y == p.y; }
+    };
+
+    auto m = py::module_::__main__();
+
+    py::class_<Point>(m, "Point")
+        .def(py::init<int, int>())
+        .def_readwrite("x", &Point::x)
+        .def_readwrite("y", &Point::y)
+        .def("__eq__", &Point::operator==);
+
+    // for function return value policy
+
+    // if return type is lvalue reference, policy is copy
+    m.def("make_point2", []() -> Point& {
+        static Point p(1, 2);
+        return p;
+    });
+    py::exec("p2 = make_point2()");
+    EXPECT_EQ(copy_constructor_calls, 1);
+    EXPECT_EQ(move_constructor_calls, 0);
+
+    // if return type is rvalue reference, policy is move
+    m.def("make_point3", []() -> Point&& {
+        static Point p(1, 2);
+        return std::move(p);
+    });
+    py::exec("p3 = make_point3()");
+    EXPECT_EQ(copy_constructor_calls, 1);
+    EXPECT_EQ(move_constructor_calls, 1);
+
+    // if return type is pointer, policy is take_ownership
+    m.def("make_point4", []() -> Point* {
+        return new Point(1, 2);
+    });
+    py::exec("p4 = make_point4()");
+    EXPECT_EQ(copy_constructor_calls, 1);
+    EXPECT_EQ(move_constructor_calls, 1);
+
+    py::finalize();
+    EXPECT_EQ(destructor_calls, 3);
+}
+
 TEST_F(PYBIND11_TEST, lambda) {
     auto m = py::module_::__main__();
 

@@ -79,7 +79,7 @@ public:
                               pkpy::Type type,
                               return_value_policy policy = return_value_policy::automatic_reference,
                               pkpy::PyVar parent = nullptr) noexcept {
-        using underlying_type = std::remove_cv_t<std::remove_reference_t<T>>;
+        using underlying_type = remove_cvref_t<T>;
 
         // resolve for automatic policy.
         if(policy == return_value_policy::automatic) {
@@ -105,7 +105,7 @@ public:
         }();
 
         instance instance;
-        instance.type = &type_info::of<underlying_type>();
+        instance.type = &type_info::of<std::remove_pointer_t<underlying_type>>();
 
         if(policy == return_value_policy::take_ownership) {
             instance.data = &_value;

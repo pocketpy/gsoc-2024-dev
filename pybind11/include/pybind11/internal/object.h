@@ -137,10 +137,13 @@ private:                                                                        
 //=============================================================================*/
 
 class object : public handle {
-    PYBIND11_TYPE_IMPLEMENT(handle, pkpy::PyObject, vm->tp_object);
+    PYBIND11_TYPE_IMPLEMENT(handle, empty, vm->tp_object);
 
 public:
-    object(const handle& h) : handle(h) {}
+    object(const handle& h) : handle(h) {
+        // object is must not null ptr
+        assert(h.ptr() != nullptr);
+    }
 };
 
 // undef after usage
