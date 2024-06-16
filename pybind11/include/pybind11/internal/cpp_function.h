@@ -96,6 +96,8 @@ public:
     }
 
     function_record(const function_record&) = delete;
+    function_record& operator= (const function_record&) = delete;
+    function_record& operator= (function_record&&) = delete;
 
     function_record(function_record&& other) noexcept {
         std::memcpy(this, &other, sizeof(function_record));
@@ -130,7 +132,7 @@ public:
         function_record* p = this;
         // foreach function record and call the function with not convert
         while(p != nullptr) {
-            handle result = p->wrapper(*this, view, false, {});
+            handle result = p->wrapper(*p, view, false, {});
             if(result) { return result; }
             p = p->next;
         }
@@ -138,7 +140,7 @@ public:
         p = this;
         // foreach function record and call the function with convert
         while(p != nullptr) {
-            handle result = p->wrapper(*this, view, true, {});
+            handle result = p->wrapper(*p, view, true, {});
             if(result) { return result; }
             p = p->next;
         }
@@ -283,6 +285,10 @@ struct template_parser<Callable, std::tuple<Extras...>, std::tuple<Args...>, std
                     sig += record.arguments->names[index].c_str();
                     sig += ": ";
                     sig += type_info::of<T>().name;
+                    if(record.arguments->defaults[index]) {
+                        sig += " = ";
+                        sig += record.arguments->defaults[index].repr();
+                    }
                 } else {
                     sig += "_: ";
                     sig += type_info::of<T>().name;
@@ -409,7 +415,7 @@ handle bind_function(const handle& obj, const char* name, Fn&& fn, pkpy::BindTyp
         callable = vm->bind_func(var.get(), name, -1, _wrapper, data);
     } else {
         auto& userdata = callable.obj_get<pkpy::NativeFunc>()._userdata;
-        function_record* record = new function_record(std::forward<Fn>(fn), name, extras...);
+        function_record* record = new function_record(std::forward<Fn>(fn), extras...);
 
         constexpr bool is_prepend = (types_count_v<prepend, Extras...> != 0);
         if constexpr(is_prepend) {

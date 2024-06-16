@@ -19,6 +19,11 @@ inline str interface<Derived>::name() const {
     return handle(vm->getattr(this->ptr(), "__name__"));
 }
 
+template <typename Derived>
+inline str interface<Derived>::repr() const {
+    return handle(str(vm->py_repr(this->ptr())));
+}
+
 template <typename policy>
 class accessor : public interface<accessor<policy>> {
 

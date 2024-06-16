@@ -39,6 +39,7 @@ public:
     object operator~() const;
 
     str name() const;
+    str repr() const;
 };
 
 /// a lightweight wrapper for python objects
