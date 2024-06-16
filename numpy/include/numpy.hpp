@@ -67,6 +67,16 @@ using _ShapeLike = std::vector<int_>;
 namespace numpy {
 
 template <typename T>
+class ndarray;
+
+template<typename T>
+constexpr inline auto is_ndarray_v = false;
+
+template<typename T>
+constexpr inline auto is_ndarray_v<ndarray<T>> = true;
+
+
+template <typename T>
 class ndarray {
 public:
     // Constructor for xtensor xarray
@@ -96,7 +106,7 @@ public:
         xt::xarray<result_type> result = xt::cast<result_type>(_array) + xt::cast<result_type>(other.get_array());
         return ndarray<result_type>(result);
     }
-    template <typename U>
+    template <typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
     auto operator+(const U& other) const {
         return binary_operator_add_impl<U>(other);
     }
@@ -118,7 +128,7 @@ public:
         xt::xarray<result_type> result = xt::cast<result_type>(_array) - xt::cast<result_type>(other.get_array());
         return ndarray<result_type>(result);
     }
-    template <typename U>
+    template <typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
     auto operator-(const U& other) const {
         return binary_operator_sub_impl<U>(other);
     }
@@ -140,7 +150,7 @@ public:
         xt::xarray<result_type> result = xt::cast<result_type>(_array) * xt::cast<result_type>(other.get_array());
         return ndarray<result_type>(result);
     }
-    template <typename U>
+    template <typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
     auto operator*(const U& other) const {
         return binary_operator_mul_impl<U>(other);
     }
@@ -156,7 +166,7 @@ public:
         xt::xarray<result_type> result = xt::cast<result_type>(_array) / xt::cast<result_type>(other.get_array());
         return ndarray<result_type>(result);
     }
-    template <typename U>
+    template <typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
     auto operator/(const U& other) const {
         return binary_operator_truediv_impl<U>(other);
     }
@@ -172,7 +182,7 @@ public:
         xt::xarray<result_type> result = xt::pow(xt::cast<result_type>(_array), xt::cast<result_type>(other.get_array()));
         return ndarray<result_type>(result);
     }
-    template <typename U>
+    template <typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
     auto pow(const U& other) const {
         return pow_impl<U>(other);
     }
@@ -200,7 +210,7 @@ public:
         xt::xarray<int_> result = _array & other.get_array();
         return ndarray(result);
     }
-    template <typename U>
+    template <typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
     ndarray operator&(const U& other) const {
         xt::xarray<int_> result = _array & other;
         return ndarray(result);
@@ -211,7 +221,7 @@ public:
         xt::xarray<int_> result = _array | other.get_array();
         return ndarray(result);
     }
-    template <typename U>
+    template <typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
     ndarray operator|(const U& other) const {
         xt::xarray<int_> result = _array | other;
         return ndarray(result);
@@ -222,7 +232,7 @@ public:
         xt::xarray<int_> result = _array ^ other.get_array();
         return ndarray(result);
     }
-    template <typename U>
+    template <typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
     ndarray operator^(const U& other) const {
         xt::xarray<int_> result = _array ^ other;
         return ndarray(result);
@@ -689,37 +699,37 @@ auto concatenate(const ndarray<T>& arr1, const ndarray<U>& arr2, int axis = 0) {
 }
 
 // Reverse Dunder Methods
-template <typename T, typename U>
+template <typename T, typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
 auto operator+(const U& scalar, const ndarray<T>& array) {
     return array + scalar;
 }
 
-template <typename T, typename U>
+template <typename T, typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
 auto operator-(const U& scalar, const ndarray<T>& array) {
     return (array *(-1)) + scalar;
 }
 
-template <typename T, typename U>
+template <typename T, typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
 auto operator*(const U& scalar, const ndarray<T>& array) {
     return array * scalar;
 }
 
-template <typename T, typename U>
+template <typename T, typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
 auto operator/(const U& scalar, const ndarray<T>& array) {
     return array.pow(-1) * scalar;
 }
 
-template <typename T, typename U>
+template <typename T, typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
 auto operator&(const U& scalar, const ndarray<T>& array) {
     return array & scalar;
 }
 
-template <typename T, typename U>
+template <typename T, typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
 auto operator|(const U& scalar, const ndarray<T>& array) {
     return array | scalar;
 }
 
-template <typename T, typename U>
+template <typename T, typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
 auto operator^(const U& scalar, const ndarray<T>& array) {
     return array ^ scalar;
 }
