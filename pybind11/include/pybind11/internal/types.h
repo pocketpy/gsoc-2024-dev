@@ -248,7 +248,7 @@ public:
         std::pair<handle, handle> value;
 
         iterator operator++ () {
-            bool is_ended = pkpy_DictIter__next(&iter, (pkpy_Var*)&value.first, (pkpy_Var*)&value.second);
+            bool is_ended = pkpy_DictIter__next(&iter, (PyVar*)&value.first, (PyVar*)&value.second);
             if(!is_ended) {
                 iter._dict = nullptr;
                 iter._index = -1;
