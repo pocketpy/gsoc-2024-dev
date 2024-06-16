@@ -359,9 +359,9 @@ public:
     }
     void set_item_int(int index, int value) override {
         if constexpr(std::is_same_v<T, int>) {
-            data.set_item(index, pkpy::numpy::adapt<int>({value}));
+            data.set_item(index, pkpy::numpy::adapt<int>(std::vector{value}));
         } else if constexpr(std::is_same_v<T, float64>) {
-            data.set_item(index, (pkpy::numpy::adapt<int>({value})).astype<float64>());
+            data.set_item(index, (pkpy::numpy::adapt<int>(std::vector{value})).astype<float64>());
         }
     }
     void set_item_index_int(int index, const std::vector<int>& value) override {
@@ -373,9 +373,9 @@ public:
     }
     void set_item_float(int index, float64 value) override {
         if constexpr(std::is_same_v<T, float64>) {
-            data.set_item(index, pkpy::numpy::adapt<float64>({value}));
+            data.set_item(index, pkpy::numpy::adapt<float64>(std::vector{value}));
         } else if constexpr(std::is_same_v<T, int>) {
-            data.set_item(index, (pkpy::numpy::adapt<float64>({value})).astype<int>());
+            data.set_item(index, (pkpy::numpy::adapt<float64>(std::vector{value})).astype<int>());
         }
     }
     void set_item_index_float(int index, const std::vector<float64>& value) override {
@@ -387,9 +387,9 @@ public:
     }
     void set_item_vector_int1(const std::vector<int>& indices, int value) override {
         if constexpr(std::is_same_v<T, int>) {
-            data.set_item(indices, pkpy::numpy::adapt<int>({value}));
+            data.set_item(indices, pkpy::numpy::adapt<int>(std::vector{value}));
         } else if constexpr(std::is_same_v<T, float64>) {
-            data.set_item(indices, (pkpy::numpy::adapt<int>({value})).astype<float64>());
+            data.set_item(indices, (pkpy::numpy::adapt<int>(std::vector{value})).astype<float64>());
         }
     }
     void set_item_vector_int2(const std::vector<int>& indices, const std::vector<int>& value) override {
@@ -401,9 +401,9 @@ public:
     }
     void set_item_vector_float1(const std::vector<int>& indices, float64 value) override {
         if constexpr(std::is_same_v<T, float64>) {
-            data.set_item(indices, pkpy::numpy::adapt<float64>({value}));
+            data.set_item(indices, pkpy::numpy::adapt<float64>(std::vector{value}));
         } else if constexpr(std::is_same_v<T, int>) {
-            data.set_item(indices, (pkpy::numpy::adapt<float64>({value})).astype<int>());
+            data.set_item(indices, (pkpy::numpy::adapt<float64>(std::vector{value})).astype<int>());
         }
     }
     void set_item_vector_float2(const std::vector<int>& indices, const std::vector<float64>& value) override {
@@ -437,9 +437,9 @@ public:
             if(stop == INT_MAX) stop = -(1 + data.shape()[0]);
         }
         if constexpr(std::is_same_v<T, int>) {
-            data.set_item(std::make_tuple(start, stop, step), pkpy::numpy::adapt<int>({value}));
+            data.set_item(std::make_tuple(start, stop, step), pkpy::numpy::adapt<int>(std::vector{value}));
         } else if constexpr(std::is_same_v<T, float64>) {
-            data.set_item(std::make_tuple(start, stop, step), (pkpy::numpy::adapt<int>({value})).astype<float64>());
+            data.set_item(std::make_tuple(start, stop, step), (pkpy::numpy::adapt<int>(std::vector{value})).astype<float64>());
         }
     }
     void set_item_slice_int2(py::slice slice, const std::vector<int>& value) override {
@@ -475,9 +475,9 @@ public:
             if(stop == INT_MAX) stop = -(1 + data.shape()[0]);
         }
         if constexpr(std::is_same_v<T, float64>) {
-            data.set_item(std::make_tuple(start, stop, step), pkpy::numpy::adapt<float64>({value}));
+            data.set_item(std::make_tuple(start, stop, step), pkpy::numpy::adapt<float64>(std::vector{value}));
         } else if constexpr(std::is_same_v<T, int>) {
-            data.set_item(std::make_tuple(start, stop, step), (pkpy::numpy::adapt<float64>({value})).astype<int>());
+            data.set_item(std::make_tuple(start, stop, step), (pkpy::numpy::adapt<float64>(std::vector{value})).astype<int>());
         }
     }
     void set_item_slice_float2(py::slice slice, const std::vector<float64>& value) override {
@@ -509,7 +509,7 @@ public:
 using ndarray_int = ndarray<int>;
 using ndarray_float = ndarray<float64>;
 
-PYBIND11_MODULE(numpy_bindings, m) {
+PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
     m.doc() = "Python bindings for pkpy::numpy::ndarray using pybind11";
 
     py::class_<ndarray_base>(m, "ndarray")
