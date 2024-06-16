@@ -106,16 +106,12 @@ public:
     ~function_record() {
         if(destructor) { destructor(this); }
         if(arguments) { delete arguments; }
-        while(next) {
-            auto* p = next;
-            next = next->next;
-            delete p;
-        }
+        if(next) { delete next; }
     }
 
     void append(function_record* record) {
         function_record* p = this;
-        while(p->next != nullptr) {
+        while(p->next) {
             p = p->next;
         }
         p->next = record;
