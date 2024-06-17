@@ -138,7 +138,7 @@ struct type_visitor {
         }
     }
 
-    template <typename T, typename Base>
+    template <typename T, typename Base = void>
     static handle create(const handle& scope, const char* name) {
         pkpy::Type type = vm->tp_object;
 #if PK_VERSION_MAJOR == 2

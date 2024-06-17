@@ -370,12 +370,7 @@ class capsule : public object {
     };
 
     PYBIND11_REGISTER_INIT([] {
-#if PK_VERSION_MAJOR == 2
-        handle type = vm->new_type_object<pack>(vm->builtins, "capsule", vm->tp_object, false);
-#else
-        handle type = vm->new_type_object(vm->builtins, "capsule", vm->tp_object, false);
-#endif
-        vm->builtins->attr().set("capsule", type.ptr());
+        type_visitor::create<pack>(vm->builtins, "capsule");
     });
 
     PYBIND11_TYPE_IMPLEMENT(object, pack, handle(vm->builtins->attr("capsule"))._as<pkpy::Type>());
