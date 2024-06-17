@@ -81,6 +81,7 @@ class ndarray {
 public:
     // Constructor for xtensor xarray
     ndarray() = default;
+    ndarray(const T scalar) : _array(scalar) {}
     ndarray(const xt::xarray<T>& arr) : _array(arr) {}
 
     // Constructor for mutli-dimensional array
