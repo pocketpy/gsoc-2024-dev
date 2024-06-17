@@ -110,6 +110,8 @@ public:
     pkpy::numpy::ndarray<T> data;
     // Constructors
     ndarray() = default;
+    ndarray(const int value) : data(value) {}
+    ndarray(const float64 value) : data(value) {}
     ndarray(const pkpy::numpy::ndarray<T>& _arr) : data(_arr) {}
     ndarray(const std::vector<T>& init_list) : data(pkpy::numpy::adapt<T>(init_list)) {}
     ndarray(const std::vector<std::vector<T>>& init_list) : data(pkpy::numpy::adapt<T>(init_list)) {}
@@ -605,6 +607,8 @@ PYBIND11_MODULE(numpy_bindings, m) {
         });
 
     py::class_<ndarray<int>, ndarray_base>(m, "ndarray_int")
+        .def(py::init<>())
+        .def(py::init<int>())
         .def(py::init<const std::vector<int>&>())
         .def(py::init<const std::vector<std::vector<int>>&>())
         .def(py::init<const std::vector<std::vector<std::vector<int>>>&>())
@@ -633,12 +637,17 @@ PYBIND11_MODULE(numpy_bindings, m) {
         });
 
     py::class_<ndarray<float64>, ndarray_base>(m, "ndarray_float")
+        .def(py::init<>())
+        .def(py::init<float64>())
         .def(py::init<const std::vector<float64>&>())
         .def(py::init<const std::vector<std::vector<float64>>&>())
         .def(py::init<const std::vector<std::vector<std::vector<float64>>>&>())
         .def(py::init<const std::vector<std::vector<std::vector<std::vector<float64>>>>&>())
         .def(py::init<const std::vector<std::vector<std::vector<std::vector<std::vector<float64>>>>>&>());
 
+    m.def("array", [](int value) {
+        return std::unique_ptr<ndarray_base>(new ndarray_int(value));
+    });
     m.def("array", [](const std::vector<int>& values) {
         return std::unique_ptr<ndarray_base>(new ndarray_int(values));
     });
@@ -655,6 +664,9 @@ PYBIND11_MODULE(numpy_bindings, m) {
         return std::unique_ptr<ndarray_base>(new ndarray_int(values));
     });
 
+    m.def("array", [](float64 value) {
+        return std::unique_ptr<ndarray_base>(new ndarray_float(value));
+    });
     m.def("array", [](const std::vector<float64>& values) {
         return std::unique_ptr<ndarray_base>(new ndarray_float(values));
     });
