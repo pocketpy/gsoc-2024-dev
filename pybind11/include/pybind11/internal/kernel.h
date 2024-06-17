@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <cassert>
 #include <pocketpy.h>
 
 #include "type_traits.h"
@@ -57,6 +58,19 @@ decltype(auto) unpack(pkpy::ArgsView view) {
     } else {
         return pkpy::lambda_get_userdata<T>(view.begin());
     }
+}
+
+inline pkpy::PyVar bind_func(pkpy::PyVar scope,
+                             pkpy::StrName name,
+                             int argc,
+                             pkpy::NativeFuncC fn,
+                             pkpy::any any = {},
+                             pkpy::BindType type = pkpy::BindType::DEFAULT) {
+#if PK_VERSION_MAJOR == 2
+    return vm->bind_func(scope.get(), name, argc, fn, any, type);
+#else
+    return vm->bind_func(scope, name, argc, fn, std::move(any), type);
+#endif
 }
 
 class handle;
@@ -158,4 +172,15 @@ class object;
 
 template <typename T>
 constexpr inline bool is_pyobject_v = std::is_base_of_v<object, T>;
+
+#if PK_VERSION_MAJOR == 2
+using error_already_set = pkpy::TopLevelException;
+#else
+class error_already_set : std::exception {
+public:
+    error_already_set() = default;
+
+    const char* what() const noexcept override { return "An error occurred while calling a Python function."; }
+};
+#endif
 }  // namespace pybind11

@@ -28,7 +28,13 @@ struct arg {
     }();
 
 class none : public object {
+#if PK_VERSION_MAJOR == 2
     PYBIND11_TYPE_IMPLEMENT(object, empty, vm->tp_none_type);
+#else
+    PYBIND11_TYPE_IMPLEMENT(object, empty, [](const handle& obj) {
+        return obj.is_none();
+    });
+#endif
 
 public:
     none() : object(vm->None) {}
@@ -54,7 +60,7 @@ class bool_ : public object {
 public:
     bool_(bool value) : object(create(value)) {}
 
-    operator bool () const { return value(); }
+    operator bool () const { return self(); }
 };
 
 /// corresponding to int in Python
@@ -64,7 +70,7 @@ class int_ : public object {
 public:
     int_(int64_t value) : object(create(value)) {}
 
-    operator int64_t () const { return value(); }
+    operator int64_t () const { return self(); }
 };
 
 /// corresponding to float in Python
@@ -74,7 +80,7 @@ class float_ : public object {
 public:
     float_(double value) : object(create(value)) {}
 
-    operator double () const { return value(); }
+    operator double () const { return self(); }
 };
 
 class iterable : public object {
@@ -130,7 +136,7 @@ public:
     // explicit str(const bytes& b);
     explicit str(handle h);
 
-    operator std::string_view () const { return value().sv(); }
+    operator std::string_view () const { return self().sv(); }
 
     template <typename... Args>
     str format(Args&&... args) const;
@@ -155,10 +161,10 @@ public:
     template <typename... Args, std::enable_if_t<(sizeof...(Args) > 1)>* = nullptr>
     tuple(Args&&... args) : object(create(sizeof...(Args))) {
         int index = 0;
-        ((value()[index++] = pybind11::cast(std::forward<Args>(args)).ptr()), ...);
+        ((self()[index++] = pybind11::cast(std::forward<Args>(args)).ptr()), ...);
     }
 
-    int size() const { return value().size(); }
+    int size() const { return self().size(); }
 
     bool empty() const { return size() == 0; }
 
@@ -169,25 +175,25 @@ class list : public object {
     PYBIND11_TYPE_IMPLEMENT(object, pkpy::List, vm->tp_list)
 
 public:
-    list() : object(create()) {}
+    list() : object(create(0)) {}
 
     list(int n) : object(create(n)) {}
 
     template <typename... Args, std::enable_if_t<(sizeof...(Args) > 1)>* = nullptr>
     list(Args&&... args) : object(create(sizeof...(Args))) {
         int index = 0;
-        ((value()[index++] = pybind11::cast(std::forward<Args>(args)).ptr()), ...);
+        ((self()[index++] = pybind11::cast(std::forward<Args>(args)).ptr()), ...);
     }
 
-    int size() const { return value().size(); }
+    int size() const { return self().size(); }
 
     bool empty() const { return size() == 0; }
 
-    void clear() { value().clear(); }
+    void clear() { self().clear(); }
 
     list_accessor operator[] (int i) const;
 
-    void append(const handle& obj) { value().push_back(obj.ptr()); }
+    void append(const handle& obj) { self().push_back(obj.ptr()); }
 
     void extend(const handle& iterable) {
         for(auto& item: iterable) {
@@ -196,8 +202,12 @@ public:
     }
 
     void insert(int index, const handle& obj) {
-        const auto pos = value().begin() + index;
-        value().insert(pos, obj.ptr());
+#if PK_VERSION_MAJOR == 2
+        const auto pos = self().begin() + index;
+        self().insert(pos, obj.ptr());
+#else
+        self().insert(index, obj.ptr());
+#endif
     }
 };
 
@@ -218,30 +228,20 @@ class dict : public object {
     PYBIND11_TYPE_IMPLEMENT(object, pkpy::Dict, vm->tp_dict);
 
 public:
+#if PK_VERSION_MAJOR == 2
     dict() : object(create()) {}
 
     template <typename... Args, typename = std::enable_if_t<(std::is_same_v<remove_cvref_t<Args>, arg> && ...)>>
     dict(Args&&... args) : object(create()) {
         auto foreach_ = [&](pybind11::arg& arg) {
-            value().set(vm, str(arg.name).ptr(), arg.default_.ptr());
+            setitem(str(arg.name), arg.default_);
         };
         (foreach_(args), ...);
     }
 
-    int size() const { return value().size(); }
+    void setitem(const handle& key, const handle& value) { self().set(vm, key.ptr(), value.ptr()); }
 
-    bool empty() const { return size() == 0; }
-
-    void clear() { value().clear(); }
-
-    template <typename Key>
-    bool contains(Key&& key) const {
-        return value().contains(vm, pybind11::cast(std::forward<Key>(key)).ptr());
-    }
-
-    dict_accessor operator[] (int index) const;
-    dict_accessor operator[] (std::string_view) const;
-    dict_accessor operator[] (const handle& key) const;
+    handle getitem(const handle& key) const { return self().try_get(vm, key.ptr()); }
 
     struct iterator {
         pkpy_DictIter iter;
@@ -256,7 +256,7 @@ public:
             return *this;
         }
 
-        const std::pair<handle, handle>& operator* () const { return value; }
+        std::pair<handle, handle> operator* () const { return value; }
 
         bool operator== (const iterator& other) const {
             return iter._dict == other.iter._dict && iter._index == other.iter._index;
@@ -266,12 +266,76 @@ public:
     };
 
     iterator begin() const {
-        iterator iter{value().iter(), {}};
+        iterator iter{self().iter(), {}};
         ++iter;
         return iter;
     }
 
     iterator end() const { return {nullptr, -1}; }
+#else
+    dict() : object(create(vm)) {}
+
+    template <typename... Args, typename = std::enable_if_t<(std::is_same_v<remove_cvref_t<Args>, arg> && ...)>>
+    dict(Args&&... args) : object(create(vm)) {
+        auto foreach_ = [&](pybind11::arg& arg) {
+            setitem(str(arg.name), arg.default_);
+        };
+        (foreach_(args), ...);
+    }
+
+    void setitem(const handle& key, const handle& value) { self().set(key.ptr(), value.ptr()); }
+
+    handle getitem(const handle& key) const { return self().try_get(key.ptr()); }
+
+    struct iterator {
+        pkpy::Dict::Item* items;
+        pkpy::Dict::ItemNode* nodes;
+        int index;
+
+        iterator operator++ () {
+            index = nodes[index].next;
+            if(index == -1) {
+                items = nullptr;
+                nodes = nullptr;
+            }
+            return *this;
+        }
+
+        std::pair<handle, handle> operator* () const { return {items[index].first, items[index].second}; }
+
+        bool operator== (const iterator& other) const {
+            return items == other.items && nodes == other.nodes && index == other.index;
+        }
+
+        bool operator!= (const iterator& other) const { return !(*this == other); }
+    };
+
+    iterator begin() const {
+        auto index = self()._head_idx;
+        if(index == -1) {
+            return end();
+        } else {
+            return {self()._items, self()._nodes, index};
+        }
+    }
+
+    iterator end() const { return {nullptr, nullptr, -1}; }
+
+    template <typename Key>
+    bool contains(Key&& key) const {
+        return self().contains(vm, pybind11::cast(std::forward<Key>(key)).ptr());
+    }
+#endif
+
+    int size() const { return self().size(); }
+
+    bool empty() const { return size() == 0; }
+
+    void clear() { self().clear(); }
+
+    dict_accessor operator[] (int index) const;
+    dict_accessor operator[] (std::string_view) const;
+    dict_accessor operator[] (const handle& key) const;
 };
 
 class function : public object {
@@ -306,7 +370,11 @@ class capsule : public object {
     };
 
     PYBIND11_REGISTER_INIT([] {
+#if PK_VERSION_MAJOR == 2
         handle type = vm->new_type_object<pack>(vm->builtins, "capsule", vm->tp_object, false);
+#else
+        handle type = vm->new_type_object(vm->builtins, "capsule", vm->tp_object, false);
+#endif
         vm->builtins->attr().set("capsule", type.ptr());
     });
 
@@ -318,7 +386,7 @@ public:
 
     template <typename T>
     T& cast() const {
-        return *static_cast<T*>(value().data);
+        return *static_cast<T*>(self().data);
     }
 };
 
@@ -326,11 +394,15 @@ class property : public object {
     PYBIND11_TYPE_IMPLEMENT(object, pkpy::Property, vm->tp_property);
 
 public:
+#if PK_VERSION_MAJOR == 2
     property(handle getter, handle setter) : object(create(getter.ptr(), setter.ptr())) {}
+#else
+    property(handle getter, handle setter) : object(create(pkpy::Property{getter.ptr(), setter.ptr()})) {}
+#endif
 
-    handle getter() const { return value().getter; }
+    handle getter() const { return self().getter; }
 
-    handle setter() const { return value().setter; }
+    handle setter() const { return self().setter; }
 };
 
 class args : public tuple {

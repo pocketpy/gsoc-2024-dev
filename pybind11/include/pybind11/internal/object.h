@@ -9,9 +9,21 @@ private:
     pkpy::PyVar ptr() const { return static_cast<const Derived*>(this)->ptr(); }
 
 public:
-    bool is_none() const { return ptr().operator== (vm->None.get()); }
+    bool is_none() const {
+#if PK_VERSION_MAJOR == 2
+        return ptr().operator== (vm->None.get());
+#else
+        return ptr() == vm->None;
+#endif
+    }
 
-    bool is(const interface& other) const { return ptr().operator== (other.ptr().get()); }
+    bool is(const interface& other) const {
+#if PK_VERSION_MAJOR == 2
+        return ptr().operator== (other.ptr().get());
+#else
+        return ptr() == other.ptr();
+#endif
+    }
 
     bool in(const interface& other) const {
         return pybind11::cast<bool>(vm->call(vm->py_op("contains"), other.ptr(), ptr()));
@@ -26,6 +38,11 @@ public:
 
     attr_accessor attr(const char* key) const;
     attr_accessor attr(const handle& key) const;
+
+protected:
+    attr_accessor attr(pkpy::StrName key) const;
+
+public:
     attr_accessor doc() const;
 
     item_accessor operator[] (int index) const;
@@ -38,6 +55,7 @@ public:
     object operator- () const;
     object operator~() const;
 
+    str package() const;
     str name() const;
     str repr() const;
 };
@@ -56,7 +74,9 @@ public:
 
     handle(pkpy::PyVar ptr) : m_ptr(ptr) {}
 
+#if PK_VERSION_MAJOR == 2
     handle(pkpy::PyObject* ptr) : m_ptr(ptr) {}
+#endif
 
     pkpy::PyVar ptr() const { return m_ptr; }
 
@@ -70,11 +90,15 @@ public:
     template <typename T>
     decltype(auto) _as() const {
         static_assert(!std::is_reference_v<T>, "T must not be a reference type.");
+#if PK_VERSION_MAJOR == 2
         if constexpr(pkpy::is_sso_v<T>) {
             return pkpy::_py_cast<T>(vm, m_ptr);
         } else {
             return m_ptr.obj_get<T>();
         }
+#else
+        return (((pkpy::Py_<T>*)m_ptr)->_value);
+#endif
     }
 };
 
@@ -96,13 +120,44 @@ struct type_visitor {
                 static_assert(dependent_false<T>, "type_or_check not defined");
             }
         } else {
+#if PK_VERSION_MAJOR == 2
             // for C++ type, lookup the type in the type map
             auto type = vm->_cxx_typeid_map.try_get(typeid(T));
             // if found, return the type
             if(type) return *type;
+#else
+            auto result = vm->_cxx_typeid_map.find(typeid(T));
+            if(result != vm->_cxx_typeid_map.end()) { return result->second; }
+#endif
             // if not found, raise error
-            vm->TypeError("type not registered");
+            std::string msg = "can not c++ instance cast to object, type: {";
+            msg += type_name<T>();
+            msg += "} is not registered.";
+            vm->TypeError(msg);
+            PK_UNREACHABLE();
         }
+    }
+
+    template <typename T, typename Base>
+    static handle create(const handle& scope, const char* name) {
+        pkpy::Type type = vm->tp_object;
+#if PK_VERSION_MAJOR == 2
+        pkpy::PyTypeInfo::Vt vt = pkpy::PyTypeInfo::Vt::get<instance>();
+        if constexpr(!std::is_same_v<Base, void>) {
+            type = type_visitor::type<Base>();
+            vt = {};
+        }
+        auto mod = scope.ptr().get();
+        handle result = vm->new_type_object(mod, name, type, true, vt);
+        vm->_cxx_typeid_map.insert(typeid(T), result._as<pkpy::Type>());
+        return result;
+#else
+        if constexpr(!std::is_same_v<Base, void>) { type = type_visitor::type<Base>(); }
+        auto mod = scope.ptr();
+        handle result = vm->new_type_object(mod, name, type, true);
+        vm->_cxx_typeid_map.try_emplace(typeid(T), result._as<pkpy::Type>());
+        return result;
+#endif
     }
 
     template <typename T>
@@ -131,7 +186,7 @@ private:                                                                        
         return tp;                                                                                                     \
     };                                                                                                                 \
                                                                                                                        \
-    decltype(auto) value() const { return _as<underlying_type>(); }                                                    \
+    decltype(auto) self() const { return _as<underlying_type>(); }                                                     \
                                                                                                                        \
     template <typename... Args>                                                                                        \
     static handle create(Args&&... args) {                                                                             \

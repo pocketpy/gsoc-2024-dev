@@ -30,6 +30,20 @@ class cpp_function : public function {
 public:
     template <typename Fn, typename... Extras>
     cpp_function(Fn&& f, const Extras&... extras) {}
+
+    template <typename T>
+    decltype(auto) get_userdata_as() {
+#if PK_VERSION_MAJOR == 2
+        return self()._userdata.as<T>();
+#else
+        return self()._userdata._cast<T>();
+#endif
+    }
+
+    template <typename T>
+    void set_userdata(T&& value) {
+        self()._userdata = std::forward<T>(value);
+    }
 };
 
 }  // namespace pybind11
@@ -155,6 +169,7 @@ public:
             p = p->next;
         }
         vm->TypeError(msg);
+        PK_UNREACHABLE();
     }
 };
 
@@ -406,27 +421,23 @@ template <typename Fn, typename... Extras>
 handle bind_function(const handle& obj, const char* name, Fn&& fn, pkpy::BindType type, const Extras&... extras) {
     // do not use cpp_function directly to avoid unnecessary reference count change
     pkpy::PyVar var = obj.ptr();
-    pkpy::PyVar callable = var->attr().try_get(name);
+    cpp_function callable = var->attr().try_get(name);
 
     // if the function is not bound yet, bind it
     if(!callable) {
         auto record = function_record(std::forward<Fn>(fn), extras...);
         void* data = add_capsule(std::move(record));
-        callable = vm->bind_func(var.get(), name, -1, _wrapper, data);
+        callable = bind_func(var, name, -1, _wrapper, data);
     } else {
-        auto& userdata = callable.obj_get<pkpy::NativeFunc>()._userdata;
         function_record* record = new function_record(std::forward<Fn>(fn), extras...);
+        function_record* last = callable.get_userdata_as<function_record*>();
 
-        constexpr bool is_prepend = (types_count_v<prepend, Extras...> != 0);
-        if constexpr(is_prepend) {
+        if constexpr((types_count_v<prepend, Extras...> != 0)) {
             // if prepend is specified, append the new record to the beginning of the list
-            auto& userdata = callable.obj_get<pkpy::NativeFunc>()._userdata;
-            function_record* last = userdata.as<function_record*>();
-            userdata = record;
+            fn.set_userdata(record);
             record->append(last);
         } else {
             // otherwise, append the new record to the end of the list
-            function_record* last = userdata.as<function_record*>();
             last->append(record);
         }
     }
@@ -502,6 +513,7 @@ pkpy::PyVar setter_wrapper(pkpy::VM* vm, pkpy::ArgsView view) {
     }
 
     vm->TypeError("Unexpected argument type");
+    PK_UNREACHABLE();
 }
 
 template <typename Getter, typename Setter, typename... Extras>
@@ -515,11 +527,11 @@ handle bind_property(const handle& obj, const char* name, Getter&& getter_, Sett
             // otherwise, store it in the type_info
             void* data = add_capsule(std::forward<decltype(f)>(f));
             // store the index in the object
-            return vm->new_object<pkpy::NativeFunc>(vm->tp_native_func, wrapper, argc, data);
+            return vm->heap.gcnew<pkpy::NativeFunc>(vm->tp_native_func, wrapper, argc, data);
         } else {
             // if the function is trivially copyable and the size is less than 16 bytes, store it in the object
             // directly
-            return vm->new_object<pkpy::NativeFunc>(vm->tp_native_func, wrapper, argc, f);
+            return vm->heap.gcnew<pkpy::NativeFunc>(vm->tp_native_func, wrapper, argc, f);
         }
     };
 

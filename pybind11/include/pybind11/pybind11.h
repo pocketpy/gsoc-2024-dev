@@ -3,8 +3,6 @@
 
 namespace pybind11 {
 
-using error_already_set = pkpy::TopLevelException;
-
 namespace literals {
 inline arg operator""_a (const char* c, size_t) { return arg(c); }
 }  // namespace literals

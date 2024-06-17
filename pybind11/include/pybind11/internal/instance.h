@@ -62,7 +62,7 @@ public:
         instance.type = info;
         instance.data = operator new (info->size);
         instance.flag = Flag::Own;
-        return vm->new_object<pybind11::instance>(type, std::move(instance));
+        return vm->heap.gcnew<pybind11::instance>(type, std::move(instance));
     }
 
     template <typename T>
@@ -116,21 +116,27 @@ public:
             instance.parent = parent;
         }
 
-        return vm->new_object<pybind11::instance>(type, std::move(instance));
+        return vm->heap.gcnew<pybind11::instance>(type, std::move(instance));
     }
 
     ~instance() {
         if(flag & Flag::Own) { type->destructor(data); }
     }
 
-    void _gc_mark(pkpy::VM* vm) const noexcept {
-        if(parent && (flag & Flag::Ref)) { PK_OBJ_MARK(parent); }
-    }
-
     template <typename T>
     T& _as() noexcept {
         return *static_cast<T*>(data);
     }
+
+#if PK_VERSION_MAJOR == 2
+    void _gc_mark(pkpy::VM* vm) const noexcept {
+        if(parent && (flag & Flag::Ref)) { PK_OBJ_MARK(parent); }
+    }
+#else
+    void _gc_mark() const noexcept {
+        if(parent && (flag & Flag::Ref)) { PK_OBJ_MARK(parent); }
+    }
+#endif
 };
 
 }  // namespace pybind11

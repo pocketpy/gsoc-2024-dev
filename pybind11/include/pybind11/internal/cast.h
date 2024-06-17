@@ -137,17 +137,8 @@ struct type_caster {
     template <typename U>
     static handle cast(U&& value, return_value_policy policy, const handle& parent = handle()) {
         const auto& info = typeid(underlying_type);
-        pkpy::Type* type = vm->_cxx_typeid_map.try_get(info);
-
-        if(type) {
-            return instance::create(std::forward<U>(value), *type, policy, parent.ptr());
-        } else {
-            std::string msg = "can not c++ instance cast to object, type: {";
-            msg += type_name<underlying_type>();
-            msg += "} is not registered.";
-            vm->TypeError(msg);
-        }
-
+        auto type = type_visitor::type<underlying_type>();
+        return instance::create(std::forward<U>(value), type, policy, parent.ptr());
         // TODO: support implicit cast
     }
 };

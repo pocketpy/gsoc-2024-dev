@@ -10,33 +10,21 @@ class class_ : public type {
 protected:
     handle m_scope;
 
-    static handle new_type(const handle& scope, const char* name) {
-        pkpy::Type type = vm->tp_object;
-        pkpy::PyTypeInfo::Vt vt = pkpy::PyTypeInfo::Vt::get<instance>();
-        if constexpr(!std::is_same_v<Base, void>) {
-            type = type_visitor::type<Base>();
-            vt = {};
-        }
-        auto mod = scope.ptr().get();
-        return vm->new_type_object(mod, name, type, true, vt);
-    }
-
 public:
     using type::type;
     using underlying_type = T;
 
     template <typename... Args>
-    class_(const handle& scope, const char* name, Args&&... args) : m_scope(scope), type(new_type(scope, name)) {
+    class_(const handle& scope, const char* name, Args&&... args) :
+        m_scope(scope), type(type_visitor::create<T, Base>(scope, name)) {
         auto& info = type_info::of<T>();
         info.name = name;
 
         // set __module__
-        pkpy::PyVar mod = scope.ptr();
-        mod->attr().set(name, m_ptr);
-        vm->_cxx_typeid_map.insert(typeid(T), this->_as<pkpy::Type>());
+        setattr(scope, name, m_ptr);
 
         // bind __new__
-        vm->bind_func(m_ptr.get(), pkpy::__new__, -1, [](pkpy::VM* vm, pkpy::ArgsView args) {
+        bind_func(m_ptr, pkpy::__new__, -1, [](pkpy::VM* vm, pkpy::ArgsView args) {
             auto cls = handle(args[0])._as<pkpy::Type>();
 
             // check if the class has constructor, if not, raise error

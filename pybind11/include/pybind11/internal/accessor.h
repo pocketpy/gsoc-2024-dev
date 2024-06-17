@@ -15,8 +15,13 @@ inline iterator interface<Derived>::end() const {
 }
 
 template <typename Derived>
+inline str interface<Derived>::package() const {
+    return handle(this->attr(pkpy::__package__));
+}
+
+template <typename Derived>
 inline str interface<Derived>::name() const {
-    return handle(vm->getattr(this->ptr(), "__name__"));
+    return handle(this->attr(pkpy::__name__));
 }
 
 template <typename Derived>
@@ -109,16 +114,21 @@ struct list {
 struct dict {
     using key_type = handle;
 
-    static handle get(const handle& obj, const handle& key) { return obj._as<pkpy::Dict>().try_get(vm, key.ptr()); }
+    static handle get(const handle& obj, const handle& key) { return obj.cast<pybind11::dict>().getitem(key); }
 
     static void set(const handle& obj, const handle& key, const handle& value) {
-        obj._as<pkpy::Dict>().set(vm, key.ptr(), value.ptr());
+        obj.cast<pybind11::dict>().setitem(key, value);
     }
 };
 
 }  // namespace policy
 
 // implement other methods of interface
+
+template <typename Derived>
+inline attr_accessor interface<Derived>::attr(pkpy::StrName key) const {
+    return attr_accessor(this->ptr(), key);
+}
 
 template <typename Derived>
 inline attr_accessor interface<Derived>::attr(const char* key) const {

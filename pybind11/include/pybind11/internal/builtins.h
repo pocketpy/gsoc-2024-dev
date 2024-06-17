@@ -5,17 +5,26 @@
 namespace pybind11 {
 
 inline object eval(std::string_view code, const handle& global = none{}, handle local = none{}) {
+#if PK_VERSION_MAJOR == 2
     return vm->py_eval(code, global.ptr(), local.ptr());
+#else
+    return vm->eval(code);
+#endif
 }
 
 inline void exec(std::string_view code, const handle& global = none{}, handle local = none{}) {
+#if PK_VERSION_MAJOR == 2
     vm->py_exec(code, global.ptr(), local.ptr());
+#else
+    vm->exec(code);
+#endif
 }
 
 /// globas() in pkpy is immutable, your changes will not be reflected in the Python interpreter
 inline dict globals() {
     auto& proxy = eval("globals()")._as<pkpy::MappingProxy>().attr();
     dict result;
+#if PK_VERSION_MAJOR == 2
     proxy.apply(
         [](pkpy::StrName key, pkpy::PyVar value, void* data) {
             auto& dict = static_cast<pybind11::dict*>(data)->_as<pkpy::Dict>();
@@ -23,6 +32,11 @@ inline dict globals() {
             dict.set(vm, key_, value);
         },
         &result);
+#else
+    proxy.apply([&](pkpy::StrName key, pkpy::PyVar value) {
+        result.setitem(str(key.sv()), value);
+    });
+#endif
     return result;
 }
 
@@ -121,6 +135,7 @@ T cast(const handle& obj, bool convert) {
         msg += type_name<T>();
         msg += "}.";
         vm->TypeError(msg);
+        PK_UNREACHABLE();
     }
 }
 
