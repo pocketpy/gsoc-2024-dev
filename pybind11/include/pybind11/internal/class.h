@@ -20,9 +20,6 @@ public:
         auto& info = type_info::of<T>();
         info.name = name;
 
-        // set __module__
-        setattr(scope, name, m_ptr);
-
         // bind __new__
         bind_func(m_ptr, pkpy::__new__, -1, [](pkpy::VM* vm, pkpy::ArgsView args) {
             auto cls = handle(args[0])._as<pkpy::Type>();

@@ -158,6 +158,8 @@ struct type_visitor {
         vm->_cxx_typeid_map.try_emplace(typeid(T), result._as<pkpy::Type>());
         return result;
 #endif
+        // set __module__
+        setattr(scope, name, result);
     }
 
     template <typename T>
