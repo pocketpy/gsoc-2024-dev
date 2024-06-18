@@ -23,6 +23,15 @@ struct Point {
 
 }  // namespace
 
+TEST_F(PYBIND11_TEST, globals) {
+    auto m = py::module_::__main__();
+
+    m.attr("x") = py::int_(1);
+
+    auto globals = py::globals();
+    EXPECT_EQ(globals["x"].cast<int>(), 1);
+}
+
 TEST_F(PYBIND11_TEST, exec_or_eval) {
     auto m = py::module_::__main__();
 
