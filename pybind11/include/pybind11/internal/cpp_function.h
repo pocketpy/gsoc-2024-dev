@@ -426,7 +426,7 @@ handle bind_function(const handle& obj, const char* name, Fn&& fn, pkpy::BindTyp
     // if the function is not bound yet, bind it
     if(!callable) {
         auto record = function_record(std::forward<Fn>(fn), extras...);
-        void* data = add_capsule(std::move(record));
+        void* data = interpreter::take_ownership(std::move(record));
         callable = bind_func(var, name, -1, _wrapper, data);
     } else {
         function_record* record = new function_record(std::forward<Fn>(fn), extras...);
@@ -525,7 +525,7 @@ handle bind_property(const handle& obj, const char* name, Getter&& getter_, Sett
     constexpr auto create = [](Wrapper wrapper, int argc, auto&& f) {
         if constexpr(need_host<remove_cvref_t<decltype(f)>>) {
             // otherwise, store it in the type_info
-            void* data = add_capsule(std::forward<decltype(f)>(f));
+            void* data = interpreter::take_ownership(std::forward<decltype(f)>(f));
             // store the index in the object
             return vm->heap.gcnew<pkpy::NativeFunc>(vm->tp_native_func, wrapper, argc, data);
         } else {

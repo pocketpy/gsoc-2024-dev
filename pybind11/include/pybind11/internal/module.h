@@ -36,8 +36,7 @@ public:
     static void _pybind11_register_##name(pybind11::module_& variable);                                                \
     namespace pybind11::impl {                                                                                         \
     auto _module_##name = [] {                                                                                         \
-        if(_init == nullptr) _init = new std::vector<void (*)()>();                                                    \
-        _init->push_back([] {                                                                                          \
+        interpreter::register_init([] {                                                                                \
             pybind11::module_ m = vm->new_module(#name, "");                                                           \
             _pybind11_register_##name(m);                                                                              \
         });                                                                                                            \

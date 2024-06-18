@@ -8,22 +8,39 @@
 namespace pybind11 {
 
 inline pkpy::VM* vm = nullptr;
-inline std::vector<void (*)()>* _init = nullptr;
 
 /// capsules are used to store some long-lived data that can be accessed by the python side
-inline std::vector<std::pair<void*, void (*)(void*)>>* _capsules = nullptr;
 
-template <typename T>
-inline void* add_capsule(T&& value) {
-    if(_capsules == nullptr) _capsules = new std::vector<std::pair<void*, void (*)(void*)>>();
-    void* ptr = new auto(std::forward<T>(value));
-    _capsules->emplace_back(ptr, [](void* ptr) {
-        delete static_cast<std::decay_t<T>*>(ptr);
-    });
-    return ptr;
-}
+namespace impl {
+struct capsule {
+    void* ptr;
+    void (*destructor)(void*);
+
+    template <typename T>
+    capsule(T&& value) :
+        ptr(new auto(std::forward<T>(value))), destructor([](void* ptr) {
+            delete static_cast<std::decay_t<T>*>(ptr);
+        }) {}
+
+    capsule(void* ptr, void (*destructor)(void*)) : ptr(ptr), destructor(destructor) {}
+
+    capsule(const capsule&) = delete;
+
+    capsule(capsule&& other) noexcept : ptr(other.ptr), destructor(other.destructor) {
+        other.ptr = nullptr;
+        other.destructor = nullptr;
+    }
+
+    ~capsule() {
+        if(ptr != nullptr && destructor != nullptr) destructor(ptr);
+    }
+};
+}  // namespace impl
 
 class interpreter {
+    inline static std::vector<impl::capsule>* _capsules = nullptr;
+    inline static std::vector<void (*)()>* _init = nullptr;
+
 public:
     inline static void initialize(bool enable_os = true) {
         if(vm == nullptr) {
@@ -37,8 +54,6 @@ public:
 
     inline static void finalize() {
         if(_capsules != nullptr) {
-            for(auto& [ptr, fn]: *_capsules)
-                fn(ptr);
             delete _capsules;
             _capsules = nullptr;
         }
@@ -47,6 +62,18 @@ public:
             delete vm;
             vm = nullptr;
         }
+    }
+
+    template <typename T>
+    inline static void* take_ownership(T&& value) {
+        if(_capsules == nullptr) _capsules = new std::vector<impl::capsule>();
+        _capsules->emplace_back(std::forward<T>(value));
+        return _capsules->back().ptr;
+    }
+
+    inline static void register_init(void (*init)()) {
+        if(_init == nullptr) _init = new std::vector<void (*)()>();
+        _init->push_back(init);
     }
 };
 

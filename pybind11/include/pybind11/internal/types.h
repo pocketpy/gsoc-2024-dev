@@ -22,8 +22,7 @@ struct arg {
 // undef in pybind11.h
 #define PYBIND11_REGISTER_INIT(func)                                                                                   \
     static inline int _register = [] {                                                                                 \
-        if(_init == nullptr) _init = new std::vector<void (*)()>();                                                    \
-        _init->push_back(func);                                                                                        \
+        interpreter::register_init(func);                                                                              \
         return 0;                                                                                                      \
     }();
 
@@ -354,26 +353,11 @@ class function : public object {
 //};
 //
 class capsule : public object {
-    struct pack {
-        void* data;
-        void (*destructor)(void*);
-
-        template <typename T>
-        pack(T&& value) {
-            data = new auto(std::forward<T>(value));
-            destructor = [](void* ptr) {
-                delete static_cast<std::decay_t<T>*>(ptr);
-            };
-        }
-
-        ~pack() { destructor(data); }
-    };
-
     PYBIND11_REGISTER_INIT([] {
-        type_visitor::create<pack>(vm->builtins, "capsule", true);
+        type_visitor::create<impl::capsule>(vm->builtins, "capsule", true);
     });
 
-    PYBIND11_TYPE_IMPLEMENT(object, pack, handle(vm->builtins->attr("capsule"))._as<pkpy::Type>());
+    PYBIND11_TYPE_IMPLEMENT(object, impl::capsule, handle(vm->builtins->attr("capsule"))._as<pkpy::Type>());
 
 public:
     template <typename T>
@@ -381,7 +365,7 @@ public:
 
     template <typename T>
     T& cast() const {
-        return *static_cast<T*>(self().data);
+        return *static_cast<T*>(self().ptr);
     }
 };
 
