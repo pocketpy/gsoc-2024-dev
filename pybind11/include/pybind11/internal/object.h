@@ -73,7 +73,7 @@ public:
         if constexpr(pkpy::is_sso_v<T>) {
             return pkpy::_py_cast<T>(vm, ptr());
         } else {
-            return ptr().obj_get<T>();
+            return ptr().template obj_get<T>();
         }
 #else
         return (((pkpy::Py_<T>*)ptr())->_value);
@@ -220,19 +220,17 @@ public:
 
 // undef after usage
 #define PYBIND11_BINARY_OPERATOR(OP, NAME)                                                                             \
-    inline object operator OP (const handle& lhs, const handle& rhs) {                                                 \
-        return vm->call(vm->py_op(NAME), lhs.ptr(), rhs.ptr());                                                        \
-    }
+    inline object operator OP (const handle& lhs, const handle& rhs) { return handle(vm->py_op(NAME))(lhs, rhs); }
 
 #define PYBIND11_INPLACE_OPERATOR(OP, NAME)                                                                            \
     inline object operator OP (handle& lhs, const handle& rhs) {                                                       \
-        handle result = vm->call(vm->py_op(NAME), lhs.ptr(), rhs.ptr());                                               \
+        handle result = handle(vm->py_op(NAME))(lhs.ptr(), rhs.ptr());                                                 \
         return lhs = result;                                                                                           \
     }
 
 #define PYBIND11_BINARY_LOGIC_OPERATOR(OP, NAME)                                                                       \
     inline bool operator OP (const handle& lhs, const handle& rhs) {                                                   \
-        return pybind11::cast<bool>(vm->call(vm->py_op(NAME), lhs.ptr(), rhs.ptr()));                                  \
+        return pybind11::cast<bool>(handle(vm->py_op(NAME))(lhs.ptr(), rhs.ptr()));                                    \
     }
 
 PYBIND11_BINARY_OPERATOR(+, "add");

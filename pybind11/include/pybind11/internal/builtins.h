@@ -156,21 +156,25 @@ args_proxy interface<Derived>::operator* () const {
 
 template <typename... Args>
 handle interpreter::vectorcall(const handle& callable, const handle& self, const Args&... args) {
-
     vm->s_data.push(callable.ptr());
-    vm->s_data.push(self == handle() ? pkpy::PY_NULL : self.ptr());
+
+#if PK_VERSION_MAJOR == 2
+    vm->s_data.push(self ? PY_NULL : self.ptr());
+#else
+    vm->s_data.push(self ? pkpy::PY_NULL : self.ptr());
+#endif
 
     int argc = 0;
     int kwargsc = 0;
 
     auto push_arg = [&](const handle& value) {
-        assert(value.ptr() != nullptr);
+        assert(value);
         vm->s_data.push(value.ptr());
         argc++;
     };
 
     auto push_named_arg = [&](std::string_view name, const handle& value) {
-        assert(value.ptr() != nullptr);
+        assert(value);
         vm->s_data.push(int_(pkpy::StrName(name).index).ptr());
         vm->s_data.push(value.ptr());
         kwargsc++;
