@@ -224,13 +224,13 @@ public:
 
 #define PYBIND11_INPLACE_OPERATOR(OP, NAME)                                                                            \
     inline object operator OP (handle& lhs, const handle& rhs) {                                                       \
-        handle result = handle(vm->py_op(NAME))(lhs.ptr(), rhs.ptr());                                                 \
+        handle result = handle(vm->py_op(NAME))(lhs, rhs);                                                             \
         return lhs = result;                                                                                           \
     }
 
 #define PYBIND11_BINARY_LOGIC_OPERATOR(OP, NAME)                                                                       \
     inline bool operator OP (const handle& lhs, const handle& rhs) {                                                   \
-        return pybind11::cast<bool>(handle(vm->py_op(NAME))(lhs.ptr(), rhs.ptr()));                                    \
+        return pybind11::cast<bool>(handle(vm->py_op(NAME))(lhs, rhs));                                                \
     }
 
 PYBIND11_BINARY_OPERATOR(+, "add");

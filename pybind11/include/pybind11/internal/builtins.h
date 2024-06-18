@@ -159,9 +159,9 @@ handle interpreter::vectorcall(const handle& callable, const handle& self, const
     vm->s_data.push(callable.ptr());
 
 #if PK_VERSION_MAJOR == 2
-    vm->s_data.push(self ? PY_NULL : self.ptr());
+    vm->s_data.push(self ? self.ptr() : PY_NULL);
 #else
-    vm->s_data.push(self ? pkpy::PY_NULL : self.ptr());
+    vm->s_data.push(self ? self.ptr() : pkpy::PY_NULL);
 #endif
 
     int argc = 0;
