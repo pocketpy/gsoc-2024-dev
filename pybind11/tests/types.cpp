@@ -99,6 +99,6 @@ TEST_F(PYBIND11_TEST, capsule) {
     NotTrivial obj;
     py::handle x = py::capsule(obj);
 
-    py::finalize();
+    py::interpreter::finalize(); 
     EXPECT_EQ(times, 1);
 }

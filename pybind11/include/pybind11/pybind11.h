@@ -8,9 +8,9 @@ inline arg operator""_a (const char* c, size_t) { return arg(c); }
 }  // namespace literals
 
 struct scoped_interpreter {
-    scoped_interpreter() { initialize(); }
+    scoped_interpreter() { interpreter::initialize(); }
 
-    ~scoped_interpreter() { finalize(); }
+    ~scoped_interpreter() { interpreter::finalize(); }
 };
 
 }  // namespace pybind11

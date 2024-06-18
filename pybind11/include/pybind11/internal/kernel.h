@@ -13,30 +13,6 @@ inline std::vector<void (*)()>* _init = nullptr;
 /// capsules are used to store some long-lived data that can be accessed by the python side
 inline std::vector<std::pair<void*, void (*)(void*)>>* _capsules = nullptr;
 
-inline void initialize(bool enable_os = true) {
-    if(vm == nullptr) {
-        vm = new pkpy::VM();
-        if(_init != nullptr) {
-            for(auto& fn: *_init)
-                fn();
-        }
-    }
-}
-
-inline void finalize() {
-    if(_capsules != nullptr) {
-        for(auto& [ptr, fn]: *_capsules)
-            fn(ptr);
-        delete _capsules;
-        _capsules = nullptr;
-    }
-
-    if(vm != nullptr) {
-        delete vm;
-        vm = nullptr;
-    }
-}
-
 template <typename T>
 inline void* add_capsule(T&& value) {
     if(_capsules == nullptr) _capsules = new std::vector<std::pair<void*, void (*)(void*)>>();
@@ -46,6 +22,33 @@ inline void* add_capsule(T&& value) {
     });
     return ptr;
 }
+
+class interpreter {
+public:
+    inline static void initialize(bool enable_os = true) {
+        if(vm == nullptr) {
+            vm = new pkpy::VM();
+            if(_init != nullptr) {
+                for(auto& fn: *_init)
+                    fn();
+            }
+        }
+    }
+
+    inline static void finalize() {
+        if(_capsules != nullptr) {
+            for(auto& [ptr, fn]: *_capsules)
+                fn(ptr);
+            delete _capsules;
+            _capsules = nullptr;
+        }
+
+        if(vm != nullptr) {
+            delete vm;
+            vm = nullptr;
+        }
+    }
+};
 
 template <typename T>
 constexpr inline bool need_host = !(std::is_trivially_copyable_v<T> && (sizeof(T) <= 8));
@@ -183,4 +186,8 @@ public:
     const char* what() const noexcept override { return "An error occurred while calling a Python function."; }
 };
 #endif
+
+inline void setattr(const handle& obj, const handle& name, const handle& value);
+inline void setattr(const handle& obj, const char* name, const handle& value);
+
 }  // namespace pybind11

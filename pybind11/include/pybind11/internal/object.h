@@ -139,27 +139,28 @@ struct type_visitor {
     }
 
     template <typename T, typename Base = void>
-    static handle create(const handle& scope, const char* name) {
+    static handle create(const handle& scope, const char* name, bool is_builtin = false) {
         pkpy::Type type = vm->tp_object;
 #if PK_VERSION_MAJOR == 2
         pkpy::PyTypeInfo::Vt vt = pkpy::PyTypeInfo::Vt::get<instance>();
+
+        if(is_builtin) { vt = pkpy::PyTypeInfo::Vt::get<T>(); }
+
         if constexpr(!std::is_same_v<Base, void>) {
             type = type_visitor::type<Base>();
             vt = {};
         }
-        auto mod = scope.ptr().get();
-        handle result = vm->new_type_object(mod, name, type, true, vt);
-        vm->_cxx_typeid_map.insert(typeid(T), result._as<pkpy::Type>());
-        return result;
+
+        handle result = vm->new_type_object(scope.ptr().get(), name, type, true, vt);
+        if(!is_builtin) { vm->_cxx_typeid_map.insert(typeid(T), result._as<pkpy::Type>()); }
 #else
         if constexpr(!std::is_same_v<Base, void>) { type = type_visitor::type<Base>(); }
-        auto mod = scope.ptr();
-        handle result = vm->new_type_object(mod, name, type, true);
-        vm->_cxx_typeid_map.try_emplace(typeid(T), result._as<pkpy::Type>());
-        return result;
+        handle result = vm->new_type_object(scope.ptr(), name, type, true);
+        if(!is_builtin) (vm->_cxx_typeid_map.try_emplace(typeid(T), result._as<pkpy::Type>()));
 #endif
         // set __module__
         setattr(scope, name, result);
+        return result;
     }
 
     template <typename T>

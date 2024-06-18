@@ -54,7 +54,7 @@ TEST_F(PYBIND11_TEST, cpp_cast_py) {
     EXPECT_EQ(copy_constructor_calls, 1);
     EXPECT_EQ(move_constructor_calls, 1);
 
-    py::finalize();
+    py::interpreter::finalize(); 
 
     EXPECT_EQ(destructor_calls, 2);
 }

@@ -105,7 +105,7 @@ assert l.start.stringfy() == '(1, 2, 3)'
 assert l.end.stringfy() == '(4, 5, 6)'
 )");
 
-    py::finalize();
+    py::interpreter::finalize(); 
 
     EXPECT_EQ(Point::constructor_calls, Point::destructor_calls);
     EXPECT_EQ(Point::copy_constructor_calls, 0);
@@ -165,7 +165,7 @@ assert p.y == 20
 assert p.z == 30
 )");
 
-    py::finalize();
+    py::interpreter::finalize(); 
 
     EXPECT_EQ(constructor_calls, 4);
 }

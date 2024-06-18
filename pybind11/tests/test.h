@@ -5,9 +5,9 @@ namespace py = pybind11;
 
 class PYBIND11_TEST : public ::testing::Test {
 protected:
-    void SetUp() override { py::initialize(); }
+    void SetUp() override { py::interpreter::initialize(); }
 
-    void TearDown() override { py::finalize(); }
+    void TearDown() override { py::interpreter::finalize(); }
 };
 
 #define EXPECT_CAST_EQ(expr, expected) EXPECT_EQ(py::cast(expr), py::cast(expected))

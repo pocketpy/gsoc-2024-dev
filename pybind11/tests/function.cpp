@@ -157,7 +157,7 @@ TEST_F(PYBIND11_TEST, return_value_policy) {
     };
 
     auto test = [](py::return_value_policy policy, auto bound_fn, auto fn) {
-        py::initialize();
+        py::interpreter::initialize(); 
         copy_constructor_calls = 0;
         move_constructor_calls = 0;
         destructor_calls = 0;
@@ -174,7 +174,7 @@ TEST_F(PYBIND11_TEST, return_value_policy) {
 
         EXPECT_EVAL_EQ("make_point()", Point::make_point());
 
-        py::finalize();
+        py::interpreter::finalize(); 
 
         fn();
     };
@@ -259,7 +259,7 @@ TEST_F(PYBIND11_TEST, default_return_value_policy) {
     EXPECT_EQ(copy_constructor_calls, 1);
     EXPECT_EQ(move_constructor_calls, 1);
 
-    py::finalize();
+    py::interpreter::finalize(); 
     EXPECT_EQ(destructor_calls, 3);
 }
 
@@ -294,7 +294,7 @@ TEST_F(PYBIND11_TEST, lambda) {
     EXPECT_EVAL_EQ("cal(1, 2)", 6);
     EXPECT_EVAL_EQ("cal2(1, 2)", 21);
 
-    py::finalize();
+    py::interpreter::finalize(); 
 
     EXPECT_EQ(destructor_calls, 4);
 }
