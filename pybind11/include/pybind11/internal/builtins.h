@@ -5,19 +5,11 @@
 namespace pybind11 {
 
 inline object eval(std::string_view code, const handle& global = none{}, handle local = none{}) {
-#if PK_VERSION_MAJOR == 2
     return vm->py_eval(code, global.ptr(), local.ptr());
-#else
-    return vm->eval(code);
-#endif
 }
 
 inline void exec(std::string_view code, const handle& global = none{}, handle local = none{}) {
-#if PK_VERSION_MAJOR == 2
     vm->py_exec(code, global.ptr(), local.ptr());
-#else
-    vm->exec(code);
-#endif
 }
 
 /// globas() in pkpy is immutable, your changes will not be reflected in the Python interpreter

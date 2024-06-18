@@ -23,6 +23,23 @@ struct Point {
 
 }  // namespace
 
+TEST_F(PYBIND11_TEST, exec_or_eval) {
+    auto m = py::module_::__main__();
+
+    py::dict locals = {py::arg("x") = 1, py::arg("y") = 2};
+    py::object obj = py::eval("x + y", py::none{}, locals);
+    EXPECT_EQ(obj.cast<int>(), 3);
+
+    py::exec("x = 1 + 2");
+    EXPECT_EQ(py::eval("x").cast<int>(), 3);
+
+    py::exec("y = 1 + 2", m.attr("__dict__"));
+    EXPECT_EQ(py::eval("y", m.attr("__dict__")).cast<int>(), 3);
+
+    EXPECT_EQ(locals["x"].cast<int>(), 1);
+    EXPECT_EQ(locals["y"].cast<int>(), 2);
+}
+
 TEST_F(PYBIND11_TEST, cpp_cast_py) {
     auto m = py::module_::__main__();
 
