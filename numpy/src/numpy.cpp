@@ -27,25 +27,18 @@ public:
     virtual std::vector<int> shape() const = 0;
     virtual bool all() const = 0;
     virtual bool any() const = 0;  
-    virtual ndarray_base* sum() const = 0;
     virtual ndarray_base* sum_axis(int axis) const = 0;
     virtual ndarray_base* sum_axes(const std::vector<int>& axes) const = 0;
-    virtual ndarray_base* prod() const = 0;
     virtual ndarray_base* prod_axis(int axis) const = 0;
     virtual ndarray_base* prod_axes(const std::vector<int>& axes) const = 0;
-    virtual ndarray_base* min() const = 0;
     virtual ndarray_base* min_axis(int axis) const = 0;
     virtual ndarray_base* min_axes(const std::vector<int>& axes) const = 0;
-    virtual ndarray_base* max() const = 0;
     virtual ndarray_base* max_axis(int axis) const = 0;
     virtual ndarray_base* max_axes(const std::vector<int>& axes) const = 0;
-    virtual ndarray_base* mean() const = 0;
     virtual ndarray_base* mean_axis(int axis) const = 0;
     virtual ndarray_base* mean_axes(const std::vector<int>& axes) const = 0;
-    virtual ndarray_base* std() const = 0;
     virtual ndarray_base* std_axis(int axis) const = 0;
     virtual ndarray_base* std_axes(const std::vector<int>& axes) const = 0;
-    virtual ndarray_base* var() const = 0;
     virtual ndarray_base* var_axis(int axis) const = 0;
     virtual ndarray_base* var_axes(const std::vector<int>& axes) const = 0;
     virtual ndarray_base* argmin() const = 0;
@@ -67,6 +60,7 @@ public:
     virtual ndarray_base* flatten() const = 0;
     virtual ndarray_base* copy() const = 0;
     virtual ndarray_base* astype(const std::string& dtype) const = 0;
+    virtual bool eq(const ndarray_base& other) const = 0;
     virtual ndarray_base* add(const ndarray_base& other) const = 0;
     virtual ndarray_base* add_int(int other) const = 0;
     virtual ndarray_base* add_float(float64 other) const = 0;
@@ -130,25 +124,18 @@ public:
     bool any() const override { return data.any(); }
 
     // Aggregation Functions
-    ndarray_base* sum() const override { return new ndarray<T>(data.sum()); }
     ndarray_base* sum_axis(int axis) const override { return new ndarray<T>(data.sum(axis)); }
     ndarray_base* sum_axes(const std::vector<int>& axes) const override { return new ndarray<T>(data.sum(axes)); }
-    ndarray_base* prod() const override { return new ndarray<T>(data.prod()); }
     ndarray_base* prod_axis(int axis) const override { return new ndarray<T>(data.prod(axis)); }
     ndarray_base* prod_axes(const std::vector<int>& axes) const override { return new ndarray<T>(data.prod(axes)); }
-    ndarray_base* min() const override { return new ndarray<T>(data.min()); }
     ndarray_base* min_axis(int axis) const override { return new ndarray<T>(data.min(axis)); }
     ndarray_base* min_axes(const std::vector<int>& axes) const override { return new ndarray<T>(data.min(axes)); }
-    ndarray_base* max() const override { return new ndarray<T>(data.max()); }
     ndarray_base* max_axis(int axis) const override { return new ndarray<T>(data.max(axis)); }
     ndarray_base* max_axes(const std::vector<int>& axes) const override { return new ndarray<T>(data.max(axes)); }
-    ndarray_base* mean() const override { return new ndarray<T>(data.mean()); }
     ndarray_base* mean_axis(int axis) const override { return new ndarray<T>(data.mean(axis)); }
     ndarray_base* mean_axes(const std::vector<int>& axes) const override { return new ndarray<T>(data.mean(axes)); }
-    ndarray_base* std() const override { return new ndarray<T>(data.std()); }
     ndarray_base* std_axis(int axis) const override { return new ndarray<T>(data.std(axis)); }
     ndarray_base* std_axes(const std::vector<int>& axes) const override { return new ndarray<T>(data.std(axes)); }
-    ndarray_base* var() const override { return new ndarray<T>(data.var()); }
     ndarray_base* var_axis(int axis) const override { return new ndarray<T>(data.var(axis)); }
     ndarray_base* var_axes(const std::vector<int>& axes) const override { return new ndarray<T>(data.var(axes)); }
     ndarray_base* argmin() const override { return new ndarray<T>(data.argmin()); }
@@ -188,6 +175,24 @@ public:
     }
 
     // Dunder Methods
+    bool eq(const ndarray_base& other) const override {
+        if constexpr(std::is_same_v<T, int>) {
+            if(auto p = dynamic_cast<const ndarray<float64>*>(&other)){ /* int == float */
+                return data == p->data;
+            } else if(auto p = dynamic_cast<const ndarray<int>*>(&other)){ /* int == int */
+                return data == p->data;
+            }
+        } else if constexpr(std::is_same_v<T, float64>) {
+            if(auto p = dynamic_cast<const ndarray<int>*>(&other)){ /* float == int */
+                return data == p->data;
+            } else if(auto p = dynamic_cast<const ndarray<float64>*>(&other)){ /* float == float */
+                return data == p->data;
+            }
+        }
+
+        const ndarray<T>& other_ = dynamic_cast<const ndarray<T>&>(other);
+        return data == other_.data;
+    }
     ndarray_base* add(const ndarray_base& other) const override {
         if constexpr(std::is_same_v<T, int>) {
             if(auto p = dynamic_cast<const ndarray<float64>*>(&other)){ /* int + float */
@@ -511,7 +516,7 @@ public:
 using ndarray_int = ndarray<int>;
 using ndarray_float = ndarray<float64>;
 
-PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
+PYBIND11_MODULE(numpy_bindings, m) {
     m.doc() = "Python bindings for pkpy::numpy::ndarray using pybind11";
 
     py::class_<ndarray_base>(m, "ndarray")
@@ -521,25 +526,18 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         .def("shape", &ndarray_base::shape)
         .def("all", &ndarray_base::all)
         .def("any", &ndarray_base::any)
-        .def("sum", &ndarray_base::sum)
         .def("sum", &ndarray_base::sum_axis)
         .def("sum", &ndarray_base::sum_axes)
-        .def("prod", &ndarray_base::prod)
         .def("prod", &ndarray_base::prod_axis)
         .def("prod", &ndarray_base::prod_axes)
-        .def("min", &ndarray_base::min)
         .def("min", &ndarray_base::min_axis)
         .def("min", &ndarray_base::min_axes)
-        .def("max", &ndarray_base::max)
         .def("max", &ndarray_base::max_axis)
         .def("max", &ndarray_base::max_axes)
-        .def("mean", &ndarray_base::mean)
         .def("mean", &ndarray_base::mean_axis)
         .def("mean", &ndarray_base::mean_axes)
-        .def("std", &ndarray_base::std)
         .def("std", &ndarray_base::std_axis)
         .def("std", &ndarray_base::std_axes)
-        .def("var", &ndarray_base::var)
         .def("var", &ndarray_base::var_axis)
         .def("var", &ndarray_base::var_axes)
         .def("argmin", &ndarray_base::argmin)
@@ -561,6 +559,7 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         .def("flatten", &ndarray_base::flatten)
         .def("copy", &ndarray_base::copy)
         .def("astype", &ndarray_base::astype)
+        .def("eq", &ndarray_base::eq)
         .def("__add__", &ndarray_base::add)
         .def("__add__", &ndarray_base::add_int)
         .def("__add__", &ndarray_base::add_float)
@@ -634,7 +633,28 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         })
         .def("__invert__", [](ndarray<int>&v){
             return ndarray<int>(~v.data);
-        });
+        })
+        .def("sum", [](ndarray<int>&v){
+            return v.data.sum();
+        })
+        .def("prod", [](ndarray<int>&v){
+            return v.data.prod();
+        })
+        .def("min", [](ndarray<int>&v){
+            return v.data.min();
+        })
+        .def("max", [](ndarray<int>&v){
+            return v.data.max();
+        })
+        .def("mean", [](ndarray<int>&v){
+            return v.data.mean();
+        })
+        .def("std", [](ndarray<int>&v){
+            return v.data.std();
+        })
+        .def("var", [](ndarray<int>&v){
+            return v.data.var();
+         });
 
     py::class_<ndarray<float64>, ndarray_base>(m, "ndarray_float")
         .def(py::init<>())
@@ -643,7 +663,28 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         .def(py::init<const std::vector<std::vector<float64>>&>())
         .def(py::init<const std::vector<std::vector<std::vector<float64>>>&>())
         .def(py::init<const std::vector<std::vector<std::vector<std::vector<float64>>>>&>())
-        .def(py::init<const std::vector<std::vector<std::vector<std::vector<std::vector<float64>>>>>&>());
+        .def(py::init<const std::vector<std::vector<std::vector<std::vector<std::vector<float64>>>>>&>())
+        .def("sum", [](ndarray<float64>&v){
+            return v.data.sum();
+        })
+        .def("prod", [](ndarray<float64>&v){
+            return v.data.prod();
+        })
+        .def("min", [](ndarray<float64>&v){
+            return v.data.min();
+        })
+        .def("max", [](ndarray<float64>&v){
+            return v.data.max();
+        })
+        .def("mean", [](ndarray<float64>&v){
+            return v.data.mean();
+        })
+        .def("std", [](ndarray<float64>&v){
+            return v.data.std();
+        })
+        .def("var", [](ndarray<float64>&v){
+            return v.data.var();
+        });
 
     m.def("array", [](int value) {
         return std::unique_ptr<ndarray_base>(new ndarray_int(value));

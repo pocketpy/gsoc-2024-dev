@@ -101,6 +101,10 @@ public:
     _ShapeLike shape() const { return _ShapeLike(_array.shape().begin(), _array.shape().end()); }
 
     // Dunder Methods
+     template <typename U>
+    bool operator==(const ndarray<U>& other) const {
+        return _array == other.get_array();
+    }
     template <typename U>
     auto operator+(const ndarray<U>& other) const {
         using result_type = std::common_type_t<T, U>;
@@ -278,8 +282,8 @@ public:
     bool any() const { return xt::any(_array); }
 
     // Aggregate Functions
-    ndarray<T> sum() const {
-        return ndarray<T>(xt::sum(_array));
+    T sum() const {
+        return (xt::sum(_array))[0];
     }
     ndarray<T> sum(int axis) const {
         xt::xarray<T> result = xt::sum(_array, {axis});
@@ -290,8 +294,8 @@ public:
         return ndarray<T>(result);
     }
 
-    ndarray<T> prod() const {
-        return ndarray<T>(xt::prod(_array));
+    T prod() const {
+        return (xt::prod(_array))[0];
     }
     ndarray<T> prod(int axis) const {
         xt::xarray<T> result = xt::prod(_array, {axis});
@@ -302,8 +306,8 @@ public:
         return ndarray<T>(result);
     }
 
-    ndarray<T> min() const {
-        return ndarray<T>(xt::amin(_array));
+    T min() const {
+        return (xt::amin(_array))[0];
     }
     ndarray<T> min(int axis) const {
         xt::xarray<T> result = xt::amin(_array, {axis});
@@ -314,8 +318,8 @@ public:
         return ndarray<T>(result);
     }
 
-    ndarray<T> max() const {
-        return ndarray<T>(xt::amax(_array));
+    T max() const {
+        return (xt::amax(_array))[0];
     }
     ndarray<T> max(int axis) const {
         xt::xarray<T> result = xt::amax(_array, {axis});
@@ -326,8 +330,8 @@ public:
         return ndarray<T>(result);
     }
 
-    ndarray<T> mean() const {
-        return ndarray<T>(xt::mean(_array));
+    pkpy::float64 mean() const {
+        return (xt::mean(_array))[0];
     }
     ndarray<T> mean(int axis) const {
         xt::xarray<T> result = xt::mean(_array, {axis});
@@ -338,8 +342,8 @@ public:
         return ndarray<T>(result);
     }
 
-    ndarray<T> std() const {
-        return ndarray<T>(xt::stddev(_array));
+    pkpy::float64 std() const {
+        return (xt::stddev(_array))[0];
     }
     ndarray<T> std(int axis) const {
         xt::xarray<T> result = xt::stddev(_array, {axis});
@@ -350,8 +354,8 @@ public:
         return ndarray<T>(result);
     }
 
-    ndarray<T> var() const {
-        return ndarray<T>(xt::variance(_array));
+    pkpy::float64 var() const {
+        return (xt::variance(_array))[0];
     }
     ndarray<T> var(int axis) const {
         xt::xarray<T> result = xt::variance(_array, {axis});
