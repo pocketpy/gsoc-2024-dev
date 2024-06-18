@@ -5,13 +5,7 @@
 
 #include "type_traits.h"
 
-namespace pybind11 {
-
-inline pkpy::VM* vm = nullptr;
-
-/// capsules are used to store some long-lived data that can be accessed by the python side
-
-namespace impl {
+namespace pybind11::impl {
 struct capsule {
     void* ptr;
     void (*destructor)(void*);
@@ -35,7 +29,19 @@ struct capsule {
         if(ptr != nullptr && destructor != nullptr) destructor(ptr);
     }
 };
-}  // namespace impl
+}  // namespace pybind11::impl
+
+namespace pybind11 {
+
+class handle;
+class object;
+class iterator;
+class str;
+class arg;
+struct args_proxy;
+struct kwargs_proxy;
+
+inline pkpy::VM* vm = nullptr;
 
 class interpreter {
     inline static std::vector<impl::capsule>* _capsules = nullptr;
@@ -75,6 +81,22 @@ public:
         if(_init == nullptr) _init = new std::vector<void (*)()>();
         _init->push_back(init);
     }
+
+    inline static pkpy::PyVar bind_func(pkpy::PyVar scope,
+                                        pkpy::StrName name,
+                                        int argc,
+                                        pkpy::NativeFuncC fn,
+                                        pkpy::any any = {},
+                                        pkpy::BindType type = pkpy::BindType::DEFAULT) {
+#if PK_VERSION_MAJOR == 2
+        return vm->bind_func(scope.get(), name, argc, fn, any, type);
+#else
+        return vm->bind_func(scope, name, argc, fn, std::move(any), type);
+#endif
+    }
+
+    template <typename... Args>
+    inline static handle vectorcall(const handle& self, const handle& func, const Args&... args);
 };
 
 template <typename T>
@@ -89,24 +111,6 @@ decltype(auto) unpack(pkpy::ArgsView view) {
         return pkpy::lambda_get_userdata<T>(view.begin());
     }
 }
-
-inline pkpy::PyVar bind_func(pkpy::PyVar scope,
-                             pkpy::StrName name,
-                             int argc,
-                             pkpy::NativeFuncC fn,
-                             pkpy::any any = {},
-                             pkpy::BindType type = pkpy::BindType::DEFAULT) {
-#if PK_VERSION_MAJOR == 2
-    return vm->bind_func(scope.get(), name, argc, fn, any, type);
-#else
-    return vm->bind_func(scope, name, argc, fn, std::move(any), type);
-#endif
-}
-
-class handle;
-class object;
-class iterator;
-class str;
 
 template <typename policy>
 class accessor;

@@ -54,7 +54,40 @@ TEST_F(PYBIND11_TEST, cpp_cast_py) {
     EXPECT_EQ(copy_constructor_calls, 1);
     EXPECT_EQ(move_constructor_calls, 1);
 
-    py::interpreter::finalize(); 
+    py::interpreter::finalize();
 
     EXPECT_EQ(destructor_calls, 2);
+}
+
+TEST_F(PYBIND11_TEST, cpp_call_py) {
+    auto m = py::module_::__main__();
+
+    py::exec(R"(
+class Test:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def sum1(self, z):
+        return self.x + self.y + z
+    
+    def sum2(self, z, *args):
+        return self.x + self.y + z + sum(args)
+    
+    def sum3(self, z, n=0):
+        return self.x + self.y + z + n
+
+    def sum4(self, z, *args, **kwargs):
+        return self.x + self.y + z + sum(args) + kwargs['a'] + kwargs['b']
+)");
+
+    auto obj = py::eval("Test(1, 2)");
+
+    EXPECT_EQ(obj.attr("sum1")(3).cast<int>(), 6);
+    EXPECT_EQ(obj.attr("sum2")(3, 4, 5).cast<int>(), 15);
+
+    using namespace pybind11::literals;
+
+    EXPECT_EQ(obj.attr("sum3")(3, "n"_a = 4).cast<int>(), 10);
+    EXPECT_EQ(obj.attr("sum4")(3, 4, 5, "a"_a = 6, "b"_a = 7).cast<int>(), 28);
 }

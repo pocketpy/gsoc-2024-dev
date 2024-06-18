@@ -33,31 +33,52 @@ public:
         return pybind11::cast<bool>(vm->call(vm->py_op("contains"), ptr(), other.ptr()));
     }
 
+protected:
+    attr_accessor attr(pkpy::StrName key) const;
+
+public:
     iterator begin() const;
     iterator end() const;
 
     attr_accessor attr(const char* key) const;
     attr_accessor attr(const handle& key) const;
-
-protected:
-    attr_accessor attr(pkpy::StrName key) const;
-
-public:
     attr_accessor doc() const;
 
     item_accessor operator[] (int index) const;
     item_accessor operator[] (const char* key) const;
     item_accessor operator[] (const handle& key) const;
 
-    template <return_value_policy policy = return_value_policy::automatic, typename... Args>
-    object operator() (Args&&... args) const;
-
+    args_proxy operator* () const;
     object operator- () const;
     object operator~() const;
+
+    template <return_value_policy policy = return_value_policy::automatic, typename... Args>
+    object operator() (Args&&... args) const;
 
     str package() const;
     str name() const;
     str repr() const;
+
+public:
+    template <typename T>
+    T cast() const {
+        return pybind11::cast<T>(ptr());
+    }
+
+    // this is a internal function, use to interact with pocketpy python
+    template <typename T>
+    decltype(auto) _as() const {
+        static_assert(!std::is_reference_v<T>, "T must not be a reference type.");
+#if PK_VERSION_MAJOR == 2
+        if constexpr(pkpy::is_sso_v<T>) {
+            return pkpy::_py_cast<T>(vm, ptr());
+        } else {
+            return ptr().obj_get<T>();
+        }
+#else
+        return (((pkpy::Py_<T>*)ptr())->_value);
+#endif
+    }
 };
 
 /// a lightweight wrapper for python objects
@@ -81,25 +102,6 @@ public:
     pkpy::PyVar ptr() const { return m_ptr; }
 
     explicit operator bool () const { return m_ptr != nullptr; }
-
-public:
-    template <typename T>
-    T cast() const;
-
-    // this is a internal function, use to interact with pocketpy python
-    template <typename T>
-    decltype(auto) _as() const {
-        static_assert(!std::is_reference_v<T>, "T must not be a reference type.");
-#if PK_VERSION_MAJOR == 2
-        if constexpr(pkpy::is_sso_v<T>) {
-            return pkpy::_py_cast<T>(vm, m_ptr);
-        } else {
-            return m_ptr.obj_get<T>();
-        }
-#else
-        return (((pkpy::Py_<T>*)m_ptr)->_value);
-#endif
-    }
 };
 
 // a helper class to visit type

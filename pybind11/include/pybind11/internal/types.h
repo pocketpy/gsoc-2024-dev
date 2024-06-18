@@ -391,4 +391,5 @@ class args : public tuple {
 class kwargs : public dict {
     PYBIND11_TYPE_IMPLEMENT(dict, struct empty, vm->tp_dict);
 };
+
 }  // namespace pybind11

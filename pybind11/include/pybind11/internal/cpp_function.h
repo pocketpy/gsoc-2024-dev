@@ -181,6 +181,8 @@ handle invoke(Fn&& fn,
               handle parent) {
     using underlying_type = std::decay_t<Fn>;
     using return_type = callable_return_t<underlying_type>;
+
+    constexpr bool is_void = std::is_void_v<return_type>;
     constexpr bool is_member_function_pointer = std::is_member_function_pointer_v<underlying_type>;
 
     if constexpr(is_member_function_pointer) {
@@ -189,14 +191,14 @@ handle invoke(Fn&& fn,
             return (self.*fn)(args...);
         };
 
-        if constexpr(!std::is_void_v<return_type>) {
+        if constexpr(!is_void) {
             return pybind11::cast(unpack(std::get<Is>(casters).value...), policy, parent);
         } else {
             unpack(std::get<Is>(casters).value...);
             return vm->None;
         }
     } else {
-        if constexpr(!std::is_void_v<return_type>) {
+        if constexpr(!is_void) {
             return pybind11::cast(fn(std::get<Is>(casters).value...), policy, parent);
         } else {
             fn(std::get<Is>(casters).value...);
@@ -427,7 +429,7 @@ handle bind_function(const handle& obj, const char* name, Fn&& fn, pkpy::BindTyp
     if(!callable) {
         auto record = function_record(std::forward<Fn>(fn), extras...);
         void* data = interpreter::take_ownership(std::move(record));
-        callable = bind_func(var, name, -1, _wrapper, data);
+        callable = interpreter::bind_func(var, name, -1, _wrapper, data);
     } else {
         function_record* record = new function_record(std::forward<Fn>(fn), extras...);
         function_record* last = callable.get_userdata_as<function_record*>();

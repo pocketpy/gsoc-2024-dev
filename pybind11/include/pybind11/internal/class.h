@@ -21,7 +21,7 @@ public:
         info.name = name;
 
         // bind __new__
-        bind_func(m_ptr, pkpy::__new__, -1, [](pkpy::VM* vm, pkpy::ArgsView args) {
+        interpreter::bind_func(m_ptr, pkpy::__new__, -1, [](pkpy::VM* vm, pkpy::ArgsView args) {
             auto cls = handle(args[0])._as<pkpy::Type>();
 
             // check if the class has constructor, if not, raise error

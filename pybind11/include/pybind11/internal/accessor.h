@@ -160,15 +160,6 @@ inline item_accessor interface<Derived>::operator[] (const handle& key) const {
     return item_accessor(this->ptr(), key);
 }
 
-template <typename Derived>
-template <return_value_policy policy, typename... Args>
-object interface<Derived>::operator() (Args&&... args) const {
-    // TODO: implement, resolve named arguments
-
-    // vm->vectorcall()
-    return vm->None;
-}
-
 inline tuple_accessor tuple::operator[] (int i) const { return tuple_accessor(this->ptr(), i); }
 
 inline list_accessor list::operator[] (int i) const { return list_accessor(this->ptr(), i); }

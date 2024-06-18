@@ -139,15 +139,88 @@ T cast(const handle& obj, bool convert) {
     }
 }
 
-template <typename T>
-T handle::cast() const {
-    return pybind11::cast<T>(*this);
+struct kwargs_proxy {
+    handle value;
+};
+
+struct args_proxy {
+    handle value;
+
+    kwargs_proxy operator* () { return kwargs_proxy{value}; }
+};
+
+template <typename Derived>
+args_proxy interface<Derived>::operator* () const {
+    return args_proxy{ptr()};
+}
+
+template <typename... Args>
+handle interpreter::vectorcall(const handle& callable, const handle& self, const Args&... args) {
+
+    vm->s_data.push(callable.ptr());
+    vm->s_data.push(self == handle() ? pkpy::PY_NULL : self.ptr());
+
+    int argc = 0;
+    int kwargsc = 0;
+
+    auto push_arg = [&](const handle& value) {
+        assert(value.ptr() != nullptr);
+        vm->s_data.push(value.ptr());
+        argc++;
+    };
+
+    auto push_named_arg = [&](std::string_view name, const handle& value) {
+        assert(value.ptr() != nullptr);
+        vm->s_data.push(int_(pkpy::StrName(name).index).ptr());
+        vm->s_data.push(value.ptr());
+        kwargsc++;
+    };
+
+    auto foreach_ = [&](const auto& arg) {
+        using T = std::decay_t<decltype(arg)>;
+        if constexpr(std::is_convertible_v<T, handle>) {
+            push_arg(arg);
+        } else if constexpr(std::is_same_v<T, args_proxy>) {
+            pybind11::tuple args = arg.value.template cast<pybind11::tuple>();
+            for(auto item: args) {
+                push_arg(item);
+            }
+        } else if constexpr(std::is_same_v<T, pybind11::arg>) {
+            push_named_arg(arg.name, arg.default_);
+        } else if constexpr(std::is_same_v<T, kwargs_proxy>) {
+            pybind11::dict kwargs = arg.value.template cast<pybind11::dict>();
+            for(auto item: kwargs) {
+                str name = item.first.template cast<str>();
+                push_named_arg(name, item.second);
+            }
+        } else {
+            static_assert(dependent_false<T>, "unsupported type");
+        }
+    };
+    (foreach_(args), ...);
+
+    return vm->vectorcall(argc, kwargsc);
+}
+
+template <typename Derived>
+template <return_value_policy policy, typename... Args>
+inline object interface<Derived>::operator() (Args&&... args) const {
+    auto _cast = [&](auto&& arg) {
+        using T = std::decay_t<decltype(arg)>;
+        if constexpr(std::is_same_v<T, pybind11::arg> || std::is_same_v<T, kwargs_proxy> ||
+                     std::is_same_v<T, args_proxy> || std::is_convertible_v<T, handle>) {
+            return arg;
+        } else {
+            return pybind11::cast(std::forward<decltype(arg)>(arg), policy);
+        }
+    };
+    return interpreter::vectorcall(ptr(), handle(), _cast(std::forward<Args>(args))...);
 }
 
 template <typename... Args>
 void print(Args&&... args) {
-    pkpy::PyVar print = vm->builtins->attr("print");
-    vm->call(print, cast(std::forward<Args>(args)).ptr()...);
+    handle print = getattr(vm->builtins, "print");
+    print(std::forward<Args>(args)...);
 }
 
 }  // namespace pybind11
