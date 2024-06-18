@@ -5,6 +5,8 @@
 
 namespace pybind11 {
 
+struct dynamic_attr {};
+
 template <typename T, typename Base = void>
 class class_ : public type {
 protected:
@@ -15,7 +17,7 @@ public:
     using underlying_type = T;
 
     template <typename... Args>
-    class_(const handle& scope, const char* name, Args&&... args) :
+    class_(const handle& scope, const char* name, const Args&... args) :
         m_scope(scope), type(type_visitor::create<T, Base>(scope, name)) {
         auto& info = type_info::of<T>();
         info.name = name;
@@ -25,11 +27,21 @@ public:
             auto cls = handle(args[0])._as<pkpy::Type>();
 
             // check if the class has constructor, if not, raise error
-            if(args[0]->attr().try_get(pkpy::__init__) == nullptr) {
+            if(vm->find_name_in_mro(cls, pkpy::__init__) == nullptr) {
                 vm->RuntimeError("if you want to create instance of bound class, you must bind constructor for it");
             }
 
-            return instance::create(cls, &type_info::of<T>());
+            auto var = instance::create(cls, &type_info::of<T>());
+
+            if constexpr(types_count_v<dynamic_attr, Args...> != 0) {
+#if PK_VERSION_MAJOR == 2
+                var.get()->_attr = new pkpy::NameDict();
+#else 
+                var->_enable_instance_dict();
+#endif
+            }
+
+            return var;
         });
     }
 

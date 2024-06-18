@@ -17,7 +17,7 @@ This is a feature list of pybind11 for pocketpy. It lists all completed and pend
 
 - [x] Creating bindings for a custom type
 - [x] Binding lambda functions
-- [ ] Dynamic attributes
+- [x] Dynamic attributes
 - [x] Inheritance and automatic downcasting
 - [x] Enumerations and internal types
 - [ ] Instance and static fields
@@ -75,6 +75,8 @@ Need further discussion.
 # Differences between CPython and pocketpy
 
 - only `add`, `sub` and `mul` have corresponding right versions in pocketpy. So if you bind `int() >> py::self`, it will has no effect in pocketpy.
+
+- `__new__` and `__del__` are not supported in pocketpy.
 
 - in-place operators, such as `+=`, `-=`, `*=`, etc., are not supported in pocketpy.
 

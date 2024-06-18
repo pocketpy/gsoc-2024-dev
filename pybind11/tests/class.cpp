@@ -105,7 +105,7 @@ assert l.start.stringfy() == '(1, 2, 3)'
 assert l.end.stringfy() == '(4, 5, 6)'
 )");
 
-    py::interpreter::finalize(); 
+    py::interpreter::finalize();
 
     EXPECT_EQ(Point::constructor_calls, Point::destructor_calls);
     EXPECT_EQ(Point::copy_constructor_calls, 0);
@@ -165,9 +165,32 @@ assert p.y == 20
 assert p.z == 30
 )");
 
-    py::interpreter::finalize(); 
+    py::interpreter::finalize();
 
     EXPECT_EQ(constructor_calls, 4);
+}
+
+TEST_F(PYBIND11_TEST, dynamic_attr) {
+    py::module_ m = py::module_::import("__main__");
+
+    struct Point {
+        int x;
+        int y;
+
+        Point(int x, int y) : x(x), y(y) {}
+    };
+
+    py::class_<Point>(m, "Point", py::dynamic_attr())
+        .def(py::init<int, int>())
+        .def_readwrite("x", &Point::x)
+        .def_readwrite("y", &Point::y);
+
+    py::object p = py::eval("Point(1, 2)");
+    EXPECT_EQ(p.attr("x").cast<int>(), 1);
+    EXPECT_EQ(p.attr("y").cast<int>(), 2);
+
+    p.attr("z") = py::int_(3);
+    EXPECT_EQ(p.attr("z").cast<int>(), 3);
 }
 
 TEST_F(PYBIND11_TEST, enum) {
