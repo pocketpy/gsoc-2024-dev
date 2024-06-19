@@ -167,4 +167,32 @@ constexpr auto type_name() {
 #endif
 }
 
+template <typename... Args>
+struct overload_cast_t {
+    template <typename Return>
+    constexpr auto operator() (Return (*pf)(Args...)) const noexcept -> decltype(pf) {
+        return pf;
+    }
+
+    template <typename Return, typename Class>
+    constexpr auto operator() (Return (Class::*pmf)(Args...), std::false_type = {}) const noexcept -> decltype(pmf) {
+        return pmf;
+    }
+
+    template <typename Return, typename Class>
+    constexpr auto operator() (Return (Class::*pmf)(Args...) const, std::true_type) const noexcept -> decltype(pmf) {
+        return pmf;
+    }
+};
+
+/// Syntax sugar for resolving overloaded function pointers:
+///  - regular: static_cast<Return (Class::*)(Arg0, Arg1, Arg2)>(&Class::func)
+///  - sweet:   overload_cast<Arg0, Arg1, Arg2>(&Class::func)
+template <typename... Args>
+constexpr inline overload_cast_t<Args...> overload_cast;
+
+/// Const member function selector for overload_cast
+///  - regular: static_cast<Return (Class::*)(Arg) const>(&Class::func)
+///  - sweet:   overload_cast<Arg>(&Class::func, const_)
+constexpr static auto const_ = std::true_type{};
 }  // namespace pybind11

@@ -157,7 +157,7 @@ TEST_F(PYBIND11_TEST, return_value_policy) {
     };
 
     auto test = [](py::return_value_policy policy, auto bound_fn, auto fn) {
-        py::interpreter::initialize(); 
+        py::interpreter::initialize();
         copy_constructor_calls = 0;
         move_constructor_calls = 0;
         destructor_calls = 0;
@@ -174,7 +174,7 @@ TEST_F(PYBIND11_TEST, return_value_policy) {
 
         EXPECT_EVAL_EQ("make_point()", Point::make_point());
 
-        py::interpreter::finalize(); 
+        py::interpreter::finalize();
 
         fn();
     };
@@ -259,7 +259,7 @@ TEST_F(PYBIND11_TEST, default_return_value_policy) {
     EXPECT_EQ(copy_constructor_calls, 1);
     EXPECT_EQ(move_constructor_calls, 1);
 
-    py::interpreter::finalize(); 
+    py::interpreter::finalize();
     EXPECT_EQ(destructor_calls, 3);
 }
 
@@ -294,7 +294,40 @@ TEST_F(PYBIND11_TEST, lambda) {
     EXPECT_EVAL_EQ("cal(1, 2)", 6);
     EXPECT_EVAL_EQ("cal2(1, 2)", 21);
 
-    py::interpreter::finalize(); 
+    py::interpreter::finalize();
 
     EXPECT_EQ(destructor_calls, 4);
+}
+
+namespace {
+int add(int a, int b) { return a + b; }
+
+int add(int a, int b, int c) { return a + b + c; }
+}  // namespace
+
+TEST_F(PYBIND11_TEST, overload_cast) {
+    auto m = py::module_::__main__();
+
+    m.def("add", py::overload_cast<int, int>(add));
+    m.def("add", py::overload_cast<int, int, int>(add));
+
+    EXPECT_EVAL_EQ("add(1, 2)", 3);
+    EXPECT_EVAL_EQ("add(1, 2, 3)", 6);
+
+    struct X {
+
+        X() {}
+
+        int add(int a, int b) { return a + b; }
+
+        int add(int a, int b, int c) { return a + b + c; }
+    };
+
+    py::class_<X>(m, "X")
+        .def(py::init<>())
+        .def("add", py::overload_cast<int, int>(&X::add))
+        .def("add", py::overload_cast<int, int, int>(&X::add));
+
+    EXPECT_EVAL_EQ("X().add(1, 2)", 3);
+    EXPECT_EVAL_EQ("X().add(1, 2, 3)", 6);
 }
