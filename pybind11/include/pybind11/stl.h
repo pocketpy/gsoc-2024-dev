@@ -140,5 +140,5 @@ struct type_caster<T, std::enable_if_t<is_py_map_like_v<T>>> {
     }
 };
 
-}  // namespace pybind11
+}  // namespace pybind11::impl
 
