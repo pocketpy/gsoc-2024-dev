@@ -9,7 +9,7 @@
 #include <map>
 #include <unordered_map>
 
-namespace pybind11 {
+namespace pybind11::impl {
 
 template <typename T, std::size_t N>
 struct type_caster<std::array<T, N>> {
