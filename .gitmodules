@@ -1,4 +1,4 @@
 [submodule "pocketpy"]
 	path = pocketpy
 	url = https://github.com/pocketpy/pocketpy
-	branch = v2.0
+	branch = main
