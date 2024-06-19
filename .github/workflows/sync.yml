@@ -1,53 +1,54 @@
-name: Sync Submodules
-
-on:
-  schedule:
-    # every 8 hour
-    - cron: "0 */8 * * *"
-  push:
-    branches:
-      - main
-
-permissions:
-  contents: write
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    # don't trigger this from a bot
-    if: github.actor != 'github-actions[bot]'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Sync submodule
-        run: |
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-          git config --global pull.rebase true
-
-          # git pull all submodules
-          git submodule update --init --recursive
-
-          # sync pocketpy
-          cd pocketpy
-          git branch
-          old_commit=$(git rev-parse HEAD)
-          echo "old_commit: $old_commit"
-          # force pull latest changes
-          git fetch --all
-          git reset --hard origin/v2.0
-          new_commit=$(git rev-parse HEAD)
-          echo "new_commit: $new_commit"
-
-          # if there is no change, exit
-          if [ "$old_commit" = "$new_commit" ]; then
-            echo "No changes"
-            exit 0
-          fi
-
-          # commit and push
-          cd ..
-          git add .
-          short_commit=$(echo $new_commit | cut -c1-7)
-          git commit -m "sync pocketpy to $short_commit"
-          git push origin main -f
+#name: Sync Submodules
+#
+#on:
+#  schedule:
+#    # every 8 hour
+#    - cron: "0 */8 * * *"
+#  push:
+#    branches:
+#      - main
+#
+#permissions:
+#  contents: write
+#
+#jobs:
+#  deploy:
+#    runs-on: ubuntu-latest
+#    # don't trigger this from a bot
+#    if: github.actor != 'github-actions[bot]'
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v4
+#      - name: Sync submodule
+#        run: |
+#          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+#          git config --global user.name "github-actions[bot]"
+#          git config --global pull.rebase true
+#
+#          # git pull all submodules
+#          git submodule update --init --recursive
+#
+#          # sync pocketpy
+#          cd pocketpy
+#          git branch
+#          old_commit=$(git rev-parse HEAD)
+#          echo "old_commit: $old_commit"
+#          # force pull latest changes
+#          git fetch --all
+#          git reset --hard origin/v2.0
+#          new_commit=$(git rev-parse HEAD)
+#          echo "new_commit: $new_commit"
+#
+#          # if there is no change, exit
+#          if [ "$old_commit" = "$new_commit" ]; then
+#            echo "No changes"
+#            exit 0
+#          fi
+#
+#          # commit and push
+#          cd ..
+#          git add .
+#          short_commit=$(echo $new_commit | cut -c1-7)
+#          git commit -m "sync pocketpy to $short_commit"
+#          git push origin main -f
+#
