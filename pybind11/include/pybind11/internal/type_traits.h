@@ -25,9 +25,9 @@ struct function_traits {
     static_assert(dependent_false<Fn>, "unsupported function type");
 };
 
-#define PYBIND11_FUNCTION_TRAITS_SPECIALIZE(qualifiers)                                                                \
+#define PYBIND11_FUNCTION_TRAITS_SPECIALIZE(...)                                                                       \
     template <typename R, typename... Args>                                                                            \
-    struct function_traits<R(Args...) qualifiers> {                                                                    \
+    struct function_traits<R(Args...) __VA_ARGS__> {                                                                   \
         using return_type = R;                                                                                         \
         using args_type = std::tuple<Args...>;                                                                         \
         constexpr static std::size_t args_count = sizeof...(Args);                                                     \

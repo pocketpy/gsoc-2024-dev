@@ -37,7 +37,7 @@ class handle;
 class object;
 class iterator;
 class str;
-class arg;
+struct arg;
 struct args_proxy;
 struct kwargs_proxy;
 

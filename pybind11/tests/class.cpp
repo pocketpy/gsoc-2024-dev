@@ -86,13 +86,6 @@ assert p.stringfy() == '(10, 20, 30)'
         .def_readwrite("start", &Line::start)
         .def_readwrite("end", &Line::end);
 
-    try {
-        // py::vm->eval("Line()");
-    } catch(const std::exception& e) {
-        // expect error: "Bound class must have constructor"
-        // std::cerr << e.what() << std::endl;
-    }
-
     // bind constructor
     line.def(py::init<>());
 

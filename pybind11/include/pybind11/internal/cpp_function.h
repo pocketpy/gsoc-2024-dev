@@ -361,10 +361,10 @@ struct template_parser<Callable, std::tuple<Extras...>, std::tuple<Args...>, std
 
         // resolve keyword arguments
         const auto n = vm->s_data._sp - view.end();
-        std::size_t index = 0;
+        int index = 0;
 
         if constexpr(named_argc > 0) {
-            std::size_t arg_index = 0;
+            int arg_index = 0;
             auto& arguments = *record.arguments;
 
             while(arg_index < named_argc && index < n) {
