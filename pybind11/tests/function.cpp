@@ -1,5 +1,29 @@
 #include "test.h"
 
+TEST_F(PYBIND11_TEST, constructor) {
+    auto m = py::module_::__main__();
+
+    struct Point {
+        int x, y;
+
+        Point(int x, int y) : x(x), y(y) {}
+
+        bool operator== (const Point& p) const { return x == p.x && y == p.y; }
+    };
+
+    py::class_<Point>(m, "Point")
+        .def(py::init<int, int>(), py::arg("x") = 1, py::arg("y") = 2)
+        .def(py::init([](py::tuple tuple) {
+            return Point(tuple[0].cast<int>(), tuple[1].cast<int>());
+        }))
+        .def("__eq__", &Point::operator==);
+
+    EXPECT_EVAL_EQ("Point()", Point(1, 2));
+    EXPECT_EVAL_EQ("Point(3)", Point(3, 2));
+    EXPECT_EVAL_EQ("Point(3, 4)", Point(3, 4));
+    EXPECT_EVAL_EQ("Point((3, 4))", Point(3, 4));
+}
+
 TEST_F(PYBIND11_TEST, args) {
     auto m = py::module_::__main__();
 
@@ -112,6 +136,22 @@ TEST_F(PYBIND11_TEST, default_with_args_and_kwargs) {
     EXPECT_EVAL_EQ("cal(1, 4, 5, *[], **{})", 10);  // a = 1, b = 4, c = 5, args = (), kwargs = {}
 
     EXPECT_EVAL_EQ("cal(1, 4, 5, 6, 7, d=8, e=9)", 40);  // a = 1, b = 4, c = 5, args = (6, 7), kwargs = {d=8, e=9}
+
+    struct Point {
+        int x, y;
+
+        Point(int x, int y) : x(x), y(y) {}
+
+        int sum(int x = 1, int y = 2) { return this->x + this->y + x + y; }
+    };
+
+    py::class_<Point>(m, "Point")
+        .def(py::init<int, int>())  //
+        .def("sum", &Point::sum, py::arg("x") = 1, py::arg("y") = 2);
+
+    EXPECT_EVAL_EQ("Point(1, 2).sum()", 6);       // x = 1, y = 2
+    EXPECT_EVAL_EQ("Point(1, 2).sum(3)", 8);      // x = 3, y = 2
+    EXPECT_EVAL_EQ("Point(1, 2).sum(3, 4)", 10);  // x = 3, y = 4
 }
 
 TEST_F(PYBIND11_TEST, overload) {

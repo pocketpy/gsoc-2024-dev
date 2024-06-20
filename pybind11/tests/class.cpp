@@ -203,6 +203,16 @@ TEST_F(PYBIND11_TEST, enum) {
     EXPECT_EVAL_EQ("Color.GREEN", Color::GREEN);
     EXPECT_EVAL_EQ("Color.BLUE", Color::BLUE);
 
+    EXPECT_EVAL_EQ("Color(0)", Color::RED);
+    EXPECT_EVAL_EQ("Color(1)", Color::Yellow);
+    EXPECT_EVAL_EQ("Color(2)", Color::GREEN);
+    EXPECT_EVAL_EQ("Color(3)", Color::BLUE);
+
+    EXPECT_EXEC_EQ("Color(0)", "Color.RED");
+    EXPECT_EXEC_EQ("Color(1)", "Color.Yellow");
+    EXPECT_EXEC_EQ("Color(2)", "Color.GREEN");
+    EXPECT_EXEC_EQ("Color(3)", "Color.BLUE");
+
     EXPECT_EVAL_EQ("Color.RED.value", static_cast<int>(Color::RED));
     EXPECT_EVAL_EQ("Color.Yellow.value", static_cast<int>(Color::Yellow));
     EXPECT_EVAL_EQ("Color.GREEN.value", static_cast<int>(Color::GREEN));
