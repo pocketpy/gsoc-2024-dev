@@ -29,25 +29,25 @@ public:
     virtual bool any() const = 0;  
     virtual py::object sum() const = 0;
     virtual ndarray_base* sum_axis(int axis) const = 0;
-    virtual ndarray_base* sum_axes(const std::vector<int>& axes) const = 0;
+    virtual ndarray_base* sum_axes(py::tuple axes) const = 0;
     virtual py::object prod() const = 0;
     virtual ndarray_base* prod_axis(int axis) const = 0;
-    virtual ndarray_base* prod_axes(const std::vector<int>& axes) const = 0;
+    virtual ndarray_base* prod_axes(py::tuple axes) const = 0;
     virtual py::object min() const = 0;
     virtual ndarray_base* min_axis(int axis) const = 0;
-    virtual ndarray_base* min_axes(const std::vector<int>& axes) const = 0;
+    virtual ndarray_base* min_axes(py::tuple axes) const = 0;
     virtual py::object max() const = 0;
     virtual ndarray_base* max_axis(int axis) const = 0;
-    virtual ndarray_base* max_axes(const std::vector<int>& axes) const = 0;
+    virtual ndarray_base* max_axes(py::tuple axes) const = 0;
     virtual py::object mean() const = 0;
     virtual ndarray_base* mean_axis(int axis) const = 0;
-    virtual ndarray_base* mean_axes(const std::vector<int>& axes) const = 0;
+    virtual ndarray_base* mean_axes(py::tuple axes) const = 0;
     virtual py::object std() const = 0;
     virtual ndarray_base* std_axis(int axis) const = 0;
-    virtual ndarray_base* std_axes(const std::vector<int>& axes) const = 0;
+    virtual ndarray_base* std_axes(py::tuple axes) const = 0;
     virtual py::object var() const = 0;
     virtual ndarray_base* var_axis(int axis) const = 0;
-    virtual ndarray_base* var_axes(const std::vector<int>& axes) const = 0;
+    virtual ndarray_base* var_axes(py::tuple axes) const = 0;
     virtual ndarray_base* argmin() const = 0;
     virtual ndarray_base* argmin_axis(int axis) const = 0;
     virtual ndarray_base* argmax() const = 0;
@@ -141,7 +141,11 @@ public:
         }
     }
     ndarray_base* sum_axis(int axis) const override { return new ndarray<T>(data.sum(axis)); }
-    ndarray_base* sum_axes(const std::vector<int>& axes) const override { return new ndarray<T>(data.sum(axes)); }
+    ndarray_base* sum_axes(py::tuple axes) const override {
+        std::vector<int> axes_;
+        for (auto item : axes) axes_.push_back(py::cast<int>(item));
+        return new ndarray<T>(data.sum(axes_));
+    }
     py::object prod() const override {
         if constexpr (std::is_same_v<T, int>) {
             return py::int_(data.prod());
@@ -152,7 +156,11 @@ public:
         }
     }
     ndarray_base* prod_axis(int axis) const override { return new ndarray<T>(data.prod(axis)); }
-    ndarray_base* prod_axes(const std::vector<int>& axes) const override { return new ndarray<T>(data.prod(axes)); }
+    ndarray_base* prod_axes(py::tuple axes) const override {
+        std::vector<int> axes_;
+        for (auto item : axes) axes_.push_back(py::cast<int>(item));
+        return new ndarray<T>(data.prod(axes_));
+    }
     py::object min() const override {
         if constexpr (std::is_same_v<T, int>) {
             return py::int_(data.min());
@@ -163,7 +171,11 @@ public:
         }
     }
     ndarray_base* min_axis(int axis) const override { return new ndarray<T>(data.min(axis)); }
-    ndarray_base* min_axes(const std::vector<int>& axes) const override { return new ndarray<T>(data.min(axes)); }
+    ndarray_base* min_axes(py::tuple axes) const override {
+        std::vector<int> axes_;
+        for (auto item : axes) axes_.push_back(py::cast<int>(item));
+        return new ndarray<T>(data.min(axes_));
+    }
     py::object max() const override {
         if constexpr (std::is_same_v<T, int>) {
             return py::int_(data.max());
@@ -174,7 +186,11 @@ public:
         }
     }
     ndarray_base* max_axis(int axis) const override { return new ndarray<T>(data.max(axis)); }
-    ndarray_base* max_axes(const std::vector<int>& axes) const override { return new ndarray<T>(data.max(axes)); }
+    ndarray_base* max_axes(py::tuple axes) const override {
+        std::vector<int> axes_;
+        for (auto item : axes) axes_.push_back(py::cast<int>(item));
+        return new ndarray<T>(data.max(axes_));
+    }
     py::object mean() const override {
         if constexpr (std::is_same_v<T, int> || std::is_same_v<T, float64>) {
             return py::float_(data.mean());
@@ -183,7 +199,11 @@ public:
         }
     }
     ndarray_base* mean_axis(int axis) const override { return new ndarray<T>(data.mean(axis)); }
-    ndarray_base* mean_axes(const std::vector<int>& axes) const override { return new ndarray<T>(data.mean(axes)); }
+    ndarray_base* mean_axes(py::tuple axes) const override {
+        std::vector<int> axes_;
+        for (auto item : axes) axes_.push_back(py::cast<int>(item));
+        return new ndarray<T>(data.mean(axes_));
+    }
     py::object std() const override {
         if constexpr (std::is_same_v<T, int> || std::is_same_v<T, float64>) {
             return py::float_(data.std());
@@ -192,7 +212,11 @@ public:
         }
     }
     ndarray_base* std_axis(int axis) const override { return new ndarray<T>(data.std(axis)); }
-    ndarray_base* std_axes(const std::vector<int>& axes) const override { return new ndarray<T>(data.std(axes)); }
+    ndarray_base* std_axes(py::tuple axes) const override {
+        std::vector<int> axes_;
+        for (auto item : axes) axes_.push_back(py::cast<int>(item));
+        return new ndarray<T>(data.std(axes_));
+    }
     py::object var() const override {
         if constexpr (std::is_same_v<T, int> || std::is_same_v<T, float64>) {
             return py::float_(data.var());
@@ -201,7 +225,11 @@ public:
         }
     }
     ndarray_base* var_axis(int axis) const override { return new ndarray<T>(data.var(axis)); }
-    ndarray_base* var_axes(const std::vector<int>& axes) const override { return new ndarray<T>(data.var(axes)); }
+    ndarray_base* var_axes(py::tuple axes) const override {
+        std::vector<int> axes_;
+        for (auto item : axes) axes_.push_back(py::cast<int>(item));
+        return new ndarray<T>(data.var(axes_));
+    }
     ndarray_base* argmin() const override { return new ndarray<T>(data.argmin()); }
     ndarray_base* argmin_axis(int axis) const override { return new ndarray<T>(data.argmin(axis)); }
     ndarray_base* argmax() const override { return new ndarray<T>(data.argmax()); }
