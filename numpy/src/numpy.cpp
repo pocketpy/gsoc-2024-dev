@@ -74,12 +74,16 @@ public:
     virtual ndarray_base* sub(const ndarray_base& other) const = 0;
     virtual ndarray_base* sub_int(int other) const = 0;
     virtual ndarray_base* sub_float(float64 other) const = 0;
+    virtual ndarray_base* rsub_int(int other) const = 0;
+    virtual ndarray_base* rsub_float(float64 other) const = 0;
     virtual ndarray_base* mul(const ndarray_base& other) const = 0;
     virtual ndarray_base* mul_int(int other) const = 0;
     virtual ndarray_base* mul_float(float64 other) const = 0;
     virtual ndarray_base* div(const ndarray_base& other) const = 0;
     virtual ndarray_base* div_int(int other) const = 0;
     virtual ndarray_base* div_float(float64 other) const = 0;
+    virtual ndarray_base* rdiv_int(int other) const = 0;
+    virtual ndarray_base* rdiv_float(float64 other) const = 0;
     virtual ndarray_base* pow(const ndarray_base& other) const = 0;
     virtual ndarray_base* pow_int(int other) const = 0;
     virtual ndarray_base* pow_float(float64 other) const = 0;
@@ -333,6 +337,12 @@ public:
     ndarray_base* sub_float(float64 other) const override {
         return new ndarray<float64>(data - other);
     }
+    ndarray_base* rsub_int(int other) const override {
+        return new ndarray<T>(other - data);
+    }
+    ndarray_base* rsub_float(float64 other) const override {
+        return new ndarray<float64>(other - data);
+    }
     ndarray_base* mul(const ndarray_base& other) const override {
         if constexpr(std::is_same_v<T, int>) {
             if(auto p = dynamic_cast<const ndarray<float64>*>(&other)){ /* int * float */
@@ -352,7 +362,7 @@ public:
         return new ndarray<T>(data * other_.data);
     }
     ndarray_base* mul_int(int other) const override {
-        return new ndarray<float64>(data * other);
+        return new ndarray<T>(data * other);
     }
     ndarray_base* mul_float(float64 other) const override {
         return new ndarray<float64>(data * other);
@@ -381,6 +391,12 @@ public:
     ndarray_base* div_float(float64 other) const override {
         return new ndarray<float64>(data / other);
     }
+    ndarray_base* rdiv_int(int other) const override {
+        return new ndarray<float64>(other / data);
+    }
+    ndarray_base* rdiv_float(float64 other) const override {
+        return new ndarray<float64>(other / data);
+    }
     ndarray_base* pow(const ndarray_base& other) const override {
         if constexpr(std::is_same_v<T, int>) {
             if(auto p = dynamic_cast<const ndarray<float64>*>(&other)){ /* int ** float */
@@ -400,7 +416,7 @@ public:
         return new ndarray<T>(data.pow(other_.data));
     }
     ndarray_base* pow_int(int other) const override {
-        return new ndarray<T>(data.pow(other));
+        return new ndarray<float64>(data.pow(other));
     }
     ndarray_base* pow_float(float64 other) const override {
         return new ndarray<float64>(data.pow(other));
@@ -662,15 +678,23 @@ PYBIND11_MODULE(numpy_bindings, m) {
         .def("__add__", &ndarray_base::add)
         .def("__add__", &ndarray_base::add_int)
         .def("__add__", &ndarray_base::add_float)
+        .def("__radd__", &ndarray_base::add_int)
+        .def("__radd__", &ndarray_base::add_float)
         .def("__sub__", &ndarray_base::sub)
         .def("__sub__", &ndarray_base::sub_int)
         .def("__sub__", &ndarray_base::sub_float)
+        .def("__rsub__", &ndarray_base::rsub_int)
+        .def("__rsub__", &ndarray_base::rsub_float)
         .def("__mul__", &ndarray_base::mul)
         .def("__mul__", &ndarray_base::mul_int)
         .def("__mul__", &ndarray_base::mul_float)
+        .def("__rmul__", &ndarray_base::mul_int)
+        .def("__rmul__", &ndarray_base::mul_float)
         .def("__truediv__", &ndarray_base::div)
         .def("__truediv__", &ndarray_base::div_int)
         .def("__truediv__", &ndarray_base::div_float)
+        .def("__rtruediv__", &ndarray_base::rdiv_int)
+        .def("__rtruediv__", &ndarray_base::rdiv_float)
         .def("__pow__", &ndarray_base::pow)
         .def("__pow__", &ndarray_base::pow_int)
         .def("__pow__", &ndarray_base::pow_float)
@@ -718,17 +742,26 @@ PYBIND11_MODULE(numpy_bindings, m) {
         .def("__and__", [](ndarray<int>&v, int w){
             return ndarray<int>(v.data & w);
         })
+        .def("__rand__", [](ndarray<int>&v, int w){
+            return ndarray<int>(w & v.data);
+        })
         .def("__or__", [](ndarray<int>&v, ndarray<int>&w){
             return ndarray<int>(v.data | w.data);
         })
         .def("__or__", [](ndarray<int>&v, int w){
             return ndarray<int>(v.data | w);
         })
+        .def("__ror__", [](ndarray<int>&v, int w){
+            return ndarray<int>(w | v.data);
+        })
         .def("__xor__", [](ndarray<int>&v, ndarray<int>&w){
             return ndarray<int>(v.data ^ w.data);
         })
         .def("__xor__", [](ndarray<int>&v, int w){
             return ndarray<int>(v.data ^ w);
+        })
+        .def("__rxor__", [](ndarray<int>&v, int w){
+            return ndarray<int>(w ^ v.data);
         })
         .def("__invert__", [](ndarray<int>&v){
             return ndarray<int>(~v.data);

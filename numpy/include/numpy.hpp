@@ -101,7 +101,7 @@ public:
     _ShapeLike shape() const { return _ShapeLike(_array.shape().begin(), _array.shape().end()); }
 
     // Dunder Methods
-     template <typename U>
+    template <typename U>
     bool operator==(const ndarray<U>& other) const {
         return _array == other.get_array();
     }
@@ -161,8 +161,14 @@ public:
     }
     template <typename U>
     auto binary_operator_mul_impl(const U& other) const {
-        xt::xarray<float_> result = xt::cast<float_>(_array) * other;
-        return ndarray<float_>(result);
+        if constexpr (std::is_same_v<U, float_>) {
+            xt::xarray<float_> result = xt::cast<float_>(_array) * other;
+            return ndarray<float_>(result);
+        } else {
+            using result_type = std::common_type_t<T, U>;
+            xt::xarray<result_type> result = xt::cast<result_type>(_array) * other;
+            return ndarray<result_type>(result);
+        }
     }
 
     template <typename U>
@@ -193,14 +199,8 @@ public:
     }
     template <typename U>
     auto pow_impl(const U& other) const {
-        if constexpr (std::is_same_v<U, float_>) {
-            xt::xarray<float_> result = xt::pow(xt::cast<float_>(_array), other);
-            return ndarray<float_>(result);
-        } else {
-            using result_type = std::common_type_t<T, U>;
-            xt::xarray<result_type> result = xt::pow(xt::cast<result_type>(_array), other);
-            return ndarray<result_type>(result);
-        }
+        xt::xarray<float_> result = xt::pow(xt::cast<float_>(_array), other);
+        return ndarray<float_>(result);
     }
 
     template <typename U>
@@ -706,22 +706,48 @@ auto concatenate(const ndarray<T>& arr1, const ndarray<U>& arr2, int axis = 0) {
 // Reverse Dunder Methods
 template <typename T, typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
 auto operator+(const U& scalar, const ndarray<T>& array) {
-    return array + scalar;
+    xt::xarray<T> arr = array.get_array();
+    if constexpr (std::is_same_v<U, float_>) {
+        xt::xarray<float_> result = scalar + xt::cast<float_>(arr);
+        return ndarray<float_>(result);
+    } else {
+        using result_type = std::common_type_t<T, U>;
+        xt::xarray<result_type> result = scalar + xt::cast<result_type>(arr);
+        return ndarray<result_type>(result);
+    }
 }
 
 template <typename T, typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
 auto operator-(const U& scalar, const ndarray<T>& array) {
-    return (array *(-1)) + scalar;
+    xt::xarray<T> arr = array.get_array();
+    if constexpr (std::is_same_v<U, float_>) {
+        xt::xarray<float_> result = scalar - xt::cast<float_>(arr);
+        return ndarray<float_>(result);
+    } else {
+        using result_type = std::common_type_t<T, U>;
+        xt::xarray<result_type> result = scalar - xt::cast<result_type>(arr);
+        return ndarray<result_type>(result);
+    }
 }
 
 template <typename T, typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
 auto operator*(const U& scalar, const ndarray<T>& array) {
-    return array * scalar;
+    xt::xarray<T> arr = array.get_array();
+    if constexpr (std::is_same_v<U, float_>) {
+        xt::xarray<float_> result = scalar * xt::cast<float_>(arr);
+        return ndarray<float_>(result);
+    } else {
+        using result_type = std::common_type_t<T, U>;
+        xt::xarray<result_type> result = scalar * xt::cast<result_type>(arr);
+        return ndarray<result_type>(result);
+    }
 }
 
 template <typename T, typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
 auto operator/(const U& scalar, const ndarray<T>& array) {
-    return array.pow(-1) * scalar;
+    xt::xarray<T> arr = array.get_array();
+    xt::xarray<float_> result = scalar / xt::cast<float_>(arr);
+    return ndarray<float_>(result);
 }
 
 template <typename T, typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
