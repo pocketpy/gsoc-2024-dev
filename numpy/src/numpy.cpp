@@ -782,12 +782,6 @@ PYBIND11_MODULE(numpy_bindings, m) {
     });
 
     // Array Creation Functions
-    m.def("array", [](const std::vector<int>& init_list, const std::vector<int>& shape) {
-        return std::unique_ptr<ndarray_base>(new ndarray_int(pkpy::numpy::array<int>(init_list, shape)));
-    });
-    m.def("array", [](const std::vector<float64>& init_list, const std::vector<int>& shape) {
-        return std::unique_ptr<ndarray_base>(new ndarray_float(pkpy::numpy::array<float64>(init_list, shape)));
-    });
     m.def("ones", [](const std::vector<int>& shape) {
         return std::unique_ptr<ndarray_base>(new ndarray_float(pkpy::numpy::ones<float64>(shape)));
     });
