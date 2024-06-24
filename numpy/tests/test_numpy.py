@@ -135,15 +135,16 @@ def test_array_std():
     arr = np.array([[[1.5, 2.5, 3.5], [3.5, 4.5, 5.5], [5.5, 6.5, 7.5]]])
     assert arr.std() == 1.8257418583505538
     assert arr.std(0) == np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]])
-    assert repr(arr.std(1)) == repr(np.array([[1.632993,  1.632993,  1.632993]]))
-    assert repr(arr.std(2)) == repr(np.array([[ 0.816497,  0.816497,  0.816497]]))
+    assert np.allclose(arr.std(1), np.array([[1.632993,  1.632993,  1.632993]])) == 1
+    assert np.allclose(arr.std(2), np.array([[0.81649658, 0.81649658, 0.81649658]])) == 1
 
 def test_array_var():
     arr = np.array([[[1.5, 2.5, 3.5], [3.5, 4.5, 5.5], [5.5, 6.5, 7.5]]])
     assert arr.var() == 3.3333333333333335
     assert arr.var(0) == np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]])
-    assert repr(arr.var(1)) == repr(np.array([[2.66666667, 2.66666667, 2.66666667]]))
-    assert repr(arr.var(2)) == repr(np.array([[0.66666667, 0.66666667, 0.66666667]]))
+    assert np.allclose(arr.var(1), np.array([[2.66666667, 2.66666667, 2.66666667]])) == 1
+    assert np.allclose(arr.var(2), np.array([[0.66666667, 0.66666667, 0.66666667]])) == 1
+
 
 if __name__ == "__main__":
     pytest.main()

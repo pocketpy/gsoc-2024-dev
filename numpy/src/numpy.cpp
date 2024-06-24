@@ -985,4 +985,22 @@ PYBIND11_MODULE(numpy_bindings, m) {
         }
         throw std::invalid_argument("Invalid dtype");
     }, py::arg("arr1"), py::arg("arr2"), py::arg("axis") = 0);
+
+    // Testing Functions
+    m.def("allclose", [](const ndarray_base& arr1, const ndarray_base& arr2, float64 rtol, float64 atol) {
+        if(auto p = dynamic_cast<const ndarray<int>*>(&arr1)){
+            if(auto q = dynamic_cast<const ndarray<int>*>(&arr2)){
+                return pkpy::numpy::allclose(p->data, q->data, rtol, atol);
+            } else if(auto q = dynamic_cast<const ndarray<float64>*>(&arr2)){
+                return pkpy::numpy::allclose(p->data, q->data, rtol, atol);
+            }
+        } else if(auto p = dynamic_cast<const ndarray<float64>*>(&arr1)){
+            if(auto q = dynamic_cast<const ndarray<int>*>(&arr2)){
+                return pkpy::numpy::allclose(p->data, q->data, rtol, atol);
+            } else if(auto q = dynamic_cast<const ndarray<float64>*>(&arr2)){
+                return pkpy::numpy::allclose(p->data, q->data, rtol, atol);
+            }
+        }
+        throw std::invalid_argument("Invalid dtype");
+    }, py::arg("arr1"), py::arg("arr2"), py::arg("rtol") = 1e-5, py::arg("atol") = 1e-8);
 }
