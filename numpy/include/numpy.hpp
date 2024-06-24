@@ -703,6 +703,12 @@ auto concatenate(const ndarray<T>& arr1, const ndarray<U>& arr2, int axis = 0) {
     return ndarray<result_type>(xt::concatenate(xt::xtuple(xarr1, xarr2), axis));
 }
 
+// Testing Functions
+template <typename T, typename U>
+bool allclose(const ndarray<T>& arr1, const ndarray<U>& arr2, float_ rtol = 1e-5, float_ atol = 1e-8) {
+    return xt::allclose(arr1.get_array(), arr2.get_array(), rtol, atol);
+}
+
 // Reverse Dunder Methods
 template <typename T, typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
 auto operator+(const U& scalar, const ndarray<T>& array) {
