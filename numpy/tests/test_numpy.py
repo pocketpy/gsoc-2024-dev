@@ -1,7 +1,7 @@
 import pytest
 import numpy_bindings as np
 
-def test_array_creation_int():
+def test_array_int():
     arr1 = np.array([])
     arr2 = np.array([-2, -1, 0, 1, 2])
     arr3 = np.array([[1, 2], [2, 1]])
@@ -9,17 +9,43 @@ def test_array_creation_int():
     arr5 = np.array([[[[[1],[10], [100], [1000], [10000]]]]])
     arr6 = np.array([[[2147483647]]])
 
-def test_array_creation_bool():
+def test_array_bool():
     arr1 = np.array([True, False, True, False])
     arr2 = np.array([[True, False], [False, True]])
     arr3 = np.array([[[True, False, True], [False, True, False]], [[True, False, True], [False, True, False]]])
 
-def test_array_creation_float():
+def test_array_float():
     arr1 = np.array([-2.0, -1.0, 0.0, 1.0, 2.0])
     arr2 = np.array([[1.0, 2.0], [2.0, 1.0]])
     arr3 = np.array([[[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]], [[7.0, 8.0, 9.0], [10.0, 11.0, 12.0]]])
     arr4 = np.array([[[[[1.0],[10.0], [100.0], [1000.0], [10000.0]]]]])
     arr5 = np.array([[[3.141592653589793]]])
+
+def test_array_creation():
+    assert np.ones([1, 1]) == np.array([[1.0]])
+    assert np.ones([1, 1, 2, 2]) == np.array([[[[1.0, 1.0], [1.0, 1.0]]]])
+
+    assert np.zeros([1, 1]) == np.array([[0.0]])
+    assert np.zeros([1, 1, 2, 2]) == np.array([[[[0.0, 0.0], [0.0, 0.0]]]])
+
+    assert np.full([1, 1], -1e9) == np.array([[-1.000000e+09]])
+    assert np.full([1, 1, 2, 2], 3.14) == np.array([[[[3.14, 3.14], [3.14, 3.14]]]])
+
+    assert np.identity(1) == np.array([[1.0]])
+    assert np.identity(3) == np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
+
+    assert np.arange(10) == np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    assert np.arange(1, 10) == np.array([1, 2, 3, 4, 5, 6, 7, 8, 9])
+    assert np.arange(1, 10, 2) == np.array([1, 3, 5, 7, 9])
+
+    assert np.linspace(0, 1, 5) == np.array([0.0, 0.25, 0.5, 0.75, 1.0])
+    assert np.allclose(np.linspace(0, 1, 5, False), np.array([0.0, 0.2, 0.4, 0.6, 0.8]))
+    assert np.allclose(np.linspace(0, 1, 20, True), np.array([0.0, 0.05263158, 0.10526316, 
+                                                    0.15789474, 0.21052632, 0.26315789, 
+                                                    0.31578947, 0.36842105, 0.42105263, 
+                                                    0.47368421, 0.52631579, 0.57894737, 
+                                                    0.63157895, 0.68421053, 0.73684211, 
+                                                    0.78947368, 0.84210526, 0.89473684, 0.94736842, 1.0]))
 
 def test_array_properties():
     arr1 = np.array([1, 2, 3])
