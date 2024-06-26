@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <complex>
 #include <iostream>
+#include <limits>
 #include <string>
 #include <tuple>
 #include <type_traits>
@@ -702,6 +703,10 @@ auto concatenate(const ndarray<T>& arr1, const ndarray<U>& arr2, int axis = 0) {
     xt::xarray<result_type> xarr2 = xt::cast<result_type>(arr2.get_array());
     return ndarray<result_type>(xt::concatenate(xt::xtuple(xarr1, xarr2), axis));
 }
+
+// Constants
+constexpr float_ pi = xt::numeric_constants<double>::PI;
+constexpr double inf = std::numeric_limits<double>::infinity();
 
 // Testing Functions
 template <typename T, typename U>
