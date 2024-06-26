@@ -986,6 +986,10 @@ PYBIND11_MODULE(numpy_bindings, m) {
         throw std::invalid_argument("Invalid dtype");
     }, py::arg("arr1"), py::arg("arr2"), py::arg("axis") = 0);
 
+    // Constants
+    m.attr("pi") = pkpy::numpy::pi;
+    m.attr("inf") = pkpy::numpy::inf;
+
     // Testing Functions
     m.def("allclose", [](const ndarray_base& arr1, const ndarray_base& arr2, float64 rtol, float64 atol) {
         if(auto p = dynamic_cast<const ndarray<int>*>(&arr1)){
