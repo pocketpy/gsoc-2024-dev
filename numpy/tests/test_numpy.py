@@ -271,5 +271,72 @@ def test_array_sort():
     assert arr4 == np.array([[[[[ 1.5, -5.5], [ 3.5, -3.5], [ 5.5, -1.5]]]]])
 
 
+def test_array_reshape():
+    arr1 = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9])
+    assert arr1.reshape([3, 3]) == np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+
+    arr2 = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    assert arr2.reshape([9]) == np.array([1, 2, 3, 4, 5, 6, 7, 8, 9])
+
+    arr3 = np.array([1.5, 2.5 , 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 11.5, 12.5])
+    assert arr3.reshape([3, 4]) == np.array([[1.5, 2.5, 3.5, 4.5], [5.5, 6.5, 7.5, 8.5], [9.5, 10.5, 11.5, 12.5]])
+    assert arr3.reshape([2, 3, 2]) == np.array([[[1.5, 2.5], [3.5, 4.5], [5.5, 6.5]], 
+                                                [[7.5, 8.5], [9.5, 10.5], [11.5, 12.5]]])
+    assert arr3.reshape([1, 1, 2, 2, 3]) == np.array([[[[[ 1.5,  2.5,  3.5], [ 4.5,  5.5,  6.5]],
+                                                        [[ 7.5,  8.5,  9.5], [10.5, 11.5, 12.5]]]]])
+
+
+def test_array_squeeze():
+    arr1 = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9])
+    assert arr1.squeeze() == np.array([1, 2, 3, 4, 5, 6, 7, 8, 9])
+
+    arr2 = np.array([[-1], [-2], [-3]])
+    assert arr2.squeeze() == np.array([-1, -2, -3])
+
+    arr3 = np.array([[[[[1.5, -1.5], [3.5, -3.5], [5.5, -5.5]]]]])
+    assert arr3.squeeze() == np.array([[ 1.5, -1.5], [ 3.5, -3.5], [ 5.5, -5.5]])
+    assert arr3.squeeze(0) == np.array([[[[1.5, -1.5], [3.5, -3.5], [5.5, -5.5]]]])
+
+
+def test_array_transpose():
+    arr1 = np.array([[1], [2], [3]])
+    assert arr1.transpose() == np.array([[1, 2, 3]])
+
+    arr2 = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    assert arr2.transpose() == np.array([[1, 4, 7], [2, 5, 8], [3, 6, 9]])
+    assert arr2.transpose(0, 1) == np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+    assert arr2.transpose(1, 0) == np.array([[1, 4, 7], [2, 5, 8], [3, 6, 9]])
+
+    arr3 = np.array([[[[[ 1.5, -5.5], [ 3.5, -3.5], [ 5.5, -1.5]]]]])
+    assert arr3.transpose() == np.array([[[[[ 1.5]]], [[[ 3.5]]], [[[ 5.5]]]],
+                                        [[[[-5.5]]], [[[-3.5]]], [[[-1.5]]]]])
+    assert arr3.transpose(0, 1, 2, 3, 4) == np.array([[[[[ 1.5, -5.5],
+                                                         [ 3.5, -3.5],
+                                                         [ 5.5, -1.5]]]]])
+    assert arr3.transpose((3, 4, 0, 2, 1)) == np.array([[[[[ 1.5]]], [[[-5.5]]]],
+                                                        [[[[ 3.5]]], [[[-3.5]]]],
+                                                        [[[[ 5.5]]], [[[-1.5]]]]])
+
+
+def test_array_repeat():
+    arr1 = np.array([[1, 2], [3, 4]])
+    assert arr1.repeat(2, 0) == np.array([[1, 2], [1, 2], [3, 4], [3, 4]])
+
+    arr2 = np.array([[[[1, 2, 3], [4, 5, 6]]]])
+    assert arr2.repeat(4, 3) == np.array([[[[1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3], 
+                                            [4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6]]]])
+    assert arr2.repeat([1, 2, 3], 3) == np.array([[[[1, 2, 2, 3, 3, 3],
+                                                    [4, 5, 5, 6, 6, 6]]]])
+
+
+def test_array_flatten():
+    arr1 = np.array([[1, 2], [3, 4]])
+    assert arr1.flatten() == np.array([1, 2, 3, 4])
+
+    arr2 = np.array([[[1., 2.], [3., 4.], [5., 6.]],
+                        [[7., 8.], [9., 10.], [11., 12.]]])
+    assert arr2.flatten() == np.array([1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11., 12.])
+
+
 if __name__ == "__main__":
     pytest.main()
