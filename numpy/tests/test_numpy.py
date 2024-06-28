@@ -199,5 +199,77 @@ def test_array_var():
     assert np.allclose(arr.var(2), np.array([[0.66666667, 0.66666667, 0.66666667]])) == 1
 
 
+def test_array_argmin():
+    arr1 = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9])
+    assert arr1.argmin() == 0
+
+    arr2 = np.array([[-1], [-2], [-3]])
+    assert arr2.argmin() == 2
+    assert arr2.argmin(0) == np.array([2])
+
+    arr3 = np.array([[[[[1.5, -1.5], [3.5, -3.5], [5.5, -5.5]]]]])
+    assert arr3.argmin() == 5
+    assert arr3.argmin(0) == np.array([[[[0, 0], [0, 0], [0, 0]]]])
+    assert arr3.argmin(1) == np.array([[[[0, 0], [0, 0], [0, 0]]]])
+    assert arr3.argmin(2) == np.array([[[[0, 0], [0, 0], [0, 0]]]])
+    assert arr3.argmin(3) == np.array([[[[0, 2]]]])
+    assert arr3.argmin(4) == np.array([[[[1, 1, 1]]]])
+
+
+def test_array_argmax():
+    arr1 = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9])
+    assert arr1.argmax() == 8
+
+    arr2 = np.array([[-1], [-2], [-3]])
+    assert arr2.argmax() == 0
+    assert arr2.argmax(0) == np.array([0])
+
+    arr3 = np.array([[[[[1.5, -1.5], [3.5, -3.5], [5.5, -5.5]]]]])
+    assert arr3.argmax() == 4
+    assert arr3.argmax(0) == np.array([[[[0, 0], [0, 0], [0, 0]]]])
+    assert arr3.argmax(1) == np.array([[[[0, 0], [0, 0], [0, 0]]]])
+    assert arr3.argmax(2) == np.array([[[[0, 0], [0, 0], [0, 0]]]])
+    assert arr3.argmax(3) == np.array([[[[2, 0]]]])
+    assert arr3.argmax(4) == np.array([[[[0, 0, 0]]]])
+
+
+def test_array_argsort():
+    arr1 = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9])
+    assert arr1.argsort() ==  np.array([0, 1, 2, 3, 4, 5, 6, 7, 8])
+
+    arr2 = np.array([9, 8, 7, 6, 5, 4, 3, 2, 1])
+    assert arr2.argsort() == np.array([8, 7, 6, 5, 4, 3, 2, 1, 0])
+
+    arr3 = np.array([[-1], [-2], [-3]])
+    assert arr3.argsort() == np.array([[0], [0], [0]])
+    assert arr3.argsort(0) == np.array([[2], [1], [0]])
+
+    arr4 = np.array([[[[[1.5, -1.5], [3.5, -3.5], [5.5, -5.5]]]]])
+    assert arr4.argsort() == np.array([[[[[1, 0], [1, 0], [1, 0]]]]])
+    assert arr4.argsort(0) == np.array([[[[[0, 0], [0, 0], [0, 0]]]]])
+    assert arr4.argsort(1) == np.array([[[[[0, 0], [0, 0], [0, 0]]]]])
+    assert arr4.argsort(2) == np.array([[[[[0, 0], [0, 0], [0, 0]]]]])
+    assert arr4.argsort(3) == np.array([[[[[0, 2], [1, 1], [2, 0]]]]])
+    assert arr4.argsort(4) == np.array([[[[[1, 0], [1, 0], [1, 0]]]]])
+
+
+def test_array_sort():
+    arr1 = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9])
+    arr1.sort()
+    assert arr1 == np.array([1, 2, 3, 4, 5, 6, 7, 8, 9])
+
+    arr2 = np.array([9, 8, 7, 6, 5, 4, 3, 2, 1])
+    arr2.sort()
+    assert arr2 == np.array([1, 2, 3, 4, 5, 6, 7, 8, 9])
+
+    arr3 = np.array([[-1], [-2], [-3]])
+    arr3.sort(0)
+    assert arr3 == np.array([[-3], [-2], [-1]])
+
+    arr4 = np.array([[[[[1.5, -1.5], [3.5, -3.5], [5.5, -5.5]]]]])
+    arr4.sort(3)
+    assert arr4 == np.array([[[[[ 1.5, -5.5], [ 3.5, -3.5], [ 5.5, -1.5]]]]])
+
+
 if __name__ == "__main__":
     pytest.main()

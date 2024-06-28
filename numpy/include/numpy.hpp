@@ -368,16 +368,16 @@ public:
     }
 
     // Searching and Sorting Functions
-    ndarray<T> argmin() const {
-        return ndarray<T>(xt::argmin(_array));
+    T argmin() const {
+        return (xt::argmin(_array))[0];
     }
     ndarray<T> argmin(int axis) const {
         xt::xarray<T> result = xt::argmin(_array, {axis});
         return ndarray<T>(result);
     }
 
-    ndarray<T> argmax() const {
-        return ndarray<T>(xt::argmax(_array));
+    T argmax() const {
+        return (xt::argmax(_array))[0];
     }
     ndarray<T> argmax(int axis) const {
         xt::xarray<T> result = xt::argmax(_array, {axis});

@@ -48,9 +48,9 @@ public:
     virtual py::object var() const = 0;
     virtual ndarray_base* var_axis(int axis) const = 0;
     virtual ndarray_base* var_axes(py::tuple axes) const = 0;
-    virtual ndarray_base* argmin() const = 0;
+    virtual py::object argmin() const = 0;
     virtual ndarray_base* argmin_axis(int axis) const = 0;
-    virtual ndarray_base* argmax() const = 0;
+    virtual py::object argmax() const = 0;
     virtual ndarray_base* argmax_axis(int axis) const = 0;
     virtual ndarray_base* argsort() const = 0;
     virtual ndarray_base* argsort_axis(int axis) const = 0;
@@ -234,9 +234,26 @@ public:
         for (auto item : axes) axes_.push_back(py::cast<int>(item));
         return new ndarray<T>(data.var(axes_));
     }
-    ndarray_base* argmin() const override { return new ndarray<T>(data.argmin()); }
+
+    py::object argmin() const override {
+        if constexpr (std::is_same_v<T, int>) {
+            return py::int_(data.argmin());
+        } else if constexpr (std::is_same_v<T, float64>) {
+            return py::float_(data.argmin());
+        } else {
+            throw std::runtime_error("Unsupported type");
+        }
+    }
     ndarray_base* argmin_axis(int axis) const override { return new ndarray<T>(data.argmin(axis)); }
-    ndarray_base* argmax() const override { return new ndarray<T>(data.argmax()); }
+    py::object argmax() const override {
+        if constexpr (std::is_same_v<T, int>) {
+            return py::int_(data.argmax());
+        } else if constexpr (std::is_same_v<T, float64>) {
+            return py::float_(data.argmax());
+        } else {
+            throw std::runtime_error("Unsupported type");
+        }
+    }
     ndarray_base* argmax_axis(int axis) const override { return new ndarray<T>(data.argmax(axis)); }
     ndarray_base* argsort() const override { return new ndarray<T>(data.argsort()); }
     ndarray_base* argsort_axis(int axis) const override { return new ndarray<T>(data.argsort(axis)); }
