@@ -640,19 +640,28 @@ public:
 
 class Random {
 public:
-    static ndarray_base* randn(py::args args) {
-        std::vector<int> shape;
-        for (auto item : args) shape.push_back(py::cast<int>(item));
-        return new ndarray<float64>(pkpy::numpy::random::randn<float64>(shape));
+    static py::object rand() {
+        return py::float_(pkpy::numpy::random::rand<float64>());
     }
-
-    static ndarray_base* rand(py::args args) {
+    static ndarray_base* rand_shape(py::args args) {
         std::vector<int> shape;
         for (auto item : args) shape.push_back(py::cast<int>(item));
         return new ndarray<float64>(pkpy::numpy::random::rand<float64>(shape));
     }
 
-    static ndarray_base* randint(int low, int high, const std::vector<int>& shape) {
+    static py::object randn() {
+        return py::float_(pkpy::numpy::random::randn<float64>());
+    }
+    static ndarray_base* randn_shape(py::args args) {
+        std::vector<int> shape;
+        for (auto item : args) shape.push_back(py::cast<int>(item));
+        return new ndarray<float64>(pkpy::numpy::random::randn<float64>(shape));
+    }
+
+    static py::object randint(int low, int high) {
+        return py::int_(pkpy::numpy::random::randint<int>(low, high));
+    }
+    static ndarray_base* randint_shape(int low, int high, const std::vector<int>& shape) {
         return new ndarray<int>(pkpy::numpy::random::randint<int>(low, high, shape));
     }
 
@@ -815,8 +824,11 @@ PYBIND11_MODULE(numpy_bindings, m) {
 
     py::class_<Random>(m, "random")
         .def_static("rand", &Random::rand)
+        .def_static("rand_shape", &Random::rand_shape)
         .def_static("randn", &Random::randn)
-        .def_static("randint", &Random::randint, py::arg("low"), py::arg("high"), py::arg("shape") = std::vector<int>{});
+        .def_static("randn_shape", &Random::randn_shape)
+        .def_static("randint", &Random::randint)
+        .def_static("randint_shape", &Random::randint_shape);
 
     m.def("array", [](int value) {
         return std::unique_ptr<ndarray_base>(new ndarray_int(value));

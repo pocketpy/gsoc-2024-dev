@@ -465,11 +465,21 @@ public:
     }
 
     template <typename T>
+    static T rand() {
+        random random_instance;
+        return (xt::random::rand<T>(std::vector{1}))[0];
+    }
+    template <typename T>
     static ndarray<T> rand(const _ShapeLike& shape){
         random random_instance;
         return ndarray<T>(xt::random::rand<T>(shape));
     }
 
+    template <typename T>
+    static T randn() {
+        random random_instance;
+        return (xt::random::randn<T>(std::vector{1}))[0];
+    }
     template <typename T>
     static ndarray<T> randn(const _ShapeLike& shape){
         random random_instance;
@@ -477,10 +487,13 @@ public:
     }
 
     template <typename T>
-    static ndarray<T> randint(T low, T high, const _ShapeLike& shape = {}){
+    static int randint(T low, T high) {
         random random_instance;
-        if(shape.empty())
-            return ndarray<T>(xt::random::randint<T>(std::vector{1}, low, high));
+        return (xt::random::randint<T>(std::vector{1}, low, high))[0];
+    }
+    template <typename T>
+    static ndarray<T> randint(T low, T high, const _ShapeLike& shape){
+        random random_instance;
         return ndarray<T>(xt::random::randint<T>(shape, low, high));
     }
 };
