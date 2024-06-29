@@ -3,6 +3,7 @@
 #include <any>
 #include <cstdint>
 #include <complex>
+#include <chrono>
 #include <iostream>
 #include <limits>
 #include <string>
@@ -10,9 +11,11 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+
 #include <xtensor/xarray.hpp>
 #include <xtensor/xio.hpp>
 #include <xtensor/xmath.hpp>
+#include <xtensor/xrandom.hpp>
 #include <xtensor/xsort.hpp> 
 #include <xtensor/xview.hpp> 
 #include <xtensor-blas/xlinalg.hpp>
@@ -452,6 +455,47 @@ public:
 
     private:
         xt::xarray<T> _array;
+};
+
+class random {
+public:
+    random() {
+        auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+        xt::random::seed(seed);
+    }
+
+    template <typename T>
+    static T rand() {
+        random random_instance;
+        return (xt::random::rand<T>(std::vector{1}))[0];
+    }
+    template <typename T>
+    static ndarray<T> rand(const _ShapeLike& shape){
+        random random_instance;
+        return ndarray<T>(xt::random::rand<T>(shape));
+    }
+
+    template <typename T>
+    static T randn() {
+        random random_instance;
+        return (xt::random::randn<T>(std::vector{1}))[0];
+    }
+    template <typename T>
+    static ndarray<T> randn(const _ShapeLike& shape){
+        random random_instance;
+        return ndarray<T>(xt::random::randn<T>(shape));
+    }
+
+    template <typename T>
+    static int randint(T low, T high) {
+        random random_instance;
+        return (xt::random::randint<T>(std::vector{1}, low, high))[0];
+    }
+    template <typename T>
+    static ndarray<T> randint(T low, T high, const _ShapeLike& shape){
+        random random_instance;
+        return ndarray<T>(xt::random::randint<T>(shape, low, high));
+    }
 };
 
 template <typename T>
