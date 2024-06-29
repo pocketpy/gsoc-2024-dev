@@ -326,6 +326,108 @@ def test_array_flatten():
     assert arr2.flatten() == np.array([1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11., 12.])
 
 
+def test_array_add():
+    arr1 = np.array([1, 2, 3, 4, 5])
+
+    assert arr1 + 1 == np.array([2, 3, 4, 5, 6])
+    assert arr1 + 2.5 == np.array([3.5, 4.5, 5.5, 6.5, 7.5])
+    assert 1 + arr1 == np.array([2, 3, 4, 5, 6])
+    assert 2.5 + arr1 == np.array([3.5, 4.5, 5.5, 6.5, 7.5])
+    assert arr1 + arr1 == np.array([2, 4, 6, 8, 10])
+    assert arr1 + np.array([-1, -2, -3, -4, -5]) == np.array([0, 0, 0, 0, 0])
+
+    arr2 = np.array([[1.33, 2.66], [3.99, 5.33]])
+
+    assert arr2 + 1 == np.array([[2.33, 3.66], [4.99, 6.33]])
+    assert arr2 + 1.66 == np.array([[2.99, 4.32], [5.65, 6.99]])
+    assert 1 + arr2 == np.array([[2.33, 3.66], [4.99, 6.33]])
+    assert 1.66 + arr2 == np.array([[2.99, 4.32], [5.65, 6.99]])
+    assert arr2 + arr2 == np.array([[2.66, 5.32], [7.98, 10.66]])
+
+    array1 = np.ones((2, 2, 2, 2, 2))
+    array2 = np.array([[[[[1.1, 1.2], [1.3, 1.4]], [[1.5, 1.6], [1.7, 1.8]]],
+                    [[[2.1, 2.2], [2.3, 2.4]], [[2.5, 2.6], [2.7, 2.8]]]],
+                   [[[[3.1, 3.2], [3.3, 3.4]], [[3.5, 3.6], [3.7, 3.8]]],
+                    [[[4.1, 4.2], [4.3, 4.4]], [[4.5, 4.6], [4.7, 4.8]]]]])
+
+    assert array1 + array2 == np.array([[[[[2.1, 2.2], [2.3, 2.4]],
+                                        [[2.5, 2.6], [2.7, 2.8]]],
+                                        [[[3.1, 3.2], [3.3, 3.4]],
+                                        [[3.5, 3.6], [3.7, 3.8]]]],
+                                        [[[[4.1, 4.2], [4.3, 4.4]],
+                                        [[4.5, 4.6], [4.7, 4.8]]],
+                                        [[[5.1, 5.2], [5.3, 5.4]],
+                                        [[5.5, 5.6], [5.7, 5.8]]]]])
+
+
+def test_array_sub():
+    arr1 = np.array([1, 2, 3, 4, 5])
+
+    assert arr1 - 1 == np.array([0, 1, 2, 3, 4])
+    assert arr1 - 2.5 == np.array([-1.5, -0.5, 0.5, 1.5, 2.5])
+    assert 1 - arr1 == np.array([0, -1, -2, -3, -4])
+    assert 2.5 - arr1 == np.array([1.5, 0.5, -0.5, -1.5, -2.5])
+    assert arr1 - arr1 == np.array([0, 0, 0, 0, 0])
+
+    arr2 = np.array([[1.33, 2.66], [3.99, 5.33]])
+
+    assert np.allclose(arr2 - 1, np.array([[0.33, 1.66], [2.99, 4.33]]))
+    assert np.allclose(arr2 - 1.66, np.array([[-0.33,  1.  ], [ 2.33,  3.67]]))
+    assert np.allclose(1 - arr2, np.array([[-0.33, -1.66], [-2.99, -4.33]]))
+    assert np.allclose(1.66 - arr2, np.array([[ 0.33, -1.  ], [-2.33, -3.67]]))
+    assert arr2 - arr2 == np.array([[0, 0], [0, 0]])
+
+    array1 = np.ones((2, 2, 2, 2, 2))
+    array2 = np.array([[[[[1.1, 1.2], [1.3, 1.4]], [[1.5, 1.6], [1.7, 1.8]]],
+                    [[[2.1, 2.2], [2.3, 2.4]], [[2.5, 2.6], [2.7, 2.8]]]],
+                   [[[[3.1, 3.2], [3.3, 3.4]], [[3.5, 3.6], [3.7, 3.8]]],
+                    [[[4.1, 4.2], [4.3, 4.4]], [[4.5, 4.6], [4.7, 4.8]]]]])
+
+    assert np.allclose(array1 - array2, np.array([[[[[ -0.1, -0.2], [-0.3, -0.4]],
+                                        [[-0.5, -0.6], [-0.7, -0.8]]],
+                                        [[[ -1.1, -1.2], [-1.3, -1.4]],
+                                        [[-1.5, -1.6], [-1.7, -1.8]]]],
+                                        [[[[ -2.1, -2.2], [-2.3, -2.4]],
+                                        [[-2.5, -2.6], [-2.7, -2.8]]],
+                                        [[[ -3.1, -3.2], [-3.3, -3.4]],
+                                        [[-3.5, -3.6], [-3.7, -3.8]]]]]))
+
+
+def test_array_mul():
+    arr1 = np.array([1, 2, 3, 4, 5])
+
+    assert arr1 * 2 == np.array([2, 4, 6, 8, 10])
+    assert arr1 * 2.5 == np.array([2.5, 5.0, 7.5, 10.0, 12.5])
+    assert 4 * arr1 == np.array([4, 8, 12, 16, 20])
+    assert 5.0 * arr1 == np.array([5.0, 10.0, 15.0, 20.0, 25.0])
+    assert arr1 * arr1 == np.array([1, 4, 9, 16, 25])
+
+    arr2 = np.array([[1.33, 2.66], [3.99, 5.33]])
+
+    assert np.allclose(arr2 * 2, np.array([[2.66, 5.32], [7.98, 10.66]]))
+    assert np.allclose(arr2 * 2.5, np.array([[3.325, 6.65], [9.975, 13.325]]))
+    assert np.allclose(4 * arr2, np.array([[5.32, 10.64], [15.96, 21.32]]))
+    assert np.allclose(5.0 * arr2, np.array([[6.65, 13.3], [19.95, 26.65]]))
+    assert np.allclose(arr2 * arr2, np.array([[1.7689, 7.0756], [15.9201, 28.4089]]))
+
+
+def test_array_div():
+    arr1 = np.array([1, 2, 3, 4, 5])
+
+    assert np.allclose(arr1 / 2, np.array([0.5, 1.0, 1.5, 2.0, 2.5]))
+    assert np.allclose(arr1 / 2.5, np.array([0.4, 0.8, 1.2, 1.6, 2.0]))
+    assert np.allclose(4 / arr1, np.array([4.0, 2.0, 1.3333333333333333, 1.0, 0.8]))
+    assert np.allclose(5.0 / arr1, np.array([5.0, 2.5, 1.6666666666666667, 1.25, 1.0]))
+
+    arr2 = np.array([[1.33, 2.66], [3.99, 5.33]])
+
+    assert np.allclose(arr2 / 2, np.array([[0.665, 1.33], [1.995, 2.665]]))
+    assert np.allclose(arr2 / 1.33, np.array([[1.0, 2.0], [3.0, 4.007519]]))
+    assert np.allclose(4 / arr2, np.array([[3.0075188 , 1.5037594], [1.00250627, 0.75046904]]))
+    assert np.allclose(1.33 / arr2, np.array([[1.0, 0.5], [0.33333333, 0.24953096]]))
+    assert np.allclose(arr2 / arr2, np.array([[1.0, 1.0], [1.0, 1.0]]))
+
+
 def test_array_trigonometry():
     arr1 = np.array([np.pi/6, np.pi/4, np.pi/3, np.pi/2, np.pi])
     assert np.allclose(np.sin(arr1), np.array([0.5, 0.707107, 0.866025, 1.0, 0.0]))
