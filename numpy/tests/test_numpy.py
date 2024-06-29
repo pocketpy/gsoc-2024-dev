@@ -54,18 +54,6 @@ def test_array_creation():
                                                     0.78947368, 0.84210526, 0.89473684, 0.94736842, 1.0]))
 
 
-def test_array_trigonometry():
-    arr1 = np.array([np.pi/6, np.pi/4, np.pi/3, np.pi/2, np.pi])
-    assert np.allclose(np.sin(arr1), np.array([0.5, 0.707107, 0.866025, 1.0, 0.0]))
-    assert np.allclose(np.cos(arr1), np.array([0.866025, 0.707107, 0.5, 0.0, -1.0]))
-    assert np.allclose(np.tan(arr1), np.array([0.57735, 1.0, 1.73205, np.inf , 0.0]))
-
-    arr2 = np.array([0.5, 0.707107, 0.866025, 1.0, 0.0])
-    assert np.allclose(np.arcsin(arr2), np.array([np.pi/6, np.pi/4, np.pi/3, np.pi/2, 0.0]))
-    assert np.allclose(np.arccos(arr2), np.array([np.pi/3, np.pi/4, np.pi/6, 0.0, np.pi/2]))
-    assert np.allclose(np.arctan(arr2), np.array([0.463648,  0.61548 ,  0.713724,  0.785398,  0.0]))
-
-
 def test_array_properties():
     arr1 = np.array([1, 2, 3])
     assert arr1.size() == 3
@@ -336,6 +324,27 @@ def test_array_flatten():
     arr2 = np.array([[[1., 2.], [3., 4.], [5., 6.]],
                         [[7., 8.], [9., 10.], [11., 12.]]])
     assert arr2.flatten() == np.array([1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11., 12.])
+
+
+def test_array_trigonometry():
+    arr1 = np.array([np.pi/6, np.pi/4, np.pi/3, np.pi/2, np.pi])
+    assert np.allclose(np.sin(arr1), np.array([0.5, 0.707107, 0.866025, 1.0, 0.0]))
+    assert np.allclose(np.cos(arr1), np.array([0.866025, 0.707107, 0.5, 0.0, -1.0]))
+    assert np.allclose(np.tan(arr1), np.array([0.57735, 1.0, 1.73205, np.inf , 0.0]))
+
+    arr2 = np.array([0.5, 0.707107, 0.866025, 1.0, 0.0])
+    assert np.allclose(np.arcsin(arr2), np.array([np.pi/6, np.pi/4, np.pi/3, np.pi/2, 0.0]))
+    assert np.allclose(np.arccos(arr2), np.array([np.pi/3, np.pi/4, np.pi/6, 0.0, np.pi/2]))
+    assert np.allclose(np.arctan(arr2), np.array([0.463648,  0.61548 ,  0.713724,  0.785398,  0.0]))
+
+
+def test_array_exponential():
+    arr1 = np.array([0.0, 1.0, 2.0, 3.0, 4.0])
+
+    assert np.allclose(np.exp(arr1), np.array([1.0, 2.718282, 7.389056, 20.085537, 54.598150]))
+    assert np.allclose(np.log(arr1), np.array([-np.inf, 0.0, 0.693147, 1.098612, 1.386294]))
+    assert np.allclose(np.log2(arr1), np.array([-np.inf, 0.0, 1.0, 1.584963, 2.0]))
+    assert np.allclose(np.log10(arr1), np.array([-np.inf, 0.0, 0.30103, 0.477121, 0.60206]))
 
 
 if __name__ == "__main__":
