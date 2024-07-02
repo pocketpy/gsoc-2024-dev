@@ -365,7 +365,7 @@ class capsule : public object {
     PYBIND11_TYPE_IMPLEMENT(object, impl::capsule, handle(vm->builtins->attr("capsule"))._as<pkpy::Type>());
 
 public:
-    template <typename T>
+    template <typename T, typename = std::enable_if_t<!(std::is_same_v<remove_cvref_t<T>, capsule>)>>
     capsule(T&& value) : object(create(std::forward<T>(value))) {}
 
     capsule(void* ptr, void (*destructor)(void*) = nullptr) : object(create(ptr, destructor)) {}
