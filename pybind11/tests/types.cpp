@@ -99,6 +99,19 @@ TEST_F(PYBIND11_TEST, capsule) {
     NotTrivial obj;
     py::handle x = py::capsule(obj);
 
-    py::interpreter::finalize(); 
+    auto m = py::module_::__main__();
+
+    m.def("foo", [](int x) {
+        return py::capsule(new int(x));
+    });
+
+    m.def("bar", [](py::capsule x, int y) {
+        EXPECT_EQ(x.cast<int>(), y);
+        delete x.cast<int*>();
+    });
+
+    py::exec("bar(foo(123), 123)");
+
+    py::interpreter::finalize();
     EXPECT_EQ(times, 1);
 }

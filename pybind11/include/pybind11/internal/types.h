@@ -368,6 +368,10 @@ public:
     template <typename T>
     capsule(T&& value) : object(create(std::forward<T>(value))) {}
 
+    capsule(void* ptr, void (*destructor)(void*) = nullptr) : object(create(ptr, destructor)) {}
+
+    void* data() const { return self().ptr; }
+
     template <typename T>
     T& cast() const {
         return *static_cast<T*>(self().ptr);
