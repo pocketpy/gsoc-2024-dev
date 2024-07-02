@@ -87,6 +87,8 @@ public:
     virtual ndarray_base* pow(const ndarray_base& other) const = 0;
     virtual ndarray_base* pow_int(int other) const = 0;
     virtual ndarray_base* pow_float(float64 other) const = 0;
+    virtual ndarray_base* rpow_int(int other) const = 0;
+    virtual ndarray_base* rpow_float(float64 other) const = 0;
     virtual ndarray_base* matmul(const ndarray_base& other) const = 0;
     virtual ndarray_base* get_item_int(int index) const = 0;
     virtual ndarray_base* get_item_tuple(py::tuple indices) const = 0;
@@ -438,6 +440,12 @@ public:
     ndarray_base* pow_float(float64 other) const override {
         return new ndarray<float64>(data.pow(other));
     }
+    ndarray_base* rpow_int(int other) const override {
+        return new ndarray<float64>(pkpy::numpy::pow(other, data));
+    }
+    ndarray_base* rpow_float(float64 other) const override {
+        return new ndarray<float64>(pkpy::numpy::pow(other, data));
+    }
     ndarray_base* matmul(const ndarray_base& other) const override {
         if constexpr(std::is_same_v<T, int>){
             if(auto p = dynamic_cast<const ndarray<float64>*>(&other)){ /* int @ float */
@@ -744,6 +752,8 @@ PYBIND11_MODULE(numpy_bindings, m) {
         .def("__pow__", &ndarray_base::pow)
         .def("__pow__", &ndarray_base::pow_int)
         .def("__pow__", &ndarray_base::pow_float)
+        .def("__rpow__", &ndarray_base::rpow_int)
+        .def("__rpow__", &ndarray_base::rpow_float)
         .def("__matmul__", &ndarray_base::matmul)
         .def("__len__", &ndarray_base::len)
         .def("__getitem__", &ndarray_base::get_item_int)

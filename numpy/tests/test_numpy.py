@@ -428,6 +428,55 @@ def test_array_div():
     assert np.allclose(arr2 / arr2, np.array([[1.0, 1.0], [1.0, 1.0]]))
 
 
+def test_array_matmul():
+    arr1 = np.array([[1, 2], [3, 4]])
+    arr2 = np.array([[5, 6], [7, 8]])
+
+    assert arr1 @ arr2 == np.array([[19, 22], [43, 50]])
+    assert arr2 @ arr1 == np.array([[23, 34], [31, 46]])
+
+    arr3 = np.array([[1.0, 2.0], [2.0, 3.0], [4.0, 5.0]])
+    arr4 = np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
+
+    assert arr3 @ arr4 == np.array([[9.0, 12.0, 15.0], 
+                                    [14.0, 19.0, 24.0], 
+                                    [24.0, 33.0, 42.0]])
+    assert arr4 @ arr3 == np.array([[17.0, 23.0],
+                                    [38.0, 53.0]])
+
+
+def test_array_len():
+    arr1 = np.array([1, 2, 3, 4, 5])
+    assert len(arr1) == 5
+
+    arr2 = np.array([[1, 2], [3, 4], [5, 6]])
+    assert len(arr2) == 3
+
+    arr3 = np.array([[[[1.5, -1.5, 2.5], [3.5, -3.5, 4.5], [5.5, -5.5, 6.5]]]])
+    assert len(arr3) == 1
+
+
+def test_array_pow():
+    a = np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]])
+    b = np.array([[[2, 2], [2, 2]], [[3, 3], [3, 3]]])
+
+    assert np.allclose(a ** b, np.array([[[1, 4], [9, 16]], [[125, 216], [343, 512]]]))
+
+    arr1 = np.array([1, 2, 3, 4, 5])
+    assert arr1 ** 2 == np.array([1, 4, 9, 16, 25])
+    assert np.allclose(arr1 ** 2.5, np.array([1.0, 5.656854, 15.588457, 32.0, 55.901699]))
+    assert 2 ** arr1 == np.array([2, 4, 8, 16, 32])
+    assert np.allclose(2.5 ** arr1, np.array([2.5, 6.25, 15.625, 39.0625, 97.65625]))
+
+    arr2 = np.array([[1.33, 2.66], [3.99, 5.33]])
+    assert np.allclose(arr2 ** 2, np.array([[1.7689, 7.0756], [15.9201, 28.4089]]))
+    assert np.allclose(arr2 ** 2.5, np.array([[ 2.039995, 11.53995437], [31.80037484, 65.58703869]]))
+    assert np.allclose(4 ** arr2, np.array([[   6.32033049,   39.94657756],
+                                            [ 252.47557235, 1618.0046067 ]]))
+    assert np.allclose(5.0 ** arr2, np.array([[   8.50413422,   72.32029875],
+                                             [ 615.0215271 , 5315.08388464]]))
+
+
 def test_array_trigonometry():
     arr1 = np.array([np.pi/6, np.pi/4, np.pi/3, np.pi/2, np.pi])
     assert np.allclose(np.sin(arr1), np.array([0.5, 0.707107, 0.866025, 1.0, 0.0]))
