@@ -457,14 +457,24 @@ def test_array_len():
 
 
 def test_array_pow():
-    arr1 = np.array([1, 2, 3, 4, 5])
+    a = np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]])
+    b = np.array([[[2, 2], [2, 2]], [[3, 3], [3, 3]]])
 
+    assert np.allclose(a ** b, np.array([[[1, 4], [9, 16]], [[125, 216], [343, 512]]]))
+
+    arr1 = np.array([1, 2, 3, 4, 5])
     assert arr1 ** 2 == np.array([1, 4, 9, 16, 25])
     assert np.allclose(arr1 ** 2.5, np.array([1.0, 5.656854, 15.588457, 32.0, 55.901699]))
+    assert 2 ** arr1 == np.array([2, 4, 8, 16, 32])
+    assert np.allclose(2.5 ** arr1, np.array([2.5, 6.25, 15.625, 39.0625, 97.65625]))
 
     arr2 = np.array([[1.33, 2.66], [3.99, 5.33]])
     assert np.allclose(arr2 ** 2, np.array([[1.7689, 7.0756], [15.9201, 28.4089]]))
     assert np.allclose(arr2 ** 2.5, np.array([[ 2.039995, 11.53995437], [31.80037484, 65.58703869]]))
+    assert np.allclose(4 ** arr2, np.array([[   6.32033049,   39.94657756],
+                                            [ 252.47557235, 1618.0046067 ]]))
+    assert np.allclose(5.0 ** arr2, np.array([[   8.50413422,   72.32029875],
+                                             [ 615.0215271 , 5315.08388464]]))
 
 
 def test_array_trigonometry():
