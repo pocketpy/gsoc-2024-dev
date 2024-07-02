@@ -96,8 +96,9 @@ TEST_F(PYBIND11_TEST, capsule) {
         ~NotTrivial() { times++; }
     };
 
-    NotTrivial obj;
-    py::handle x = py::capsule(obj);
+    py::handle x = py::capsule(new NotTrivial(), [](void* ptr) {
+        delete static_cast<NotTrivial*>(ptr);
+    });
 
     auto m = py::module_::__main__();
 
@@ -107,7 +108,7 @@ TEST_F(PYBIND11_TEST, capsule) {
 
     m.def("bar", [](py::capsule x, int y) {
         EXPECT_EQ(x.cast<int>(), y);
-        delete x.cast<int*>();
+        delete (int*)x.data();
     });
 
     py::exec("bar(foo(123), 123)");
