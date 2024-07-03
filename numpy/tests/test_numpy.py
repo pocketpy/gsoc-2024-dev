@@ -326,6 +326,17 @@ def test_array_flatten():
     assert arr2.flatten() == np.array([1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11., 12.])
 
 
+def test_array_copy():
+    arr1 = np.array([[1, 2], [3, 4]])
+    arr2 = arr1
+    arr3 = arr1.copy()
+
+    # Showcasing deep copy vs shallow copy
+    arr1[0] = [10, 20]
+    assert arr2 == np.array([[10, 20], [3, 4]])
+    assert arr3 == np.array([[1, 2], [3, 4]])
+
+
 def test_array_add():
     arr1 = np.array([1, 2, 3, 4, 5])
 
