@@ -337,6 +337,39 @@ def test_array_copy():
     assert arr3 == np.array([[1, 2], [3, 4]])
 
 
+def test_array_astype():
+    arr1 = np.array([1, 2, 2.5])
+
+    assert arr1.astype('int') == np.array([1, 2, 2])
+    assert arr1.dtype() == 'float64'
+
+    assert arr1.astype('float64') == np.array([1.0, 2.0, 2.5])
+    assert arr1.dtype() == 'float64'
+
+
+def test_array_round():
+    assert np.round(np.array([40, 20, 30, 10])) == np.array([40, 20, 30, 10])
+    assert np.round(np.array([0.37, 1.64])) == np.array([0.0, 2.0])
+    assert np.round(np.array([.5, 1.5, 2.5, 3.5, 4.5])) ==  np.array([ 1.,  2.,  3.,  4.,  5.])
+
+
+def test_array_floor():
+    assert np.floor(np.array([40, 20, 30, 10])) == np.array([40, 20, 30, 10])
+    assert np.floor(np.array([0.37, 1.64])) == np.array([0.,  1.])
+    assert np.floor(np.array([.5, 1.5, 2.5, 3.5, 4.5])) == np.array([ 0.,  1.,  2.,  3.,  4.])
+
+
+def test_array_ceil():
+    assert np.ceil(np.array([40, 20, 30, 10])) == np.array([40, 20, 30, 10])
+    assert np.ceil(np.array([0.37, 1.64])) == np.array([1.,  2.])
+    assert np.ceil(np.array([.5, 1.5, 2.5, 3.5, 4.5])) == np.array([ 1.,  2.,  3.,  4.,  5.])
+
+
+def test_array_abs():
+    assert np.abs(np.array([[-1.2, 1.2], [-10, 10]])) == np.array([[1.2, 1.2], [10, 10]])
+    assert np.abs(np.linspace(0, -10)) == np.linspace(0, 10)
+
+
 def test_array_add():
     arr1 = np.array([1, 2, 3, 4, 5])
 
