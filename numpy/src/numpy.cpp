@@ -357,15 +357,15 @@ public:
     bool eq(const ndarray_base& other) const override {
         if constexpr(std::is_same_v<T, int>) {
             if(auto p = dynamic_cast<const ndarray<float64>*>(&other)) { /* int == float */
-                return data == p->data;
+                return data == p->data || (data.size() == 0 && p->data.size() == 0);
             } else if(auto p = dynamic_cast<const ndarray<int>*>(&other)) { /* int == int */
-                return data == p->data;
+                return data == p->data || (data.size() == 0 && p->data.size() == 0);
             }
         } else if constexpr(std::is_same_v<T, float64>) {
             if(auto p = dynamic_cast<const ndarray<int>*>(&other)) { /* float == int */
-                return data == p->data;
+                return data == p->data || (data.size() == 0 && p->data.size() == 0);
             } else if(auto p = dynamic_cast<const ndarray<float64>*>(&other)) { /* float == float */
-                return data == p->data;
+                return data == p->data || (data.size() == 0 && p->data.size() == 0);
             }
         }
 
@@ -524,6 +524,7 @@ public:
     int len() const override { return data.shape()[0]; }
 
     py::object get_item_int(int index) const override {
+        if(index < 0) index += data.shape()[0];
         if(data.ndim() == 1) {
             if constexpr(std::is_same_v<T, int>) {
                 return py::int_(data(index));
@@ -542,10 +543,12 @@ public:
             indices.push_back(py::cast<int>(item));
         }
         for(int i = 0; i < indices.size() - 1; i++) {
+            if(indices[i] < 0) indices[i] += store.shape()[0];
             pkpy::numpy::ndarray<T> temp = store[indices[i]];
             store = temp;
         }
 
+        if(indices[indices.size() - 1] < 0) indices[indices.size() - 1] += store.shape()[0];
         if(store.ndim() == 1) {
             if constexpr(std::is_same_v<T, int>) {
                 return py::int_(store(indices[indices.size() - 1]));
