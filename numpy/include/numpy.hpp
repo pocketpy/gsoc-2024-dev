@@ -248,7 +248,8 @@ public:
     }
 
     ndarray operator~() const { return ndarray(~(_array)); }
-    
+
+    T operator()(int index) const { return _array(index); }
     ndarray operator[](int index) const { return ndarray(xt::view(_array, index, xt::all())); }
     ndarray operator[](const std::vector<int>& indices) const { return ndarray(xt::view(_array, xt::keep(indices))); }
     ndarray operator[](const std::tuple<int, int, int>& slice) const {
@@ -269,16 +270,16 @@ public:
         xt::view(_array, xt::range(std::get<0>(slice), std::get<1>(slice), std::get<2>(slice))) = value.get_array();
     }
     void set_item_2d(int i1, int i2, T value) {
-        _array(i1, i2) = value;
+        xt::view(_array, i1, i2) = value;
     }
     void set_item_3d(int i1, int i2, int i3, T value) {
-        _array(i1, i2, i3) = value;
+        xt::view(_array, i1, i2, i3) = value;
     }
     void set_item_4d(int i1, int i2, int i3, int i4, T value) {
-        _array(i1, i2, i3, i4) = value;
+        xt::view(_array, i1, i2, i3, i4) = value;
     }
     void set_item_5d(int i1, int i2, int i3, int i4, int i5, T value) {
-        _array(i1, i2, i3, i4, i5) = value;
+        xt::view(_array, i1, i2, i3, i4, i5) = value;
     }
 
     // Boolean Functions

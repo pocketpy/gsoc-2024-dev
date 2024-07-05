@@ -98,7 +98,8 @@ public:
     virtual void set_item_index_int(int index, const std::vector<int>& value) = 0;
     virtual void set_item_float(int index, float64 value) = 0;
     virtual void set_item_index_float(int index, const std::vector<float64>& value) = 0;
-    virtual void set_item_tuple(py::tuple args, float64 value) = 0;
+    virtual void set_item_tuple_int(py::tuple args, int value) = 0;
+    virtual void set_item_tuple_float(py::tuple args, float64 value) = 0;
     virtual void set_item_vector_int1(const std::vector<int>& indices, int value) = 0;
     virtual void set_item_vector_int2(const std::vector<int>& indices, const std::vector<int>& value) = 0;
     virtual void set_item_vector_float1(const std::vector<int>& indices, float64 value) = 0;
@@ -542,15 +543,41 @@ public:
             data.set_item(index, (pkpy::numpy::adapt<float64>(value)).astype<int>());
         }
     }
-    void set_item_tuple(py::tuple args, float64 value) override {
+    void set_item_tuple_int(py::tuple args, int value) override {
         std::vector<int> indices;
         for (auto item : args) {
             indices.push_back(py::cast<int>(item));
         }
-        if(data.ndim() == 2) data.set_item_2d(indices[0], indices[1], value);
-        else if(data.ndim() == 3) data.set_item_3d(indices[0], indices[1], indices[2], value);
-        else if(data.ndim() == 4) data.set_item_4d(indices[0], indices[1], indices[2], indices[3], value);
-        else if(data.ndim() == 5) data.set_item_5d(indices[0], indices[1], indices[2], indices[3], indices[4], value);
+        if(indices.size() == 1) {
+            int index = indices[0];
+            if constexpr(std::is_same_v<T, int>) {
+                data.set_item(index, pkpy::numpy::adapt<int>(std::vector{value}));
+            } else if constexpr(std::is_same_v<T, float64>) {
+                data.set_item(index, (pkpy::numpy::adapt<int>(std::vector{value})).astype<float64>());
+            }
+        }
+        else if(indices.size() == 2 && indices.size() <= data.ndim()) data.set_item_2d(indices[0], indices[1], value);
+        else if(indices.size() == 3 && indices.size() <= data.ndim()) data.set_item_3d(indices[0], indices[1], indices[2], value);
+        else if(indices.size() == 4 && indices.size() <= data.ndim()) data.set_item_4d(indices[0], indices[1], indices[2], indices[3], value);
+        else if(indices.size() == 5 && indices.size() <= data.ndim()) data.set_item_5d(indices[0], indices[1], indices[2], indices[3], indices[4], value);
+    }
+    void set_item_tuple_float(py::tuple args, float64 value) override {
+        std::vector<int> indices;
+        for (auto item : args) {
+            indices.push_back(py::cast<int>(item));
+        }
+        if(indices.size() == 1) {
+            int index = indices[0];
+            if constexpr(std::is_same_v<T, float64>) {
+                data.set_item(index, pkpy::numpy::adapt<float64>(std::vector{value}));
+            } else if constexpr(std::is_same_v<T, int>) {
+                data.set_item(index, (pkpy::numpy::adapt<float64>(std::vector{value})).astype<int>());
+            }
+        }
+        else if(indices.size() == 2 && indices.size() <= data.ndim()) data.set_item_2d(indices[0], indices[1], value);
+        else if(indices.size() == 3 && indices.size() <= data.ndim()) data.set_item_3d(indices[0], indices[1], indices[2], value);
+        else if(indices.size() == 4 && indices.size() <= data.ndim()) data.set_item_4d(indices[0], indices[1], indices[2], indices[3], value);
+        else if(indices.size() == 5 && indices.size() <= data.ndim()) data.set_item_5d(indices[0], indices[1], indices[2], indices[3], indices[4], value);
     }
     void set_item_vector_int1(const std::vector<int>& indices, int value) override {
         if constexpr(std::is_same_v<T, int>) {
@@ -781,7 +808,8 @@ PYBIND11_MODULE(numpy_bindings, m) {
         .def("__setitem__", &ndarray_base::set_item_index_int)
         .def("__setitem__", &ndarray_base::set_item_float)
         .def("__setitem__", &ndarray_base::set_item_index_float)
-        .def("__setitem__", &ndarray_base::set_item_tuple)
+        .def("__setitem__", &ndarray_base::set_item_tuple_int)
+        .def("__setitem__", &ndarray_base::set_item_tuple_float)
         .def("__setitem__", &ndarray_base::set_item_vector_int1)
         .def("__setitem__", &ndarray_base::set_item_vector_int2)
         .def("__setitem__", &ndarray_base::set_item_vector_float1)
@@ -790,6 +818,7 @@ PYBIND11_MODULE(numpy_bindings, m) {
         .def("__setitem__", &ndarray_base::set_item_slice_int2)
         .def("__setitem__", &ndarray_base::set_item_slice_float1)
         .def("__setitem__", &ndarray_base::set_item_slice_float2)
+
         .def("__str__", [](const ndarray_base& self) {
             std::ostringstream os;
             os << self.to_string();
