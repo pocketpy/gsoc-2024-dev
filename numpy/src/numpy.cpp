@@ -90,19 +90,19 @@ public:
     virtual ndarray_base* rpow_int(int other) const = 0;
     virtual ndarray_base* rpow_float(float64 other) const = 0;
     virtual ndarray_base* matmul(const ndarray_base& other) const = 0;
-    virtual ndarray_base* get_item_int(int index) const = 0;
-    virtual ndarray_base* get_item_tuple(py::tuple indices) const = 0;
+    virtual py::object get_item_int(int index) const = 0;
+    virtual py::object get_item_tuple(py::tuple indices) const = 0;
     virtual ndarray_base* get_item_vector(const std::vector<int>& indices) const = 0;
     virtual ndarray_base* get_item_slice(py::slice slice) const = 0;
     virtual void set_item_int(int index, int value) = 0;
     virtual void set_item_index_int(int index, const std::vector<int>& value) = 0;
     virtual void set_item_float(int index, float64 value) = 0;
     virtual void set_item_index_float(int index, const std::vector<float64>& value) = 0;
+    virtual void set_item_tuple(py::tuple args, float64 value) = 0;
     virtual void set_item_vector_int1(const std::vector<int>& indices, int value) = 0;
     virtual void set_item_vector_int2(const std::vector<int>& indices, const std::vector<int>& value) = 0;
     virtual void set_item_vector_float1(const std::vector<int>& indices, float64 value) = 0;
     virtual void set_item_vector_float2(const std::vector<int>& indices, const std::vector<float64>& value) = 0;
-    virtual void set_item_tuple(py::tuple args, float64 value) = 0;
     virtual void set_item_slice_int1(py::slice slice, int value) = 0;
     virtual void set_item_slice_int2(py::slice slice, const std::vector<int>& value) = 0;
     virtual void set_item_slice_float1(py::slice slice, float64 value) = 0;
@@ -465,20 +465,37 @@ public:
         return new ndarray<T>(data.matmul(other_.data));
     }
     int len() const override { return data.shape()[0]; }
-    ndarray_base* get_item_int(int index) const override { return new ndarray<T>(data[index]); }
-    ndarray_base* get_item_tuple(py::tuple args) const override {
+    py::object get_item_int(int index) const override {
+        if (data.ndim() == 1) {
+            if constexpr(std::is_same_v<T, int>) {
+                return py::int_(data(index));
+            } else if constexpr(std::is_same_v<T, float64>) {
+                return py::float_(data(index));
+            }
+        } else {
+            return py::cast(ndarray<T>(data[index]));
+        }
+    }
+    py::object get_item_tuple(py::tuple args) const override {
         pkpy::numpy::ndarray<T> store = data;
         std::vector<int> indices;
-
-        for (auto item : args) {
+        for(auto item: args) {
             indices.push_back(py::cast<int>(item));
         }
-        for(int i = 0; i < indices.size() - 1; i++){
+        for(int i = 0; i < indices.size() - 1; i++) {
             pkpy::numpy::ndarray<T> temp = store[indices[i]];
             store = temp;
         }
 
-        return new ndarray<T>(store[indices[indices.size()-1]]);
+        if(store.ndim() == 1) {
+            if constexpr(std::is_same_v<T, int>) {
+                return py::int_(store(indices[indices.size() - 1]));
+            } else if constexpr(std::is_same_v<T, float64>) {
+                return py::float_(store(indices[indices.size() - 1]));
+            }
+        } else {
+            return py::cast(ndarray<T>(store[indices[indices.size() - 1]]));
+        }
     }
     ndarray_base* get_item_vector(const std::vector<int>& indices) const override { return new ndarray<T>(data[indices]); }
     ndarray_base* get_item_slice(py::slice slice) const override {
@@ -525,6 +542,16 @@ public:
             data.set_item(index, (pkpy::numpy::adapt<float64>(value)).astype<int>());
         }
     }
+    void set_item_tuple(py::tuple args, float64 value) override {
+        std::vector<int> indices;
+        for (auto item : args) {
+            indices.push_back(py::cast<int>(item));
+        }
+        if(data.ndim() == 2) data.set_item_2d(indices[0], indices[1], value);
+        else if(data.ndim() == 3) data.set_item_3d(indices[0], indices[1], indices[2], value);
+        else if(data.ndim() == 4) data.set_item_4d(indices[0], indices[1], indices[2], indices[3], value);
+        else if(data.ndim() == 5) data.set_item_5d(indices[0], indices[1], indices[2], indices[3], indices[4], value);
+    }
     void set_item_vector_int1(const std::vector<int>& indices, int value) override {
         if constexpr(std::is_same_v<T, int>) {
             data.set_item(indices, pkpy::numpy::adapt<int>(std::vector{value}));
@@ -552,16 +579,6 @@ public:
         } else if constexpr(std::is_same_v<T, int>) {
             data.set_item(indices, (pkpy::numpy::adapt<float64>(value)).astype<int>());
         }
-    }
-    void set_item_tuple(py::tuple args, float64 value) override {
-        std::vector<int> indices;
-        for (auto item : args) {
-            indices.push_back(py::cast<int>(item));
-        }
-        if(data.ndim() == 2) data.set_item_2d(indices[0], indices[1], value);
-        else if(data.ndim() == 3) data.set_item_3d(indices[0], indices[1], indices[2], value);
-        else if(data.ndim() == 4) data.set_item_4d(indices[0], indices[1], indices[2], indices[3], value);
-        else if(data.ndim() == 5) data.set_item_5d(indices[0], indices[1], indices[2], indices[3], indices[4], value);
     }
     void set_item_slice_int1(py::slice slice, int value) override {
         int start = parseAttr(getattr(slice, "start"));
@@ -764,11 +781,11 @@ PYBIND11_MODULE(numpy_bindings, m) {
         .def("__setitem__", &ndarray_base::set_item_index_int)
         .def("__setitem__", &ndarray_base::set_item_float)
         .def("__setitem__", &ndarray_base::set_item_index_float)
+        .def("__setitem__", &ndarray_base::set_item_tuple)
         .def("__setitem__", &ndarray_base::set_item_vector_int1)
         .def("__setitem__", &ndarray_base::set_item_vector_int2)
         .def("__setitem__", &ndarray_base::set_item_vector_float1)
         .def("__setitem__", &ndarray_base::set_item_vector_float2)
-        .def("__setitem__", &ndarray_base::set_item_tuple)
         .def("__setitem__", &ndarray_base::set_item_slice_int1)
         .def("__setitem__", &ndarray_base::set_item_slice_int2)
         .def("__setitem__", &ndarray_base::set_item_slice_float1)
