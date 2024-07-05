@@ -273,13 +273,13 @@ public:
         xt::view(_array, i1, i2) = value;
     }
     void set_item_3d(int i1, int i2, int i3, T value) {
-        xt::view(_array, i1, i2, i3)  = value;
+        xt::view(_array, i1, i2, i3) = value;
     }
     void set_item_4d(int i1, int i2, int i3, int i4, T value) {
-        xt::view(_array, i1, i2, i3, i4)  = value;
+        xt::view(_array, i1, i2, i3, i4) = value;
     }
     void set_item_5d(int i1, int i2, int i3, int i4, int i5, T value) {
-        xt::view(_array, i1, i2, i3, i4, i5)  = value;
+        xt::view(_array, i1, i2, i3, i4, i5) = value;
     }
 
     // Boolean Functions
