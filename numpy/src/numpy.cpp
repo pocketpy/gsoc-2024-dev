@@ -67,7 +67,7 @@ public:
     virtual ndarray_base* flatten() const = 0;
     virtual ndarray_base* copy() const = 0;
     virtual ndarray_base* astype(const std::string& dtype) const = 0;
-    virtual bool eq(const ndarray_base& other) const = 0;
+    virtual ndarray_base* eq(const ndarray_base& other) const = 0;
     virtual ndarray_base* add(const ndarray_base& other) const = 0;
     virtual ndarray_base* add_int(int other) const = 0;
     virtual ndarray_base* add_float(float64 other) const = 0;
@@ -354,23 +354,23 @@ public:
     }
 
     // Dunder Methods
-    bool eq(const ndarray_base& other) const override {
+    ndarray_base* eq(const ndarray_base& other) const override {
         if constexpr(std::is_same_v<T, int>) {
             if(auto p = dynamic_cast<const ndarray<float64>*>(&other)) { /* int == float */
-                return data == p->data || (data.size() == 0 && p->data.size() == 0);
+                return new ndarray<int>(data == p->data);
             } else if(auto p = dynamic_cast<const ndarray<int>*>(&other)) { /* int == int */
-                return data == p->data || (data.size() == 0 && p->data.size() == 0);
+                return new ndarray<int>(data == p->data);
             }
         } else if constexpr(std::is_same_v<T, float64>) {
             if(auto p = dynamic_cast<const ndarray<int>*>(&other)) { /* float == int */
-                return data == p->data || (data.size() == 0 && p->data.size() == 0);
+                return new ndarray<int>(data == p->data);
             } else if(auto p = dynamic_cast<const ndarray<float64>*>(&other)) { /* float == float */
-                return data == p->data || (data.size() == 0 && p->data.size() == 0);
+                return new ndarray<int>(data == p->data);
             }
         }
 
         const ndarray<T>& other_ = dynamic_cast<const ndarray<T>&>(other);
-        return data == other_.data;
+        return new ndarray<int>(data == other_.data);
     }
 
     ndarray_base* add(const ndarray_base& other) const override {
