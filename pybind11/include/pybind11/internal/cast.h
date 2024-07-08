@@ -170,5 +170,5 @@ struct type_caster<T, std::enable_if_t<is_pointer_v<T> || std::is_reference_v<T>
     }
 };
 
-}  // namespace pybind11
+}  // namespace pybind11::impl
 
