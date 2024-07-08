@@ -30,9 +30,7 @@ class none : public object {
 #if PK_VERSION_MAJOR == 2
     PYBIND11_TYPE_IMPLEMENT(object, empty, vm->tp_none_type);
 #else
-    PYBIND11_TYPE_IMPLEMENT(object, empty, [](const handle& obj) {
-        return obj.is_none();
-    });
+    PYBIND11_TYPE_IMPLEMENT(object, empty, handle(vm->_t(vm->None))._as<pkpy::Type>());
 #endif
 
 public:

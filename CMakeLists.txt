@@ -5,7 +5,7 @@ project(gsoc2024)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# include_directories(numpy/include)
+include_directories(numpy/include)
 include_directories(pybind11/include)
 include_directories(pocketpy/include)
 
@@ -13,7 +13,7 @@ include_directories(pocketpy/include)
 # add_subdirectory(3rd/glm)
 add_subdirectory(pocketpy)
 
-add_executable(${PROJECT_NAME} test_main.cpp)
+add_executable(${PROJECT_NAME} test_main.cpp numpy/src/numpy.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     pocketpy # glm numpy

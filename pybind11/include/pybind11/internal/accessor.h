@@ -81,6 +81,11 @@ struct attr {
     static void set(const handle& obj, pkpy::StrName key, const handle& value) {
         vm->setattr(obj.ptr(), key, value.ptr());
     }
+
+    template <typename Value>
+    static void set(const handle& obj, pkpy::StrName key, Value&& value) {
+        vm->setattr(obj.ptr(), key, pybind11::cast(std::forward<Value>(value)).ptr());
+    }
 };
 
 struct item {

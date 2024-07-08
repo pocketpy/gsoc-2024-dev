@@ -808,7 +808,7 @@ public:
 using ndarray_int = ndarray<int>;
 using ndarray_float = ndarray<float64>;
 
-PYBIND11_MODULE(numpy_bindings, m) {
+PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
     m.doc() = "Python bindings for pkpy::numpy::ndarray using pybind11";
 
     py::class_<ndarray_base>(m, "ndarray")
