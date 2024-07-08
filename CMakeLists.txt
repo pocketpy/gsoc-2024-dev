@@ -13,6 +13,10 @@ include_directories(pocketpy/include)
 # add_subdirectory(3rd/glm)
 add_subdirectory(pocketpy)
 
+if(MSVC)
+    add_compile_options(/bigobj)
+endif()
+
 add_executable(${PROJECT_NAME} test_main.cpp numpy/src/numpy.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
