@@ -1,3 +1,9 @@
-import numpy as np
+import numpy_bindings as np
 
-np.hello()
+a = np.array([1, 2, 3])
+print(a)
+print(repr(a))
+print(a.dtype())
+print(a.shape())
+print(a.mean(), a.sum())
+
