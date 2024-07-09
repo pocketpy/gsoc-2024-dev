@@ -774,7 +774,21 @@ public:
     std::string to_string() const override {
         std::ostringstream os;
         os << data;
-        return os.str();
+        std::string result = os.str();
+        
+        // Replacing curly braces with square braces
+        size_t pos = 0;
+        while ((pos = result.find('{', pos)) != std::string::npos) {
+            result.replace(pos, 1, "[");
+            pos += 1;
+        }
+        pos = 0;
+        while ((pos = result.find('}', pos)) != std::string::npos) {
+            result.replace(pos, 1, "]");
+            pos += 1;
+        }
+
+        return result;
     }
 };
 
