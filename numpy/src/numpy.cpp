@@ -812,10 +812,10 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
     m.doc() = "Python bindings for pkpy::numpy::ndarray using pybind11";
 
     py::class_<ndarray_base>(m, "ndarray")
-        .def("ndim", &ndarray_base::ndim)
-        .def("size", &ndarray_base::size)
-        .def("dtype", &ndarray_base::dtype)
-        .def("shape", &ndarray_base::shape)
+        .def_property_readonly("ndim", &ndarray_base::ndim)
+        .def_property_readonly("size", &ndarray_base::size)
+        .def_property_readonly("dtype", &ndarray_base::dtype)
+        .def_property_readonly("shape", &ndarray_base::shape)
         .def("all", &ndarray_base::all)
         .def("any", &ndarray_base::any)
         .def("sum", &ndarray_base::sum)
@@ -913,7 +913,7 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
              })
         .def("__repr__", [](const ndarray_base& self) {
             std::ostringstream os;
-            os << "ndarray(" << std::endl << self.to_string() << std::endl << ")";
+            os << "array(" << self.to_string() << ")";
             return os.str();
         });
 
