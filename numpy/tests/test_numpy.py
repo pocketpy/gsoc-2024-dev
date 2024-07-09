@@ -56,22 +56,22 @@ def test_array_creation():
 
 def test_array_properties():
     arr1 = np.array([1, 2, 3])
-    assert arr1.size() == 3
-    assert arr1.ndim() == 1
-    assert arr1.shape() == [3]
-    assert arr1.dtype() == 'int32'
+    assert arr1.size == 3
+    assert arr1.ndim == 1
+    assert arr1.shape == [3]
+    assert arr1.dtype == 'int32'
 
     arr2 = np.array([[1, 2, 2, 1], [3, 4, 4, 3], [5, 6, 6, 5]])
-    assert arr2.size() == 12
-    assert arr2.ndim() == 2
-    assert arr2.shape() == [3, 4]
-    assert arr2.dtype() == 'int32'
+    assert arr2.size == 12
+    assert arr2.ndim == 2
+    assert arr2.shape == [3, 4]
+    assert arr2.dtype == 'int32'
 
     arr3 = np.array([[[[[1.5, 2.5], [3.5, 4.5], [5.5, 6.5]]]]])
-    assert arr3.size() == 6
-    assert arr3.ndim() == 5
-    assert arr3.shape() == [1, 1, 1, 3, 2]
-    assert arr3.dtype() == 'float64'
+    assert arr3.size == 6
+    assert arr3.ndim == 5
+    assert arr3.shape == [1, 1, 1, 3, 2]
+    assert arr3.dtype == 'float64'
 
 
 def test_boolean_functions():
