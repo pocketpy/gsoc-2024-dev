@@ -9,6 +9,10 @@ using namespace pybind11;
 int main() {
   py::scoped_interpreter guard{};
   std::ifstream file("test_numpy.py");
+  if(!file.is_open()){
+    std::cerr << "Could not open file" << std::endl;
+    return 1;
+  }
   std::stringstream buffer;
   buffer << file.rdbuf();
   std::string script = buffer.str();
