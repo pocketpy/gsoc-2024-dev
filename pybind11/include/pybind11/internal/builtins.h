@@ -120,12 +120,14 @@ handle cast(T&& value, return_value_policy policy, handle parent) {
 
 template <typename T>
 T cast(const handle& obj, bool convert) {
+    using caster_t = impl::type_caster<T>;
+    constexpr auto is_dangling_v = (std::is_reference_v<T> || is_pointer_v<T>) && caster_t::is_temporary_v;
+    static_assert(!is_dangling_v, "dangling reference or pointer is not allowed.");
     assert(obj.ptr() != nullptr);
 
-    impl::type_caster<T> caster = {};
-
+    caster_t caster;
     if(caster.load(obj, convert)) {
-        return caster.value;
+        return caster.value();
     } else {
         std::string msg = "cast python instance to c++ failed, ";
         msg += "obj type is: {";

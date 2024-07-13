@@ -202,4 +202,8 @@ constexpr inline bool is_unique_pointer_v = false;
 
 template <typename T>
 constexpr inline bool is_unique_pointer_v<std::unique_ptr<T>> = true;
+
+template <typename T>
+constexpr bool is_pointer_v = std::is_pointer_v<T> && !std::is_same_v<T, const char*>;
+
 }  // namespace pybind11

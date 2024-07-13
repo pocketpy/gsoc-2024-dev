@@ -221,16 +221,16 @@ handle invoke(Fn&& fn,
         };
 
         if constexpr(!is_void) {
-            return pybind11::cast(unpack(std::get<Is>(casters).value...), policy, parent);
+            return pybind11::cast(unpack(std::get<Is>(casters).value()...), policy, parent);
         } else {
-            unpack(std::get<Is>(casters).value...);
+            unpack(std::get<Is>(casters).value()...);
             return vm->None;
         }
     } else {
         if constexpr(!is_void) {
-            return pybind11::cast(fn(std::get<Is>(casters).value...), policy, parent);
+            return pybind11::cast(fn(std::get<Is>(casters).value()...), policy, parent);
         } else {
-            fn(std::get<Is>(casters).value...);
+            fn(std::get<Is>(casters).value()...);
             return vm->None;
         }
     }
@@ -529,14 +529,14 @@ pkpy::PyVar setter_wrapper(pkpy::VM* vm, pkpy::ArgsView view) {
             // specialize for pointer to data member
             impl::type_caster<member_type_t<Setter>> caster;
             if(caster.load(view[1], true)) {
-                self.*setter = caster.value;
+                self.*setter = caster.value();
                 return vm->None;
             }
         } else {
             // specialize for pointer to member function
             impl::type_caster<std::tuple_element_t<1, callable_args_t<Setter>>> caster;
             if(caster.load(view[1], true)) {
-                (self.*setter)(caster.value);
+                (self.*setter)(caster.value());
                 return vm->None;
             }
         }
@@ -547,7 +547,7 @@ pkpy::PyVar setter_wrapper(pkpy::VM* vm, pkpy::ArgsView view) {
 
         impl::type_caster<std::tuple_element_t<1, callable_args_t<Setter>>> caster;
         if(caster.load(view[1], true)) {
-            setter(self, caster.value);
+            setter(self, caster.value());
             return vm->None;
         }
     }
