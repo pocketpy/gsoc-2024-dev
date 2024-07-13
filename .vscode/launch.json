@@ -2,6 +2,14 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "type": "cppvsdbg",
+      "request": "launch",
+      "name": "Debug MSVC",
+      "program": "${workspaceFolder}/build/Debug/gsoc2024.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
       "type": "lldb",
       "request": "launch",
       "name": "Debug",
