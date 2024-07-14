@@ -57,6 +57,7 @@ public:
     virtual void sort() = 0;
     virtual void sort_axis(int axis) = 0;
     virtual ndarray_base* reshape(const std::vector<int>& shape) const = 0;
+    virtual void resize(const std::vector<int>& shape) = 0;
     virtual ndarray_base* squeeze() const = 0;
     virtual ndarray_base* squeeze_axis(int axis) const = 0;
     virtual ndarray_base* transpose() const = 0;
@@ -312,6 +313,8 @@ public:
     void sort_axis(int axis) override { data = data.sort(axis); }
 
     ndarray_base* reshape(const std::vector<int>& shape) const override { return new ndarray<T>(data.reshape(shape)); }
+
+    void resize(const std::vector<int>& shape) override { data = data.resize(shape); }
 
     ndarray_base* squeeze() const override { return new ndarray<T>(data.squeeze()); }
 
@@ -862,6 +865,7 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         .def("sort", &ndarray_base::sort)
         .def("sort", &ndarray_base::sort_axis)
         .def("reshape", &ndarray_base::reshape)
+        .def("resize", &ndarray_base::resize)
         .def("squeeze", &ndarray_base::squeeze)
         .def("squeeze", &ndarray_base::squeeze_axis)
         .def("transpose", &ndarray_base::transpose)
