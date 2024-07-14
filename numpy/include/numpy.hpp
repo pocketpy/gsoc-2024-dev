@@ -435,6 +435,14 @@ public:
         return ndarray<T>(dummy);
     }
 
+    // Does not preserve elements if expected size is not equal to the current size.
+    // https://github.com/xtensor-stack/xtensor/issues/1445
+    ndarray<T> resize(const _ShapeLike& shape) const {
+        xt::xarray<T> dummy = _array;
+        dummy.resize(shape);
+        return ndarray<T>(dummy);
+    }
+
     ndarray<T> squeeze() const { return ndarray<T>(xt::squeeze(_array)); }
 
     ndarray<T> squeeze(int axis) const {
