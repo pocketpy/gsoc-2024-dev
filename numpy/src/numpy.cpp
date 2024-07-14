@@ -791,6 +791,11 @@ public:
             pos += 1;
         }
 
+        for(int i = 0; i < result.size(); i++) {
+            if(result[i] == '\n') {
+                result.insert(i + 1, "      ");
+            }
+        }
         return result;
     }
 };
