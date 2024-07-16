@@ -480,6 +480,14 @@ public:
         return result;
     }
 
+    std::vector<T> to_list() const {
+        std::vector<T> vec;
+        for(auto &it : _array) {
+            vec.push_back(it);
+        }
+        return vec;
+    }
+
 private:
     xt::xarray<T> _array;
 };
