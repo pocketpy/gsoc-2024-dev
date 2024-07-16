@@ -833,6 +833,9 @@ using ndarray_float = ndarray<float64>;
 PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
     m.doc() = "Python bindings for pkpy::numpy::ndarray using pybind11";
 
+    m.attr("int") = "int";
+    m.attr("float64") = "float64";
+    
     py::class_<ndarray_base>(m, "ndarray")
         .def_property_readonly("ndim", &ndarray_base::ndim)
         .def_property_readonly("size", &ndarray_base::size)
