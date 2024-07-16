@@ -1022,43 +1022,167 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         .def_static("randint", &Random::randint)
         .def_static("randint_shape", &Random::randint_shape);
 
-    m.def("array", [](int value) {
+    m.def("array", [](int value, std::string dtype) {
+        if(dtype == "float64") {
+            return std::unique_ptr<ndarray_base>(new ndarray_float(value));
+        }
         return std::unique_ptr<ndarray_base>(new ndarray_int(value));
-    });
-    m.def("array", [](const std::vector<int>& values) {
+    }, py::arg("value"), py::arg("dtype") = "int");
+    m.def("array", [](const std::vector<int>& values, std::string dtype) {
+        if(dtype == "float64") {
+            std::vector<float64> float_values(values.begin(), values.end());
+            return std::unique_ptr<ndarray_base>(new ndarray_float(float_values));
+        }
         return std::unique_ptr<ndarray_base>(new ndarray_int(values));
-    });
-    m.def("array", [](const std::vector<std::vector<int>>& values) {
+    }, py::arg("values"), py::arg("dtype") = "int");
+    m.def("array", [](const std::vector<std::vector<int>>& values, std::string dtype) {
+        if(dtype == "float64") {
+            std::vector<std::vector<float64>> float_values;
+            for(auto& v: values) {
+                float_values.push_back(std::vector<float64>(v.begin(), v.end()));
+            }
+            return std::unique_ptr<ndarray_base>(new ndarray_float(float_values));
+        }
         return std::unique_ptr<ndarray_base>(new ndarray_int(values));
-    });
-    m.def("array", [](const std::vector<std::vector<std::vector<int>>>& values) {
+    }, py::arg("values"), py::arg("dtype") = "int");
+    m.def("array", [](const std::vector<std::vector<std::vector<int>>>& values, std::string dtype) {
+        if(dtype == "float64") {
+            std::vector<std::vector<std::vector<float64>>> float_values;
+            for(auto& v: values) {
+                std::vector<std::vector<float64>> temp;
+                for(auto& vv: v) {
+                    temp.push_back(std::vector<float64>(vv.begin(), vv.end()));
+                }
+                float_values.push_back(temp);
+            }
+            return std::unique_ptr<ndarray_base>(new ndarray_float(float_values));
+        }
         return std::unique_ptr<ndarray_base>(new ndarray_int(values));
-    });
-    m.def("array", [](const std::vector<std::vector<std::vector<std::vector<int>>>>& values) {
+    }, py::arg("values"), py::arg("dtype") = "int");
+    m.def("array", [](const std::vector<std::vector<std::vector<std::vector<int>>>>& values, std::string dtype) {
+        if(dtype == "float64") {
+            std::vector<std::vector<std::vector<std::vector<float64>>>> float_values;
+            for(auto& v: values) {
+                std::vector<std::vector<std::vector<float64>>>
+                    temp1;
+                for(auto& vv: v) {
+                    std::vector<std::vector<float64>> temp2;
+                    for(auto& vvv: vv) {
+                        temp2.push_back(std::vector<float64>(vvv.begin(), vvv.end()));
+                    }
+                    temp1.push_back(temp2);
+                }
+                float_values.push_back(temp1);
+            }
+            return std::unique_ptr<ndarray_base>(new ndarray_float(float_values));
+        }
         return std::unique_ptr<ndarray_base>(new ndarray_int(values));
-    });
-    m.def("array", [](const std::vector<std::vector<std::vector<std::vector<std::vector<int>>>>>& values) {
+    }, py::arg("values"), py::arg("dtype") = "int");
+    m.def("array", [](const std::vector<std::vector<std::vector<std::vector<std::vector<int>>>>>& values, std::string dtype) {
+        if(dtype == "float64") {
+            std::vector<std::vector<std::vector<std::vector<std::vector<float64>>>>> float_values;
+            for(auto& v: values) {
+                std::vector<std::vector<std::vector<std::vector<float64>>>>
+                    temp1;
+                for(auto& vv: v) {
+                    std::vector<std::vector<std::vector<float64>>>
+                        temp2;
+                    for(auto& vvv: vv) {
+                        std::vector<std::vector<float64>> temp3;
+                        for(auto& vvvv: vvv) {
+                            temp3.push_back(std::vector<float64>(vvvv.begin(), vvvv.end()));
+                        }
+                        temp2.push_back(temp3);
+                    }
+                    temp1.push_back(temp2);
+                }
+                float_values.push_back(temp1);
+            }
+            return std::unique_ptr<ndarray_base>(new ndarray_float(float_values));
+        }
         return std::unique_ptr<ndarray_base>(new ndarray_int(values));
-    });
+    }, py::arg("values"), py::arg("dtype") = "int");
 
-    m.def("array", [](float64 value) {
+    m.def("array", [](float64 value, std::string dtype) {
+        if(dtype == "int") {
+            return std::unique_ptr<ndarray_base>(new ndarray_int(value));
+        }
         return std::unique_ptr<ndarray_base>(new ndarray_float(value));
-    });
-    m.def("array", [](const std::vector<float64>& values) {
+    }, py::arg("value"), py::arg("dtype") = "float64");
+    m.def("array", [](const std::vector<float64>& values, std::string dtype) {
+        if(dtype == "int") {
+            std::vector<int> int_values(values.begin(), values.end());
+            return std::unique_ptr<ndarray_base>(new ndarray_int(int_values));
+        }
         return std::unique_ptr<ndarray_base>(new ndarray_float(values));
-    });
-    m.def("array", [](const std::vector<std::vector<float64>>& values) {
+    }, py::arg("values"), py::arg("dtype") = "float64");
+    m.def("array", [](const std::vector<std::vector<float64>>& values, std::string dtype) {
+        if(dtype == "int") {
+            std::vector<std::vector<int>> int_values;
+            for(auto& v: values) {
+                int_values.push_back(std::vector<int>(v.begin(), v.end()));
+            }
+            return std::unique_ptr<ndarray_base>(new ndarray_int(int_values));
+        }
         return std::unique_ptr<ndarray_base>(new ndarray_float(values));
-    });
-    m.def("array", [](const std::vector<std::vector<std::vector<float64>>>& values) {
+    }, py::arg("values"), py::arg("dtype") = "float64");
+    m.def("array", [](const std::vector<std::vector<std::vector<float64>>>& values, std::string dtype) {
+        if(dtype == "int") {
+            std::vector<std::vector<std::vector<int>>> int_values;
+            for(auto& v: values) {
+                std::vector<std::vector<int>> temp;
+                for(auto& vv: v) {
+                    temp.push_back(std::vector<int>(vv.begin(), vv.end()));
+                }
+                int_values.push_back(temp);
+            }
+            return std::unique_ptr<ndarray_base>(new ndarray_int(int_values));
+        }
         return std::unique_ptr<ndarray_base>(new ndarray_float(values));
-    });
-    m.def("array", [](const std::vector<std::vector<std::vector<std::vector<float64>>>>& values) {
+    }, py::arg("values"), py::arg("dtype") = "float64");
+    m.def("array", [](const std::vector<std::vector<std::vector<std::vector<float64>>>>& values, std::string dtype) {
+        if(dtype == "int") {
+            std::vector<std::vector<std::vector<std::vector<int>>>> int_values;
+            for(auto& v: values) {
+                std::vector<std::vector<std::vector<int>>>
+                    temp1;
+                for(auto& vv: v) {
+                    std::vector<std::vector<int>> temp2;
+                    for(auto& vvv: vv) {
+                        temp2.push_back(std::vector<int>(vvv.begin(), vvv.end()));
+                    }
+                    temp1.push_back(temp2);
+                }
+                int_values.push_back(temp1);
+            }
+            return std::unique_ptr<ndarray_base>(new ndarray_int(int_values));
+        }
         return std::unique_ptr<ndarray_base>(new ndarray_float(values));
-    });
-    m.def("array", [](const std::vector<std::vector<std::vector<std::vector<std::vector<float64>>>>>& values) {
+    }, py::arg("values"), py::arg("dtype") = "float64");
+    m.def("array", [](const std::vector<std::vector<std::vector<std::vector<std::vector<float64>>>>>& values, std::string dtype) {
+        if(dtype == "int") {
+            std::vector<std::vector<std::vector<std::vector<std::vector<int>>>>> int_values;
+            for(auto& v: values) {
+                std::vector<std::vector<std::vector<std::vector<int>>>>
+                    temp1;
+                for(auto& vv: v) {
+                    std::vector<std::vector<std::vector<int>>>
+                        temp2;
+                    for(auto& vvv: vv) {
+                        std::vector<std::vector<int>> temp3;
+                        for(auto& vvvv: vvv) {
+                            temp3.push_back(std::vector<int>(vvvv.begin(), vvvv.end()));
+                        }
+                        temp2.push_back(temp3);
+                    }
+                    temp1.push_back(temp2);
+                }
+                int_values.push_back(temp1);
+            }
+            return std::unique_ptr<ndarray_base>(new ndarray_int(int_values));
+        }
         return std::unique_ptr<ndarray_base>(new ndarray_float(values));
-    });
+    }, py::arg("values"), py::arg("dtype") = "float64");
 
     // Array Creation Functions
     m.def("ones", [](const std::vector<int>& shape) {
