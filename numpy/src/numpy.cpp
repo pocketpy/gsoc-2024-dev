@@ -68,6 +68,7 @@ public:
     virtual ndarray_base* flatten() const = 0;
     virtual ndarray_base* copy() const = 0;
     virtual ndarray_base* astype(const std::string& dtype) const = 0;
+    virtual py::list tolist() const = 0;
     virtual ndarray_base* eq(const ndarray_base& other) const = 0;
     virtual ndarray_base* add(const ndarray_base& other) const = 0;
     virtual ndarray_base* add_int(int other) const = 0;
@@ -354,6 +355,18 @@ public:
         } else {
             throw std::invalid_argument("Invalid dtype");
         }
+    }
+
+    py::list tolist() const override {
+        py::list list;
+        if(data.ndim() == 1) {
+            return py::cast(data.to_list());
+        } else {
+            for(int i = 0; i < data.shape()[0]; i++) {
+                list.append(ndarray<T>(data[i]).tolist());
+            }
+        }
+        return list;
     }
 
     // Dunder Methods
@@ -884,6 +897,7 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         .def("flatten", &ndarray_base::flatten)
         .def("copy", &ndarray_base::copy)
         .def("astype", &ndarray_base::astype)
+        .def("tolist", &ndarray_base::tolist)
         .def("__eq__", &ndarray_base::eq)
         .def("__add__", &ndarray_base::add)
         .def("__add__", &ndarray_base::add_int)
