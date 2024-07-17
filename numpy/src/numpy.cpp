@@ -4,8 +4,16 @@
 #include <typeinfo>
 
 namespace py = pybind11;
+
+using bool_ = pkpy::bool_;
+using int8 = pkpy::int8;
+using int16 = pkpy::int16;
+using int32 = pkpy::int32;
+using int64 = pkpy::int64;
 using int_ = pkpy::int_;
+using float32 = pkpy::float32;
 using float64 = pkpy::float64;
+using float_ = pkpy::float_;
 
 // Function to parse attributes
 int parseAttr(const py::object& obj) {
@@ -841,14 +849,28 @@ public:
     }
 };
 
+using ndarray_bool = ndarray<bool_>;
+using ndarray_int8 = ndarray<int8>;
+using ndarray_int16 = ndarray<int16>;
+using ndarray_int32 = ndarray<int32>;
 using ndarray_int = ndarray<int_>;
+using ndarray_int = ndarray<int64>;
+using ndarray_float32 = ndarray<float32>;
 using ndarray_float = ndarray<float64>;
+using ndarray_float = ndarray<float_>;
 
 PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
     m.doc() = "Python bindings for pkpy::numpy::ndarray using pybind11";
 
-    m.attr("int_") = "int_";
+    m.attr("bool_") = "bool_";
+    m.attr("int8") = "int8";
+    m.attr("int16") = "int16";
+    m.attr("int32") = "int32";
+    m.attr("int64") = "int64";
+    m.attr("int_") = "int64";
+    m.attr("float32") = "float32";
     m.attr("float64") = "float64";
+    m.attr("float_") = "float64";
     
     py::class_<ndarray_base>(m, "ndarray")
         .def_property_readonly("ndim", &ndarray_base::ndim)
