@@ -31,7 +31,7 @@ using uint8 = uint8_t;
 using uint16 = uint16_t;
 using uint32 = uint32_t;
 using uint64 = uint64_t;
-using int_ = int32;
+using int_ = int64;
 using float32 = float;
 using float64 = double;
 using float_ = float64;
@@ -66,7 +66,7 @@ REGISTER_DTYPE(std::complex<float32>, "complex64");
 REGISTER_DTYPE(std::complex<float64>, "complex128");
 
 using _Dtype = std::string;
-using _ShapeLike = std::vector<int_>;
+using _ShapeLike = std::vector<int>;
 
 namespace numpy {
 
@@ -118,7 +118,7 @@ public:
     // Dunder Methods
     template <typename U>
     auto operator== (const ndarray<U>& other) const {
-        return ndarray<int>(xt::equal(_array, other.get_array()));
+        return ndarray<int_>(xt::equal(_array, other.get_array()));
     }
 
     template <typename U>
