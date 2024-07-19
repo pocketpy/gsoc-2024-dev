@@ -862,7 +862,7 @@ using ndarray_float = ndarray<float_>;
 PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
     m.doc() = "Python bindings for pkpy::numpy::ndarray using pybind11";
 
-    m.attr("bool_") = "bool_";
+    m.attr("bool_") = "bool";
     m.attr("int8") = "int8";
     m.attr("int16") = "int16";
     m.attr("int32") = "int32";
