@@ -33,7 +33,7 @@ public:
     virtual int ndim() const = 0;
     virtual int size() const = 0;
     virtual std::string dtype() const = 0;
-    virtual std::vector<int> shape() const = 0;
+    virtual py::tuple shape() const = 0;
     virtual bool all() const = 0;
     virtual bool any() const = 0;
     virtual py::object sum() const = 0;
@@ -155,7 +155,7 @@ public:
 
     std::string dtype() const override { return data.dtype(); }
 
-    std::vector<int> shape() const override { return data.shape(); }
+    py::tuple shape() const override { return py::cast(data.shape()); }
 
     // Boolean Functions
     bool all() const override { return data.all(); }
