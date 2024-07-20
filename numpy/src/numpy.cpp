@@ -81,6 +81,7 @@ public:
     virtual py::list tolist() const = 0;
     virtual ndarray_base* eq(const ndarray_base& other) const = 0;
     virtual ndarray_base* add(const ndarray_base& other) const = 0;
+    virtual ndarray_base* add_bool(bool_ other) const = 0;
     virtual ndarray_base* add_int(int_ other) const = 0;
     virtual ndarray_base* add_float(float64 other) const = 0;
     virtual ndarray_base* sub(const ndarray_base& other) const = 0;
@@ -89,11 +90,14 @@ public:
     virtual ndarray_base* rsub_int(int_ other) const = 0;
     virtual ndarray_base* rsub_float(float64 other) const = 0;
     virtual ndarray_base* mul(const ndarray_base& other) const = 0;
+    virtual ndarray_base* mul_bool(bool_ other) const = 0;
     virtual ndarray_base* mul_int(int_ other) const = 0;
     virtual ndarray_base* mul_float(float64 other) const = 0;
     virtual ndarray_base* div(const ndarray_base& other) const = 0;
+    virtual ndarray_base* div_bool(bool_ other) const = 0;
     virtual ndarray_base* div_int(int_ other) const = 0;
     virtual ndarray_base* div_float(float64 other) const = 0;
+    virtual ndarray_base* rdiv_bool(bool_ other) const = 0;
     virtual ndarray_base* rdiv_int(int_ other) const = 0;
     virtual ndarray_base* rdiv_float(float64 other) const = 0;
     virtual ndarray_base* pow(const ndarray_base& other) const = 0;
@@ -130,6 +134,8 @@ public:
     pkpy::numpy::ndarray<T> data;
     // Constructors
     ndarray() = default;
+
+    ndarray(const bool_ value) : data(value) {}
 
     ndarray(const int_ value) : data(value) {}
 
@@ -385,20 +391,20 @@ public:
     ndarray_base* eq(const ndarray_base& other) const override {
         if constexpr(std::is_same_v<T, int_>) {
             if(auto p = dynamic_cast<const ndarray<float64>*>(&other)) { /* int == float */
-                return new ndarray<int_>(data == p->data);
+                return new ndarray<bool_>(data == p->data);
             } else if(auto p = dynamic_cast<const ndarray<int_>*>(&other)) { /* int == int */
-                return new ndarray<int_>(data == p->data);
+                return new ndarray<bool_>(data == p->data);
             }
         } else if constexpr(std::is_same_v<T, float64>) {
             if(auto p = dynamic_cast<const ndarray<int_>*>(&other)) { /* float == int */
-                return new ndarray<int_>(data == p->data);
+                return new ndarray<bool_>(data == p->data);
             } else if(auto p = dynamic_cast<const ndarray<float64>*>(&other)) { /* float == float */
-                return new ndarray<int_>(data == p->data);
+                return new ndarray<bool_>(data == p->data);
             }
         }
 
         const ndarray<T>& other_ = dynamic_cast<const ndarray<T>&>(other);
-        return new ndarray<int_>(data == other_.data);
+        return new ndarray<bool_>(data == other_.data);
     }
 
     ndarray_base* add(const ndarray_base& other) const override {
@@ -420,7 +426,15 @@ public:
         return new ndarray<T>(data + other_.data);
     }
 
-    ndarray_base* add_int(int_ other) const override { return new ndarray<T>(data + other); }
+    ndarray_base* add_bool(bool_ other) const override { return new ndarray<T>(data + other);}
+
+    ndarray_base* add_int(int_ other) const override {
+        if constexpr(std::is_same_v<T, bool_>) {
+            return new ndarray<int_>(data + other);
+        } else {
+            return new ndarray<T>(data + other);
+        }
+    }
 
     ndarray_base* add_float(float64 other) const override { return new ndarray<float64>(data + other); }
 
@@ -443,11 +457,23 @@ public:
         return new ndarray<T>(data - other_.data);
     }
 
-    ndarray_base* sub_int(int_ other) const override { return new ndarray<T>(data - other); }
+    ndarray_base* sub_int(int_ other) const override {
+        if constexpr(std::is_same_v<T, bool_>) {
+            return new ndarray<int_>(data - other);
+        } else {
+            return new ndarray<T>(data - other);
+        }
+    }
 
     ndarray_base* sub_float(float64 other) const override { return new ndarray<float64>(data - other); }
 
-    ndarray_base* rsub_int(int_ other) const override { return new ndarray<T>(other - data); }
+    ndarray_base* rsub_int(int_ other) const override {
+        if constexpr(std::is_same_v<T, bool_>) {
+            return new ndarray<int_>(other - data);
+        } else {
+            return new ndarray<T>(other - data);
+        }
+    }
 
     ndarray_base* rsub_float(float64 other) const override { return new ndarray<float64>(other - data); }
 
@@ -470,7 +496,15 @@ public:
         return new ndarray<T>(data * other_.data);
     }
 
-    ndarray_base* mul_int(int_ other) const override { return new ndarray<T>(data * other); }
+    ndarray_base* mul_bool(bool_ other) const override { return new ndarray<T>(data * other); }
+
+    ndarray_base* mul_int(int_ other) const override {
+        if constexpr(std::is_same_v<T, bool_>) {
+            return new ndarray<int_>(data * other);
+        } else {
+            return new ndarray<T>(data * other);
+        }
+    }
 
     ndarray_base* mul_float(float64 other) const override { return new ndarray<float64>(data * other); }
 
@@ -493,9 +527,13 @@ public:
         return new ndarray<T>(data / other_.data);
     }
 
+    ndarray_base* div_bool(bool_ other) const override { return new ndarray<float64>(data / other); }
+
     ndarray_base* div_int(int_ other) const override { return new ndarray<float64>(data / other); }
 
     ndarray_base* div_float(float64 other) const override { return new ndarray<float64>(data / other); }
+
+    ndarray_base* rdiv_bool(bool_ other) const override { return new ndarray<float64>(other / data); }
 
     ndarray_base* rdiv_int(int_ other) const override { return new ndarray<float64>(other / data); }
 
@@ -862,7 +900,7 @@ using ndarray_float32 = ndarray<float32>;
 using ndarray_float = ndarray<float64>;
 using ndarray_float = ndarray<float_>;
 
-PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
+PYBIND11_MODULE(numpy_bindings, m) {
     m.doc() = "Python bindings for pkpy::numpy::ndarray using pybind11";
 
     m.attr("bool_") = "bool";
@@ -927,8 +965,10 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         .def("tolist", &ndarray_base::tolist)
         .def("__eq__", &ndarray_base::eq)
         .def("__add__", &ndarray_base::add)
+        .def("__add__", &ndarray_base::add_bool)
         .def("__add__", &ndarray_base::add_int)
         .def("__add__", &ndarray_base::add_float)
+        .def("__radd__", &ndarray_base::add_bool)
         .def("__radd__", &ndarray_base::add_int)
         .def("__radd__", &ndarray_base::add_float)
         .def("__sub__", &ndarray_base::sub)
@@ -937,13 +977,17 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         .def("__rsub__", &ndarray_base::rsub_int)
         .def("__rsub__", &ndarray_base::rsub_float)
         .def("__mul__", &ndarray_base::mul)
+        .def("__mul__", &ndarray_base::mul_bool)
         .def("__mul__", &ndarray_base::mul_int)
         .def("__mul__", &ndarray_base::mul_float)
+        .def("__rmul__", &ndarray_base::mul_bool)
         .def("__rmul__", &ndarray_base::mul_int)
         .def("__rmul__", &ndarray_base::mul_float)
         .def("__truediv__", &ndarray_base::div)
+        .def("__truediv__", &ndarray_base::div_bool)
         .def("__truediv__", &ndarray_base::div_int)
         .def("__truediv__", &ndarray_base::div_float)
+        .def("__rtruediv__", &ndarray_base::rdiv_bool)
         .def("__rtruediv__", &ndarray_base::rdiv_int)
         .def("__rtruediv__", &ndarray_base::rdiv_float)
         .def("__pow__", &ndarray_base::pow)
@@ -984,6 +1028,91 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
             return os.str();
         });
 
+    py::class_<ndarray<bool_>, ndarray_base>(m, "ndarray_bool")
+        .def(py::init<>())
+        .def(py::init<bool_>())
+        .def(py::init<const std::vector<bool_>&>())
+        .def(py::init<const std::vector<std::vector<bool_>>&>())
+        .def(py::init<const std::vector<std::vector<std::vector<bool_>>>&>())
+        .def(py::init<const std::vector<std::vector<std::vector<std::vector<bool_>>>>&>())
+        .def(py::init<const std::vector<std::vector<std::vector<std::vector<std::vector<bool_>>>>>&>())
+        .def("__and__",
+             [](ndarray<bool_>& v, ndarray<bool_>& w) {
+                 return ndarray<bool_>(v.data & w.data);
+             })
+        .def("__and__",
+             [](ndarray<bool_>& v,  ndarray<int_>& w) {
+                 return ndarray<bool_>(v.data & w.data);
+             })
+        .def("__and__",
+             [](ndarray<bool_>& v, bool w) {
+                 return ndarray<bool_>(v.data & w);
+             })
+        .def("__and__",
+             [](ndarray<bool_>& v, int w) {
+                 return ndarray<bool_>(v.data & w);
+             })
+        .def("__rand__",
+             [](ndarray<bool_>& v, bool w) {
+                 return ndarray<bool_>(w & v.data);
+             })
+        .def("__rand__",
+             [](ndarray<bool_>& v, int w) {
+                 return ndarray<bool_>(w & v.data);
+             })
+        .def("__or__",
+             [](ndarray<bool_>& v, ndarray<bool_>& w) {
+                 return ndarray<bool_>(v.data | w.data);
+             })
+        .def("__or__",
+             [](ndarray<bool_>& v, ndarray<int_>& w) {
+                 return ndarray<bool_>(v.data | w.data);
+             })
+        .def("__or__",
+             [](ndarray<bool_>& v, bool w) {
+                 return ndarray<bool_>(v.data | w);
+             })
+        .def("__or__",
+             [](ndarray<bool_>& v, int w) {
+                 return ndarray<bool_>(v.data | w);
+             })
+        .def("__ror__",
+             [](ndarray<bool_>& v, bool w) {
+                 return ndarray<bool_>(w | v.data);
+             })
+        .def("__ror__",
+             [](ndarray<bool_>& v, int w) {
+                 return ndarray<bool_>(w | v.data);
+             })
+        .def("__xor__",
+             [](ndarray<bool_>& v, ndarray<bool_>& w) {
+                 return ndarray<bool_>(v.data ^ w.data);
+             })
+        .def("__xor__",
+             [](ndarray<bool_>& v, ndarray<int_>& w) {
+                 return ndarray<bool_>(v.data ^ w.data);
+             })
+        .def("__xor__",
+             [](ndarray<bool_>& v, bool w) {
+                 return ndarray<bool_>(v.data ^ w);
+             })
+        .def("__xor__",
+             [](ndarray<bool_>& v, int w) {
+                 return ndarray<bool_>(v.data ^ w);
+             })
+        .def("__rxor__",
+             [](ndarray<bool_>& v, bool w) {
+                 return ndarray<bool_>(w ^ v.data);
+             })
+        .def("__rxor__",
+             [](ndarray<bool_>& v, int w) {
+                 return ndarray<bool_>(w ^ v.data);
+             })
+        .def("__invert__", [](ndarray<bool_>& v) {
+            return ndarray<bool_>(!v.data);
+        });
+
+
     py::class_<ndarray<int_>, ndarray_base>(m, "ndarray_int")
         .def(py::init<>())
         .def(py::init<int_>())
@@ -997,11 +1126,23 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
                  return ndarray<int_>(v.data & w.data);
              })
         .def("__and__",
+             [](ndarray<int_>& v, ndarray<bool_> w) {
+                 return ndarray<int_>(v.data & w.data);
+             })
+        .def("__and__",
              [](ndarray<int_>& v, int w) {
+                 return ndarray<int_>(v.data & w);
+             })
+        .def("__and__",
+             [](ndarray<int_>& v, bool w) {
                  return ndarray<int_>(v.data & w);
              })
         .def("__rand__",
              [](ndarray<int_>& v, int w) {
+                 return ndarray<int_>(w & v.data);
+             })
+        .def("__rand__",
+             [](ndarray<int_>& v, bool w) {
                  return ndarray<int_>(w & v.data);
              })
         .def("__or__",
@@ -1009,11 +1150,23 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
                  return ndarray<int_>(v.data | w.data);
              })
         .def("__or__",
+             [](ndarray<int_>& v, ndarray<bool_> w) {
+                    return ndarray<int_>(v.data | w.data);
+             })
+        .def("__or__",
              [](ndarray<int_>& v, int w) {
+                 return ndarray<int_>(v.data | w);
+             })
+        .def("__or__",
+             [](ndarray<int_>& v, bool w) {
                  return ndarray<int_>(v.data | w);
              })
         .def("__ror__",
              [](ndarray<int_>& v, int w) {
+                 return ndarray<int_>(w | v.data);
+             })
+        .def("__ror__",
+             [](ndarray<int_>& v, bool w) {
                  return ndarray<int_>(w | v.data);
              })
         .def("__xor__",
@@ -1021,11 +1174,23 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
                  return ndarray<int_>(v.data ^ w.data);
              })
         .def("__xor__",
+             [](ndarray<int_>& v, ndarray<bool_> w) {
+                    return ndarray<int_>(v.data ^ w.data);
+             })
+        .def("__xor__",
              [](ndarray<int_>& v, int w) {
                  return ndarray<int_>(v.data ^ w);
              })
+        .def("__xor__",
+             [](ndarray<int_>& v, bool w) {
+                    return ndarray<int_>(v.data ^ w);
+             })
         .def("__rxor__",
              [](ndarray<int_>& v, int w) {
+                 return ndarray<int_>(w ^ v.data);
+             })
+        .def("__rxor__",
+             [](ndarray<int_>& v, bool w) {
                  return ndarray<int_>(w ^ v.data);
              })
         .def("__invert__", [](ndarray<int_>& v) {
@@ -1049,21 +1214,50 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         .def_static("randint", &Random::randint)
         .def_static("randint_shape", &Random::randint_shape);
 
+    m.def("array", [](bool_ value) {
+        return std::unique_ptr<ndarray_base>(new ndarray_bool(value));
+    });
+    m.def("array", [](const std::vector<bool_>& values) {
+        return std::unique_ptr<ndarray_base>(new ndarray_bool(values));
+    });
+    m.def("array", [](const std::vector<std::vector<bool_>>& values) {
+        return std::unique_ptr<ndarray_base>(new ndarray_bool(values));
+    });
+    m.def("array", [](const std::vector<std::vector<std::vector<bool_>>>& values) {
+        return std::unique_ptr<ndarray_base>(new ndarray_bool(values));
+    });
+    m.def("array", [](const std::vector<std::vector<std::vector<std::vector<bool_>>>>& values) {
+        return std::unique_ptr<ndarray_base>(new ndarray_bool(values));
+    });
+    m.def("array", [](const std::vector<std::vector<std::vector<std::vector<std::vector<bool_>>>>>& values) {
+        return std::unique_ptr<ndarray_base>(new ndarray_bool(values));
+    });
     m.def("array", [](int_ value, std::string dtype) {
-        if(dtype == "float64") {
+        if(dtype == "bool") {
+            return std::unique_ptr<ndarray_base>(new ndarray_bool(value));
+        } else if(dtype == "float64") {
             return std::unique_ptr<ndarray_base>(new ndarray_float(value));
         }
         return std::unique_ptr<ndarray_base>(new ndarray_int(value));
     }, py::arg("value"), py::arg("dtype") = "int64");
     m.def("array", [](const std::vector<int_>& values, std::string dtype) {
-        if(dtype == "float64") {
+        if(dtype == "bool") {
+            std::vector<bool_> bool_values(values.begin(), values.end());
+            return std::unique_ptr<ndarray_base>(new ndarray_bool(bool_values));
+        } else if(dtype == "float64") {
             std::vector<float64> float_values(values.begin(), values.end());
             return std::unique_ptr<ndarray_base>(new ndarray_float(float_values));
         }
         return std::unique_ptr<ndarray_base>(new ndarray_int(values));
     }, py::arg("values"), py::arg("dtype") = "int64");
     m.def("array", [](const std::vector<std::vector<int_>>& values, std::string dtype) {
-        if(dtype == "float64") {
+        if(dtype == "bool") {
+            std::vector<std::vector<bool_>> bool_values;
+            for(auto& v: values) {
+                bool_values.push_back(std::vector<bool_>(v.begin(), v.end()));
+            }
+            return std::unique_ptr<ndarray_base>(new ndarray_bool(bool_values));
+        } else if(dtype == "float64") {
             std::vector<std::vector<float64>> float_values;
             for(auto& v: values) {
                 float_values.push_back(std::vector<float64>(v.begin(), v.end()));
@@ -1073,7 +1267,17 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         return std::unique_ptr<ndarray_base>(new ndarray_int(values));
     }, py::arg("values"), py::arg("dtype") = "int64");
     m.def("array", [](const std::vector<std::vector<std::vector<int_>>>& values, std::string dtype) {
-        if(dtype == "float64") {
+        if(dtype == "bool") {
+            std::vector<std::vector<std::vector<bool_>>> bool_values;
+            for(auto& v: values) {
+                std::vector<std::vector<bool_>> temp;
+                for(auto& vv: v) {
+                    temp.push_back(std::vector<bool_>(vv.begin(), vv.end()));
+                }
+                bool_values.push_back(temp);
+            }
+            return std::unique_ptr<ndarray_base>(new ndarray_bool(bool_values));
+        } else if(dtype == "float64") {
             std::vector<std::vector<std::vector<float64>>> float_values;
             for(auto& v: values) {
                 std::vector<std::vector<float64>> temp;
@@ -1087,7 +1291,22 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         return std::unique_ptr<ndarray_base>(new ndarray_int(values));
     }, py::arg("values"), py::arg("dtype") = "int64");
     m.def("array", [](const std::vector<std::vector<std::vector<std::vector<int_>>>>& values, std::string dtype) {
-        if(dtype == "float64") {
+        if(dtype == "bool") {
+            std::vector<std::vector<std::vector<std::vector<bool_>>>> bool_values;
+            for(auto& v: values) {
+                std::vector<std::vector<std::vector<bool_>>>
+                    temp1;
+                for(auto& vv: v) {
+                    std::vector<std::vector<bool_>> temp2;
+                    for(auto& vvv: vv) {
+                        temp2.push_back(std::vector<bool_>(vvv.begin(), vvv.end()));
+                    }
+                    temp1.push_back(temp2);
+                }
+                bool_values.push_back(temp1);
+            }
+            return std::unique_ptr<ndarray_base>(new ndarray_bool(bool_values));
+        } else if(dtype == "float64") {
             std::vector<std::vector<std::vector<std::vector<float64>>>> float_values;
             for(auto& v: values) {
                 std::vector<std::vector<std::vector<float64>>>
@@ -1106,7 +1325,27 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         return std::unique_ptr<ndarray_base>(new ndarray_int(values));
     }, py::arg("values"), py::arg("dtype") = "int64");
     m.def("array", [](const std::vector<std::vector<std::vector<std::vector<std::vector<int_>>>>>& values, std::string dtype) {
-        if(dtype == "float64") {
+        if(dtype == "bool") {
+            std::vector<std::vector<std::vector<std::vector<std::vector<bool_>>>>> bool_values;
+            for(auto& v: values) {
+                std::vector<std::vector<std::vector<std::vector<bool_>>>>
+                    temp1;
+                for(auto& vv: v) {
+                    std::vector<std::vector<std::vector<bool_>>>
+                        temp2;
+                    for(auto& vvv: vv) {
+                        std::vector<std::vector<bool_>> temp3;
+                        for(auto& vvvv: vvv) {
+                            temp3.push_back(std::vector<bool_>(vvvv.begin(), vvvv.end()));
+                        }
+                        temp2.push_back(temp3);
+                    }
+                    temp1.push_back(temp2);
+                }
+                bool_values.push_back(temp1);
+            }
+            return std::unique_ptr<ndarray_base>(new ndarray_bool(bool_values));
+        } else if(dtype == "float64") {
             std::vector<std::vector<std::vector<std::vector<std::vector<float64>>>>> float_values;
             for(auto& v: values) {
                 std::vector<std::vector<std::vector<std::vector<float64>>>>
@@ -1131,20 +1370,31 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
     }, py::arg("values"), py::arg("dtype") = "int64");
 
     m.def("array", [](float64 value, std::string dtype) {
-        if(dtype == "int64") {
+        if(dtype == "bool") {
+            return std::unique_ptr<ndarray_base>(new ndarray_bool(value));
+        } else if(dtype == "int64") {
             return std::unique_ptr<ndarray_base>(new ndarray_int(value));
         }
         return std::unique_ptr<ndarray_base>(new ndarray_float(value));
     }, py::arg("value"), py::arg("dtype") = "float64");
     m.def("array", [](const std::vector<float64>& values, std::string dtype) {
-        if(dtype == "int64") {
+        if(dtype == "bool") {
+            std::vector<bool_> bool_values(values.begin(), values.end());
+            return std::unique_ptr<ndarray_base>(new ndarray_bool(bool_values));
+        } else if(dtype == "int64") {
             std::vector<int_> int_values(values.begin(), values.end());
             return std::unique_ptr<ndarray_base>(new ndarray_int(int_values));
         }
         return std::unique_ptr<ndarray_base>(new ndarray_float(values));
     }, py::arg("values"), py::arg("dtype") = "float64");
     m.def("array", [](const std::vector<std::vector<float64>>& values, std::string dtype) {
-        if(dtype == "int64") {
+        if(dtype == "bool") {
+            std::vector<std::vector<bool_>> bool_values;
+            for(auto& v: values) {
+                bool_values.push_back(std::vector<bool_>(v.begin(), v.end()));
+            }
+            return std::unique_ptr<ndarray_base>(new ndarray_bool(bool_values));
+        } else if(dtype == "int64") {
             std::vector<std::vector<int_>> int_values;
             for(auto& v: values) {
                 int_values.push_back(std::vector<int_>(v.begin(), v.end()));
@@ -1154,7 +1404,17 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         return std::unique_ptr<ndarray_base>(new ndarray_float(values));
     }, py::arg("values"), py::arg("dtype") = "float64");
     m.def("array", [](const std::vector<std::vector<std::vector<float64>>>& values, std::string dtype) {
-        if(dtype == "int64") {
+        if(dtype == "bool") {
+            std::vector<std::vector<std::vector<bool_>>> bool_values;
+            for(auto& v: values) {
+                std::vector<std::vector<bool_>> temp;
+                for(auto& vv: v) {
+                    temp.push_back(std::vector<bool_>(vv.begin(), vv.end()));
+                }
+                bool_values.push_back(temp);
+            }
+            return std::unique_ptr<ndarray_base>(new ndarray_bool(bool_values));
+        } else if(dtype == "int64") {
             std::vector<std::vector<std::vector<int_>>> int_values;
             for(auto& v: values) {
                 std::vector<std::vector<int_>> temp;
@@ -1168,7 +1428,22 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         return std::unique_ptr<ndarray_base>(new ndarray_float(values));
     }, py::arg("values"), py::arg("dtype") = "float64");
     m.def("array", [](const std::vector<std::vector<std::vector<std::vector<float64>>>>& values, std::string dtype) {
-        if(dtype == "int64") {
+        if(dtype == "bool") {
+            std::vector<std::vector<std::vector<std::vector<bool_>>>> bool_values;
+            for(auto& v: values) {
+                std::vector<std::vector<std::vector<bool_>>>
+                    temp1;
+                for(auto& vv: v) {
+                    std::vector<std::vector<bool_>> temp2;
+                    for(auto& vvv: vv) {
+                        temp2.push_back(std::vector<bool_>(vvv.begin(), vvv.end()));
+                    }
+                    temp1.push_back(temp2);
+                }
+                bool_values.push_back(temp1);
+            }
+            return std::unique_ptr<ndarray_base>(new ndarray_bool(bool_values));
+        } else if(dtype == "int64") {
             std::vector<std::vector<std::vector<std::vector<int_>>>> int_values;
             for(auto& v: values) {
                 std::vector<std::vector<std::vector<int_>>>
@@ -1187,7 +1462,27 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         return std::unique_ptr<ndarray_base>(new ndarray_float(values));
     }, py::arg("values"), py::arg("dtype") = "float64");
     m.def("array", [](const std::vector<std::vector<std::vector<std::vector<std::vector<float64>>>>>& values, std::string dtype) {
-        if(dtype == "int64") {
+        if(dtype == "bool") {
+            std::vector<std::vector<std::vector<std::vector<std::vector<bool_>>>>> bool_values;
+            for(auto& v: values) {
+                std::vector<std::vector<std::vector<std::vector<bool_>>>>
+                    temp1;
+                for(auto& vv: v) {
+                    std::vector<std::vector<std::vector<bool_>>>
+                        temp2;
+                    for(auto& vvv: vv) {
+                        std::vector<std::vector<bool_>> temp3;
+                        for(auto& vvvv: vvv) {
+                            temp3.push_back(std::vector<bool_>(vvvv.begin(), vvvv.end()));
+                        }
+                        temp2.push_back(temp3);
+                    }
+                    temp1.push_back(temp2);
+                }
+                bool_values.push_back(temp1);
+            }
+            return std::unique_ptr<ndarray_base>(new ndarray_bool(bool_values));
+        } else if(dtype == "int64") {
             std::vector<std::vector<std::vector<std::vector<std::vector<int_>>>>> int_values;
             for(auto& v: values) {
                 std::vector<std::vector<std::vector<std::vector<int_>>>>
