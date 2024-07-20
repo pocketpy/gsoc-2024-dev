@@ -900,7 +900,7 @@ using ndarray_float32 = ndarray<float32>;
 using ndarray_float = ndarray<float64>;
 using ndarray_float = ndarray<float_>;
 
-PYBIND11_MODULE(numpy_bindings, m) {
+PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
     m.doc() = "Python bindings for pkpy::numpy::ndarray using pybind11";
 
     m.attr("bool_") = "bool";
