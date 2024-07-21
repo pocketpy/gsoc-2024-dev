@@ -31,6 +31,15 @@ struct Point {
 
 }  // namespace
 
+TEST_F(PYBIND11_TEST, vector_bool) {
+    std::vector<bool> v = {true, false, true};
+    py::object obj = py::cast(v);
+    EXPECT_EVAL_EQ("[True, False, True]", obj);
+
+    std::vector<bool> v2 = obj.cast<std::vector<bool>>();
+    EXPECT_EQ(v, v2);
+}
+
 TEST_F(PYBIND11_TEST, list_like) {
     py::class_<Point>(py::module_::__main__(), "Point")
         .def(py::init<int, int>())
