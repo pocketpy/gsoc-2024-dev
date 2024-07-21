@@ -74,6 +74,7 @@ public:
     virtual ndarray_base* transpose_args(py::args args) const = 0;
     virtual ndarray_base* repeat(int repeats, int axis) const = 0;
     virtual ndarray_base* repeat_axis(const std::vector<size_t>& repeats, int axis) const = 0;
+    virtual ndarray_base* round() const = 0;
     virtual ndarray_base* flatten() const = 0;
     virtual ndarray_base* copy() const = 0;
     virtual ndarray_base* astype(const std::string& dtype) const = 0;
@@ -351,6 +352,8 @@ public:
     ndarray_base* repeat_axis(const std::vector<size_t>& repeats, int axis) const override {
         return new ndarray<T>(data.repeat(repeats, axis));
     }
+
+    ndarray_base* round() const override { return new ndarray<T>(data.round()); }
 
     ndarray_base* flatten() const override { return new ndarray<T>(data.flatten()); }
 
@@ -917,6 +920,7 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         .def("transpose", &ndarray_base::transpose_args)
         .def("repeat", &ndarray_base::repeat)
         .def("repeat", &ndarray_base::repeat_axis)
+        .def("round", &ndarray_base::round)
         .def("flatten", &ndarray_base::flatten)
         .def("copy", &ndarray_base::copy)
         .def("astype", &ndarray_base::astype)
