@@ -469,6 +469,8 @@ public:
     ndarray<T> flatten() const { return ndarray<T>(xt::flatten(_array)); }
 
     // Miscellaneous Functions
+    ndarray<T> round() const { return ndarray<T>(xt::round(_array)); }
+
     template <typename U>
     ndarray<U> astype() const {
         xt::xarray<U> result = xt::cast<U>(_array);
