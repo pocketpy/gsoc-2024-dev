@@ -54,9 +54,9 @@ array([[1, 2],
        [3, 4]])
 '''
 assert_equal(a[0], np.array([1, 2]))
-assert_equal(a[0, 1], 2)
+assert a[0, 1] == 2
 a[0, 1] = 3
-assert_equal(a[0, 1], 3)
+assert a[0, 1] == 3
 
 # test __len__
 a = np.array([[1, 2], [3, 4]])
