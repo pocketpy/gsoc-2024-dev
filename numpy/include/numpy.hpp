@@ -118,7 +118,7 @@ public:
     // Dunder Methods
     template <typename U>
     auto operator== (const ndarray<U>& other) const {
-        return ndarray<int_>(xt::equal(_array, other.get_array()));
+        return ndarray<bool_>(xt::equal(_array, other.get_array()));
     }
 
     template <typename U>
@@ -275,6 +275,8 @@ public:
     }
 
     ndarray operator~() const { return ndarray(~(_array)); }
+
+    ndarray operator!() const { return ndarray(!(_array)); }
 
     T operator() (int index) const { return _array(index); }
 
