@@ -18,8 +18,8 @@ struct type_caster<std::array<T, N>> {
     template <typename U>
     static handle cast(U&& src, return_value_policy policy, handle parent) {
         auto list = pybind11::list();
-        for(auto& item: src) {
-            list.append(pybind11::cast(item, policy, parent));
+        for(auto&& item: src) {
+            list.append(pybind11::cast(std::move(item), policy, parent));
         }
         return list;
     }
@@ -33,7 +33,7 @@ struct type_caster<std::array<T, N>> {
         for(std::size_t i = 0; i < N; ++i) {
             type_caster<T> caster;
             if(!caster.load(list[i], convert)) { return false; }
-            data[i] = caster.value();
+            data[i] = std::move(caster.value());
         }
 
         return true;
@@ -63,8 +63,8 @@ struct type_caster<T, std::enable_if_t<is_py_list_like_v<T>>> {
     template <typename U>
     static handle cast(U&& src, return_value_policy policy, handle parent) {
         auto list = pybind11::list();
-        for(auto& item: src) {
-            list.append(pybind11::cast(item, policy, parent));
+        for(auto&& item: src) {
+            list.append(pybind11::cast(std::move(item), policy, parent));
         }
         return list;
     }
@@ -76,7 +76,7 @@ struct type_caster<T, std::enable_if_t<is_py_list_like_v<T>>> {
         for(auto item: list) {
             type_caster<typename T::value_type> caster;
             if(!caster.load(item, convert)) { return false; }
-            data.push_back(caster.value());
+            data.push_back(std::move(caster.value()));
         }
 
         return true;
@@ -103,8 +103,8 @@ struct type_caster<T, std::enable_if_t<is_py_map_like_v<T>>> {
     template <typename U>
     static handle cast(U&& src, return_value_policy policy, handle parent) {
         auto dict = pybind11::dict();
-        for(auto& [key, value]: src) {
-            dict[pybind11::cast(key, policy, parent)] = pybind11::cast(value, policy, parent);
+        for(auto&& [key, value]: src) {
+            dict[pybind11::cast(std::move(key), policy, parent)] = pybind11::cast(std::move(value), policy, parent);
         }
         return dict;
     }
@@ -120,7 +120,7 @@ struct type_caster<T, std::enable_if_t<is_py_map_like_v<T>>> {
             type_caster<typename T::mapped_type> value_caster;
             if(!value_caster.load(item.second, convert)) { return false; }
 
-            data.try_emplace(key_caster.value(), value_caster.value());
+            data.try_emplace(std::move(key_caster.value()), std::move(value_caster.value()));
         }
 
         return true;
