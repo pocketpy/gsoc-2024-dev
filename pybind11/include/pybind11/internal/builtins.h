@@ -127,7 +127,11 @@ T cast(const handle& obj, bool convert) {
 
     caster_t caster;
     if(caster.load(obj, convert)) {
-        return caster.value();
+        if constexpr(std::is_reference_v<T>) {
+            return caster.value();
+        } else {
+            return std::move(caster.value());
+        }
     } else {
         std::string msg = "cast python instance to c++ failed, ";
         msg += "obj type is: {";
