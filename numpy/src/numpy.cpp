@@ -1262,28 +1262,11 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         .def_static("randint", &Random::randint)
         .def_static("randint_shape", &Random::randint_shape);
 
-    m.def("array", [](bool_ value) {
-        return std::unique_ptr<ndarray_base>(new ndarray_bool(value));
-    });
-    m.def("array", [](const std::vector<bool_>& values) {
-        return std::unique_ptr<ndarray_base>(new ndarray_bool(values));
-    });
-    m.def("array", [](const std::vector<std::vector<bool_>>& values) {
-        return std::unique_ptr<ndarray_base>(new ndarray_bool(values));
-    });
-    m.def("array", [](const std::vector<std::vector<std::vector<bool_>>>& values) {
-        return std::unique_ptr<ndarray_base>(new ndarray_bool(values));
-    });
-    m.def("array", [](const std::vector<std::vector<std::vector<std::vector<bool_>>>>& values) {
-        return std::unique_ptr<ndarray_base>(new ndarray_bool(values));
-    });
-    m.def("array", [](const std::vector<std::vector<std::vector<std::vector<std::vector<bool_>>>>>& values) {
-        return std::unique_ptr<ndarray_base>(new ndarray_bool(values));
-    });
-
     m.def("array", [](int_ value, std::string dtype) {
         if(dtype == "bool") {
             return std::unique_ptr<ndarray_base>(new ndarray_bool(value));
+        } else if(dtype == "int32") {
+            return std::unique_ptr<ndarray_base>(new ndarray_int32(value));
         } else if(dtype == "float64") {
             return std::unique_ptr<ndarray_base>(new ndarray_float(value));
         }
@@ -1293,6 +1276,9 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         if(dtype == "bool") {
             std::vector<bool_> bool_values(values.begin(), values.end());
             return std::unique_ptr<ndarray_base>(new ndarray_bool(bool_values));
+        } else if(dtype == "int32") {
+            std::vector<int32> int32_values(values.begin(), values.end());
+            return std::unique_ptr<ndarray_base>(new ndarray_int32(int32_values));
         } else if(dtype == "float64") {
             std::vector<float64> float_values(values.begin(), values.end());
             return std::unique_ptr<ndarray_base>(new ndarray_float(float_values));
@@ -1306,6 +1292,12 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
                 bool_values.push_back(std::vector<bool_>(v.begin(), v.end()));
             }
             return std::unique_ptr<ndarray_base>(new ndarray_bool(bool_values));
+        } else if(dtype == "int32") {
+            std::vector<std::vector<int32>> int32_values;
+            for(auto& v: values) {
+                int32_values.push_back(std::vector<int32>(v.begin(), v.end()));
+            }
+            return std::unique_ptr<ndarray_base>(new ndarray_int32(int32_values));
         } else if(dtype == "float64") {
             std::vector<std::vector<float64>> float_values;
             for(auto& v: values) {
@@ -1326,6 +1318,16 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
                 bool_values.push_back(temp);
             }
             return std::unique_ptr<ndarray_base>(new ndarray_bool(bool_values));
+        } else if(dtype == "int32") {
+            std::vector<std::vector<std::vector<int32>>> int32_values;
+            for(auto& v: values) {
+                std::vector<std::vector<int32>> temp;
+                for(auto& vv: v) {
+                    temp.push_back(std::vector<int32>(vv.begin(), vv.end()));
+                }
+                int32_values.push_back(temp);
+            }
+            return std::unique_ptr<ndarray_base>(new ndarray_int32(int32_values));
         } else if(dtype == "float64") {
             std::vector<std::vector<std::vector<float64>>> float_values;
             for(auto& v: values) {
@@ -1355,8 +1357,25 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
                 bool_values.push_back(temp1);
             }
             return std::unique_ptr<ndarray_base>(new ndarray_bool(bool_values));
+        } else if(dtype == "int32") {
+            std::vector<std::vector<std::vector<std::vector<int32>>>>
+                int32_values;
+            for(auto& v: values) {
+                std::vector<std::vector<std::vector<int32>>>
+                    temp1;
+                for(auto& vv: v) {
+                    std::vector<std::vector<int32>> temp2;
+                    for(auto& vvv: vv) {
+                        temp2.push_back(std::vector<int32>(vvv.begin(), vvv.end()));
+                    }
+                    temp1.push_back(temp2);
+                }
+                int32_values.push_back(temp1);
+            }
+            return std::unique_ptr<ndarray_base>(new ndarray_int32(int32_values));
         } else if(dtype == "float64") {
-            std::vector<std::vector<std::vector<std::vector<float64>>>> float_values;
+            std::vector<std::vector<std::vector<std::vector<float64>>>>
+                float_values;
             for(auto& v: values) {
                 std::vector<std::vector<std::vector<float64>>>
                     temp1;
@@ -1394,6 +1413,26 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
                 bool_values.push_back(temp1);
             }
             return std::unique_ptr<ndarray_base>(new ndarray_bool(bool_values));
+        } else if(dtype == "int32") {
+            std::vector<std::vector<std::vector<std::vector<std::vector<int32>>>>> int32_values;
+            for(auto& v: values) {
+                std::vector<std::vector<std::vector<std::vector<int32>>>>
+                    temp1;
+                for(auto& vv: v) {
+                    std::vector<std::vector<std::vector<int32>>>
+                        temp2;
+                    for(auto& vvv: vv) {
+                        std::vector<std::vector<int32>> temp3;
+                        for(auto& vvvv: vvv) {
+                            temp3.push_back(std::vector<int32>(vvvv.begin(), vvvv.end()));
+                        }
+                        temp2.push_back(temp3);
+                    }
+                    temp1.push_back(temp2);
+                }
+                int32_values.push_back(temp1);
+            }
+            return std::unique_ptr<ndarray_base>(new ndarray_int32(int32_values));
         } else if(dtype == "float64") {
             std::vector<std::vector<std::vector<std::vector<std::vector<float64>>>>> float_values;
             for(auto& v: values) {
@@ -1421,6 +1460,8 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
     m.def("array", [](float64 value, std::string dtype) {
         if(dtype == "bool") {
             return std::unique_ptr<ndarray_base>(new ndarray_bool(value));
+        } else if(dtype == "int32") {
+            return std::unique_ptr<ndarray_base>(new ndarray_int32(value));
         } else if(dtype == "int64") {
             return std::unique_ptr<ndarray_base>(new ndarray_int(value));
         }
@@ -1430,6 +1471,9 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         if(dtype == "bool") {
             std::vector<bool_> bool_values(values.begin(), values.end());
             return std::unique_ptr<ndarray_base>(new ndarray_bool(bool_values));
+        } else if(dtype == "int32") {
+            std::vector<int32> int32_values(values.begin(), values.end());
+            return std::unique_ptr<ndarray_base>(new ndarray_int32(int32_values));
         } else if(dtype == "int64") {
             std::vector<int_> int_values(values.begin(), values.end());
             return std::unique_ptr<ndarray_base>(new ndarray_int(int_values));
@@ -1443,6 +1487,12 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
                 bool_values.push_back(std::vector<bool_>(v.begin(), v.end()));
             }
             return std::unique_ptr<ndarray_base>(new ndarray_bool(bool_values));
+        } else if(dtype == "int32") {
+            std::vector<std::vector<int32>> int32_values;
+            for(auto& v: values) {
+                int32_values.push_back(std::vector<int32>(v.begin(), v.end()));
+            }
+            return std::unique_ptr<ndarray_base>(new ndarray_int32(int32_values));
         } else if(dtype == "int64") {
             std::vector<std::vector<int_>> int_values;
             for(auto& v: values) {
@@ -1463,6 +1513,16 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
                 bool_values.push_back(temp);
             }
             return std::unique_ptr<ndarray_base>(new ndarray_bool(bool_values));
+        } else if(dtype == "int32") {
+            std::vector<std::vector<std::vector<int32>>> int32_values;
+            for(auto& v: values) {
+                std::vector<std::vector<int32>> temp;
+                for(auto& vv: v) {
+                    temp.push_back(std::vector<int32>(vv.begin(), vv.end()));
+                }
+                int32_values.push_back(temp);
+            }
+            return std::unique_ptr<ndarray_base>(new ndarray_int32(int32_values));
         } else if(dtype == "int64") {
             std::vector<std::vector<std::vector<int_>>> int_values;
             for(auto& v: values) {
@@ -1492,6 +1552,21 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
                 bool_values.push_back(temp1);
             }
             return std::unique_ptr<ndarray_base>(new ndarray_bool(bool_values));
+        } else if(dtype == "int32") {
+            std::vector<std::vector<std::vector<std::vector<int32>>>> int32_values;
+            for(auto& v: values) {
+                std::vector<std::vector<std::vector<int32>>>
+                    temp1;
+                for(auto& vv: v) {
+                    std::vector<std::vector<int32>> temp2;
+                    for(auto& vvv: vv) {
+                        temp2.push_back(std::vector<int32>(vvv.begin(), vvv.end()));
+                    }
+                    temp1.push_back(temp2);
+                }
+                int32_values.push_back(temp1);
+            }
+            return std::unique_ptr<ndarray_base>(new ndarray_int32(int32_values));
         } else if(dtype == "int64") {
             std::vector<std::vector<std::vector<std::vector<int_>>>> int_values;
             for(auto& v: values) {
@@ -1531,6 +1606,26 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
                 bool_values.push_back(temp1);
             }
             return std::unique_ptr<ndarray_base>(new ndarray_bool(bool_values));
+        } else if(dtype == "int32") {
+            std::vector<std::vector<std::vector<std::vector<std::vector<int32>>>>> int32_values;
+            for(auto& v: values) {
+                std::vector<std::vector<std::vector<std::vector<int32>>>>
+                    temp1;
+                for(auto& vv: v) {
+                    std::vector<std::vector<std::vector<int32>>>
+                        temp2;
+                    for(auto& vvv: vv) {
+                        std::vector<std::vector<int32>> temp3;
+                        for(auto& vvvv: vvv) {
+                            temp3.push_back(std::vector<int32>(vvvv.begin(), vvvv.end()));
+                        }
+                        temp2.push_back(temp3);
+                    }
+                    temp1.push_back(temp2);
+                }
+                int32_values.push_back(temp1);
+            }
+            return std::unique_ptr<ndarray_base>(new ndarray_int32(int32_values));
         } else if(dtype == "int64") {
             std::vector<std::vector<std::vector<std::vector<std::vector<int_>>>>> int_values;
             for(auto& v: values) {
@@ -1554,6 +1649,44 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         }
         return std::unique_ptr<ndarray_base>(new ndarray_float(values));
     }, py::arg("values"), py::arg("dtype") = "float64");
+
+    m.def("array", [](bool_ value) {
+    return std::unique_ptr<ndarray_base>(new ndarray_bool(value));
+    });
+    m.def("array", [](const std::vector<bool_>& values) {
+    return std::unique_ptr<ndarray_base>(new ndarray_bool(values));
+    });
+    m.def("array", [](const std::vector<std::vector<bool_>>& values) {
+    return std::unique_ptr<ndarray_base>(new ndarray_bool(values));
+    });
+    m.def("array", [](const std::vector<std::vector<std::vector<bool_>>>& values) {
+    return std::unique_ptr<ndarray_base>(new ndarray_bool(values));
+    });
+    m.def("array", [](const std::vector<std::vector<std::vector<std::vector<bool_>>>>& values) {
+    return std::unique_ptr<ndarray_base>(new ndarray_bool(values));
+    });
+    m.def("array", [](const std::vector<std::vector<std::vector<std::vector<std::vector<bool_>>>>>& values) {
+    return std::unique_ptr<ndarray_base>(new ndarray_bool(values));
+    });
+
+    m.def("array", [](int32 value) {
+    return std::unique_ptr<ndarray_base>(new ndarray_int32(value));
+    });
+    m.def("array", [](const std::vector<int32>& values) {
+    return std::unique_ptr<ndarray_base>(new ndarray_int32(values));
+    });
+    m.def("array", [](const std::vector<std::vector<int32>>& values) {
+    return std::unique_ptr<ndarray_base>(new ndarray_int32(values));
+    });
+    m.def("array", [](const std::vector<std::vector<std::vector<int32>>>& values) {
+    return std::unique_ptr<ndarray_base>(new ndarray_int32(values));
+    });
+    m.def("array", [](const std::vector<std::vector<std::vector<std::vector<int32>>>>& values) {
+    return std::unique_ptr<ndarray_base>(new ndarray_int32(values));
+    });
+    m.def("array", [](const std::vector<std::vector<std::vector<std::vector<std::vector<int32>>>>>& values) {
+    return std::unique_ptr<ndarray_base>(new ndarray_int32(values));
+    });
 
     // Array Creation Functions
     m.def("ones", [](const std::vector<int>& shape) {
