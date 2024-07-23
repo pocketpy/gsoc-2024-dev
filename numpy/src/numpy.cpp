@@ -31,100 +31,195 @@ public:
     virtual ~ndarray_base() = default;
 
     virtual int ndim() const = 0;
+
     virtual int size() const = 0;
+
     virtual std::string dtype() const = 0;
+
     virtual py::tuple shape() const = 0;
+
     virtual bool all() const = 0;
+
     virtual bool any() const = 0;
+
     virtual py::object sum() const = 0;
+
     virtual ndarray_base* sum_axis(int axis) const = 0;
+
     virtual ndarray_base* sum_axes(py::tuple axes) const = 0;
+
     virtual py::object prod() const = 0;
+
     virtual ndarray_base* prod_axis(int axis) const = 0;
+
     virtual ndarray_base* prod_axes(py::tuple axes) const = 0;
+
     virtual py::object min() const = 0;
+
     virtual ndarray_base* min_axis(int axis) const = 0;
+
     virtual ndarray_base* min_axes(py::tuple axes) const = 0;
+
     virtual py::object max() const = 0;
+
     virtual ndarray_base* max_axis(int axis) const = 0;
+
     virtual ndarray_base* max_axes(py::tuple axes) const = 0;
+
     virtual py::object mean() const = 0;
+
     virtual ndarray_base* mean_axis(int axis) const = 0;
+
     virtual ndarray_base* mean_axes(py::tuple axes) const = 0;
+
     virtual py::object std() const = 0;
+
     virtual ndarray_base* std_axis(int axis) const = 0;
+
     virtual ndarray_base* std_axes(py::tuple axes) const = 0;
+
     virtual py::object var() const = 0;
+
     virtual ndarray_base* var_axis(int axis) const = 0;
+
     virtual ndarray_base* var_axes(py::tuple axes) const = 0;
+
     virtual py::object argmin() const = 0;
+
     virtual ndarray_base* argmin_axis(int axis) const = 0;
+
     virtual py::object argmax() const = 0;
+
     virtual ndarray_base* argmax_axis(int axis) const = 0;
+
     virtual ndarray_base* argsort() const = 0;
+
     virtual ndarray_base* argsort_axis(int axis) const = 0;
+
     virtual void sort() = 0;
+
     virtual void sort_axis(int axis) = 0;
+
     virtual ndarray_base* reshape(const std::vector<int>& shape) const = 0;
+
     virtual void resize(const std::vector<int>& shape) = 0;
+
     virtual ndarray_base* squeeze() const = 0;
+
     virtual ndarray_base* squeeze_axis(int axis) const = 0;
+
     virtual ndarray_base* transpose() const = 0;
+
     virtual ndarray_base* transpose_tuple(py::tuple permutations) const = 0;
+
     virtual ndarray_base* transpose_args(py::args args) const = 0;
+
     virtual ndarray_base* repeat(int repeats, int axis) const = 0;
+
     virtual ndarray_base* repeat_axis(const std::vector<size_t>& repeats, int axis) const = 0;
+
     virtual ndarray_base* round() const = 0;
+
     virtual ndarray_base* flatten() const = 0;
+
     virtual ndarray_base* copy() const = 0;
+
     virtual ndarray_base* astype(const std::string& dtype) const = 0;
+
     virtual py::list tolist() const = 0;
+
     virtual ndarray_base* eq(const ndarray_base& other) const = 0;
+
     virtual ndarray_base* add(const ndarray_base& other) const = 0;
+
     virtual ndarray_base* add_bool(bool_ other) const = 0;
+
     virtual ndarray_base* add_int(int_ other) const = 0;
+
     virtual ndarray_base* add_float(float64 other) const = 0;
+
     virtual ndarray_base* sub(const ndarray_base& other) const = 0;
+
     virtual ndarray_base* sub_int(int_ other) const = 0;
+
     virtual ndarray_base* sub_float(float64 other) const = 0;
+
     virtual ndarray_base* rsub_int(int_ other) const = 0;
+
     virtual ndarray_base* rsub_float(float64 other) const = 0;
+
     virtual ndarray_base* mul(const ndarray_base& other) const = 0;
+
     virtual ndarray_base* mul_bool(bool_ other) const = 0;
+
     virtual ndarray_base* mul_int(int_ other) const = 0;
+
     virtual ndarray_base* mul_float(float64 other) const = 0;
+
     virtual ndarray_base* div(const ndarray_base& other) const = 0;
+
     virtual ndarray_base* div_bool(bool_ other) const = 0;
+
     virtual ndarray_base* div_int(int_ other) const = 0;
+
     virtual ndarray_base* div_float(float64 other) const = 0;
+
     virtual ndarray_base* rdiv_bool(bool_ other) const = 0;
+
     virtual ndarray_base* rdiv_int(int_ other) const = 0;
+
     virtual ndarray_base* rdiv_float(float64 other) const = 0;
+
     virtual ndarray_base* pow(const ndarray_base& other) const = 0;
+
     virtual ndarray_base* pow_int(int_ other) const = 0;
+
     virtual ndarray_base* pow_float(float64 other) const = 0;
+
     virtual ndarray_base* rpow_int(int_ other) const = 0;
+
     virtual ndarray_base* rpow_float(float64 other) const = 0;
+
     virtual ndarray_base* matmul(const ndarray_base& other) const = 0;
+
     virtual py::object get_item_int(int index) const = 0;
+
     virtual py::object get_item_tuple(py::tuple indices) const = 0;
+
     virtual ndarray_base* get_item_vector(const std::vector<int>& indices) const = 0;
+
     virtual ndarray_base* get_item_slice(py::slice slice) const = 0;
+
     virtual void set_item_int(int index, int_ value) = 0;
+
     virtual void set_item_index_int(int index, const std::vector<int_>& value) = 0;
+
     virtual void set_item_float(int index, float64 value) = 0;
+
     virtual void set_item_index_float(int index, const std::vector<float64>& value) = 0;
+
     virtual void set_item_tuple_int(py::tuple args, int_ value) = 0;
+
     virtual void set_item_tuple_float(py::tuple args, float64 value) = 0;
+
     virtual void set_item_vector_int1(const std::vector<int>& indices, int_ value) = 0;
+
     virtual void set_item_vector_int2(const std::vector<int>& indices, const std::vector<int_>& value) = 0;
+
     virtual void set_item_vector_float1(const std::vector<int>& indices, float64 value) = 0;
+
     virtual void set_item_vector_float2(const std::vector<int>& indices, const std::vector<float64>& value) = 0;
+
     virtual void set_item_slice_int1(py::slice slice, int_ value) = 0;
+
     virtual void set_item_slice_int2(py::slice slice, const std::vector<int_>& value) = 0;
+
     virtual void set_item_slice_float1(py::slice slice, float64 value) = 0;
+
     virtual void set_item_slice_float2(py::slice slice, const std::vector<float64>& value) = 0;
+
     virtual int len() const = 0;
+
     virtual std::string to_string() const = 0;
 };
 
@@ -880,8 +975,7 @@ public:
         std::ostringstream os;
         os << data;
         std::string result = os.str();
-        
-        // Replacing curly braces with square braces
+
         size_t pos = 0;
         while ((pos = result.find('{', pos)) != std::string::npos) {
             result.replace(pos, 1, "[");
@@ -929,6 +1023,7 @@ public:
     }
 };
 
+// Declare ndarray types
 using ndarray_bool = ndarray<bool_>;
 using ndarray_int8 = ndarray<int8>;
 using ndarray_int16 = ndarray<int16>;
@@ -938,6 +1033,104 @@ using ndarray_int = ndarray<int64>;
 using ndarray_float32 = ndarray<float32>;
 using ndarray_float = ndarray<float64>;
 using ndarray_float = ndarray<float_>;
+
+// Define template for creating n-dimensional vectors
+template <typename T, std::size_t N>
+struct nvector_impl {
+    using type = std::vector<typename nvector_impl<T, N - 1>::type>;
+};
+template <typename T>
+struct nvector_impl<T, 0> {
+    using type = T;
+};
+template <typename T, std::size_t N>
+using nvector = typename nvector_impl<T, N>::type;
+
+// Transform nvector<U, N> to nvector<T, N>
+template <typename U, typename T, std::size_t N>
+nvector<T, N> transform(const nvector<U, N>& values) {
+    nvector<T, N> result;
+    if constexpr(N != 0) {
+        for (const auto& value : values) {
+            result.push_back(transform<U, T, N - 1>(value));
+        }
+    } else {
+        result = static_cast<T>(values);
+    }
+    return result;
+}
+
+void register_array_int(py::module_& m) {
+    m.def("array", [](int_ value, const std::string& dtype) {
+        if (dtype == "bool") {
+            return std::unique_ptr<ndarray_base>(new ndarray_bool(value));
+        } else if (dtype == "int32") {
+            return std::unique_ptr<ndarray_base>(new ndarray_int32(value));
+        } else if (dtype == "float64") {
+            return std::unique_ptr<ndarray_base>(new ndarray_float(value));
+        }
+        return std::unique_ptr<ndarray_base>(new ndarray_int(value));
+    }, py::arg("value"), py::arg("dtype") = "int64");
+}
+
+template<std::size_t N>
+void register_array_int(py::module_& m) {
+    m.def("array", [](const nvector<int_, N>& values, const std::string& dtype) {
+        if (dtype == "bool") {
+            return std::unique_ptr<ndarray_base>(new ndarray<bool_>(transform<int_, bool_, N>(values)));
+        } else if (dtype == "int32") {
+            return std::unique_ptr<ndarray_base>(new ndarray<int32>(transform<int_, int32, N>(values)));
+        } else if (dtype == "float64") {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(transform<int_, float64, N>(values)));
+        }
+        return std::unique_ptr<ndarray_base>(new ndarray<int_>(values));
+    }, py::arg("values"), py::arg("dtype") = "int64");
+}
+
+void register_array_float(py::module_& m) {
+    m.def("array", [](float64 value, const std::string& dtype) {
+        if (dtype == "bool") {
+            return std::unique_ptr<ndarray_base>(new ndarray_bool(value));
+        } else if (dtype == "int32") {
+            return std::unique_ptr<ndarray_base>(new ndarray_int32(value));
+        } else if (dtype == "int64") {
+            return std::unique_ptr<ndarray_base>(new ndarray_int(value));
+        }
+        return std::unique_ptr<ndarray_base>(new ndarray_float(value));
+    }, py::arg("value"), py::arg("dtype") = "float64");
+}
+
+template<std::size_t N>
+void register_array_float(py::module_& m) {
+    m.def("array", [](const nvector<float64, N>& values, const std::string& dtype) {
+        if (dtype == "bool") {
+            return std::unique_ptr<ndarray_base>(new ndarray<bool_>(transform<float64, bool_, N>(values)));
+        } else if (dtype == "int32") {
+            return std::unique_ptr<ndarray_base>(new ndarray<int32>(transform<float64, int32, N>(values)));
+        } else if (dtype == "int64") {
+            return std::unique_ptr<ndarray_base>(new ndarray<int_>(transform<float64, int_, N>(values)));
+        }
+        return std::unique_ptr<ndarray_base>(new ndarray<float64>(values));
+    }, py::arg("values"), py::arg("dtype") = "float64");
+}
+
+// Register array creation functions.
+void array_creation_registry(py::module_& m) {
+    register_array_int(m);
+    register_array_int<1>(m);
+    register_array_int<2>(m);
+    register_array_int<3>(m);
+    register_array_int<4>(m);
+    register_array_int<5>(m);
+
+    register_array_float(m);
+    register_array_float<1>(m);
+    register_array_float<2>(m);
+    register_array_float<3>(m);
+    register_array_float<4>(m);
+    register_array_float<5>(m);
+}
+
 
 PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
     m.doc() = "Python bindings for pkpy::numpy::ndarray using pybind11";
@@ -951,7 +1144,7 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
     m.attr("float32") = "float32";
     m.attr("float64") = "float64";
     m.attr("float_") = "float64";
-    
+
     py::class_<ndarray_base>(m, "ndarray")
         .def_property_readonly("ndim", &ndarray_base::ndim)
         .def_property_readonly("size", &ndarray_base::size)
@@ -1262,393 +1455,7 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         .def_static("randint", &Random::randint)
         .def_static("randint_shape", &Random::randint_shape);
 
-    m.def("array", [](int_ value, std::string dtype) {
-        if(dtype == "bool") {
-            return std::unique_ptr<ndarray_base>(new ndarray_bool(value));
-        } else if(dtype == "int32") {
-            return std::unique_ptr<ndarray_base>(new ndarray_int32(value));
-        } else if(dtype == "float64") {
-            return std::unique_ptr<ndarray_base>(new ndarray_float(value));
-        }
-        return std::unique_ptr<ndarray_base>(new ndarray_int(value));
-    }, py::arg("value"), py::arg("dtype") = "int64");
-    m.def("array", [](const std::vector<int_>& values, std::string dtype) {
-        if(dtype == "bool") {
-            std::vector<bool_> bool_values(values.begin(), values.end());
-            return std::unique_ptr<ndarray_base>(new ndarray_bool(bool_values));
-        } else if(dtype == "int32") {
-            std::vector<int32> int32_values(values.begin(), values.end());
-            return std::unique_ptr<ndarray_base>(new ndarray_int32(int32_values));
-        } else if(dtype == "float64") {
-            std::vector<float64> float_values(values.begin(), values.end());
-            return std::unique_ptr<ndarray_base>(new ndarray_float(float_values));
-        }
-        return std::unique_ptr<ndarray_base>(new ndarray_int(values));
-    }, py::arg("values"), py::arg("dtype") = "int64");
-    m.def("array", [](const std::vector<std::vector<int_>>& values, std::string dtype) {
-        if(dtype == "bool") {
-            std::vector<std::vector<bool_>> bool_values;
-            for(auto& v: values) {
-                bool_values.push_back(std::vector<bool_>(v.begin(), v.end()));
-            }
-            return std::unique_ptr<ndarray_base>(new ndarray_bool(bool_values));
-        } else if(dtype == "int32") {
-            std::vector<std::vector<int32>> int32_values;
-            for(auto& v: values) {
-                int32_values.push_back(std::vector<int32>(v.begin(), v.end()));
-            }
-            return std::unique_ptr<ndarray_base>(new ndarray_int32(int32_values));
-        } else if(dtype == "float64") {
-            std::vector<std::vector<float64>> float_values;
-            for(auto& v: values) {
-                float_values.push_back(std::vector<float64>(v.begin(), v.end()));
-            }
-            return std::unique_ptr<ndarray_base>(new ndarray_float(float_values));
-        }
-        return std::unique_ptr<ndarray_base>(new ndarray_int(values));
-    }, py::arg("values"), py::arg("dtype") = "int64");
-    m.def("array", [](const std::vector<std::vector<std::vector<int_>>>& values, std::string dtype) {
-        if(dtype == "bool") {
-            std::vector<std::vector<std::vector<bool_>>> bool_values;
-            for(auto& v: values) {
-                std::vector<std::vector<bool_>> temp;
-                for(auto& vv: v) {
-                    temp.push_back(std::vector<bool_>(vv.begin(), vv.end()));
-                }
-                bool_values.push_back(temp);
-            }
-            return std::unique_ptr<ndarray_base>(new ndarray_bool(bool_values));
-        } else if(dtype == "int32") {
-            std::vector<std::vector<std::vector<int32>>> int32_values;
-            for(auto& v: values) {
-                std::vector<std::vector<int32>> temp;
-                for(auto& vv: v) {
-                    temp.push_back(std::vector<int32>(vv.begin(), vv.end()));
-                }
-                int32_values.push_back(temp);
-            }
-            return std::unique_ptr<ndarray_base>(new ndarray_int32(int32_values));
-        } else if(dtype == "float64") {
-            std::vector<std::vector<std::vector<float64>>> float_values;
-            for(auto& v: values) {
-                std::vector<std::vector<float64>> temp;
-                for(auto& vv: v) {
-                    temp.push_back(std::vector<float64>(vv.begin(), vv.end()));
-                }
-                float_values.push_back(temp);
-            }
-            return std::unique_ptr<ndarray_base>(new ndarray_float(float_values));
-        }
-        return std::unique_ptr<ndarray_base>(new ndarray_int(values));
-    }, py::arg("values"), py::arg("dtype") = "int64");
-    m.def("array", [](const std::vector<std::vector<std::vector<std::vector<int_>>>>& values, std::string dtype) {
-        if(dtype == "bool") {
-            std::vector<std::vector<std::vector<std::vector<bool_>>>> bool_values;
-            for(auto& v: values) {
-                std::vector<std::vector<std::vector<bool_>>>
-                    temp1;
-                for(auto& vv: v) {
-                    std::vector<std::vector<bool_>> temp2;
-                    for(auto& vvv: vv) {
-                        temp2.push_back(std::vector<bool_>(vvv.begin(), vvv.end()));
-                    }
-                    temp1.push_back(temp2);
-                }
-                bool_values.push_back(temp1);
-            }
-            return std::unique_ptr<ndarray_base>(new ndarray_bool(bool_values));
-        } else if(dtype == "int32") {
-            std::vector<std::vector<std::vector<std::vector<int32>>>>
-                int32_values;
-            for(auto& v: values) {
-                std::vector<std::vector<std::vector<int32>>>
-                    temp1;
-                for(auto& vv: v) {
-                    std::vector<std::vector<int32>> temp2;
-                    for(auto& vvv: vv) {
-                        temp2.push_back(std::vector<int32>(vvv.begin(), vvv.end()));
-                    }
-                    temp1.push_back(temp2);
-                }
-                int32_values.push_back(temp1);
-            }
-            return std::unique_ptr<ndarray_base>(new ndarray_int32(int32_values));
-        } else if(dtype == "float64") {
-            std::vector<std::vector<std::vector<std::vector<float64>>>>
-                float_values;
-            for(auto& v: values) {
-                std::vector<std::vector<std::vector<float64>>>
-                    temp1;
-                for(auto& vv: v) {
-                    std::vector<std::vector<float64>> temp2;
-                    for(auto& vvv: vv) {
-                        temp2.push_back(std::vector<float64>(vvv.begin(), vvv.end()));
-                    }
-                    temp1.push_back(temp2);
-                }
-                float_values.push_back(temp1);
-            }
-            return std::unique_ptr<ndarray_base>(new ndarray_float(float_values));
-        }
-        return std::unique_ptr<ndarray_base>(new ndarray_int(values));
-    }, py::arg("values"), py::arg("dtype") = "int64");
-    m.def("array", [](const std::vector<std::vector<std::vector<std::vector<std::vector<int_>>>>>& values, std::string dtype) {
-        if(dtype == "bool") {
-            std::vector<std::vector<std::vector<std::vector<std::vector<bool_>>>>> bool_values;
-            for(auto& v: values) {
-                std::vector<std::vector<std::vector<std::vector<bool_>>>>
-                    temp1;
-                for(auto& vv: v) {
-                    std::vector<std::vector<std::vector<bool_>>>
-                        temp2;
-                    for(auto& vvv: vv) {
-                        std::vector<std::vector<bool_>> temp3;
-                        for(auto& vvvv: vvv) {
-                            temp3.push_back(std::vector<bool_>(vvvv.begin(), vvvv.end()));
-                        }
-                        temp2.push_back(temp3);
-                    }
-                    temp1.push_back(temp2);
-                }
-                bool_values.push_back(temp1);
-            }
-            return std::unique_ptr<ndarray_base>(new ndarray_bool(bool_values));
-        } else if(dtype == "int32") {
-            std::vector<std::vector<std::vector<std::vector<std::vector<int32>>>>> int32_values;
-            for(auto& v: values) {
-                std::vector<std::vector<std::vector<std::vector<int32>>>>
-                    temp1;
-                for(auto& vv: v) {
-                    std::vector<std::vector<std::vector<int32>>>
-                        temp2;
-                    for(auto& vvv: vv) {
-                        std::vector<std::vector<int32>> temp3;
-                        for(auto& vvvv: vvv) {
-                            temp3.push_back(std::vector<int32>(vvvv.begin(), vvvv.end()));
-                        }
-                        temp2.push_back(temp3);
-                    }
-                    temp1.push_back(temp2);
-                }
-                int32_values.push_back(temp1);
-            }
-            return std::unique_ptr<ndarray_base>(new ndarray_int32(int32_values));
-        } else if(dtype == "float64") {
-            std::vector<std::vector<std::vector<std::vector<std::vector<float64>>>>> float_values;
-            for(auto& v: values) {
-                std::vector<std::vector<std::vector<std::vector<float64>>>>
-                    temp1;
-                for(auto& vv: v) {
-                    std::vector<std::vector<std::vector<float64>>>
-                        temp2;
-                    for(auto& vvv: vv) {
-                        std::vector<std::vector<float64>> temp3;
-                        for(auto& vvvv: vvv) {
-                            temp3.push_back(std::vector<float64>(vvvv.begin(), vvvv.end()));
-                        }
-                        temp2.push_back(temp3);
-                    }
-                    temp1.push_back(temp2);
-                }
-                float_values.push_back(temp1);
-            }
-            return std::unique_ptr<ndarray_base>(new ndarray_float(float_values));
-        }
-        return std::unique_ptr<ndarray_base>(new ndarray_int(values));
-    }, py::arg("values"), py::arg("dtype") = "int64");
-
-    m.def("array", [](float64 value, std::string dtype) {
-        if(dtype == "bool") {
-            return std::unique_ptr<ndarray_base>(new ndarray_bool(value));
-        } else if(dtype == "int32") {
-            return std::unique_ptr<ndarray_base>(new ndarray_int32(value));
-        } else if(dtype == "int64") {
-            return std::unique_ptr<ndarray_base>(new ndarray_int(value));
-        }
-        return std::unique_ptr<ndarray_base>(new ndarray_float(value));
-    }, py::arg("value"), py::arg("dtype") = "float64");
-    m.def("array", [](const std::vector<float64>& values, std::string dtype) {
-        if(dtype == "bool") {
-            std::vector<bool_> bool_values(values.begin(), values.end());
-            return std::unique_ptr<ndarray_base>(new ndarray_bool(bool_values));
-        } else if(dtype == "int32") {
-            std::vector<int32> int32_values(values.begin(), values.end());
-            return std::unique_ptr<ndarray_base>(new ndarray_int32(int32_values));
-        } else if(dtype == "int64") {
-            std::vector<int_> int_values(values.begin(), values.end());
-            return std::unique_ptr<ndarray_base>(new ndarray_int(int_values));
-        }
-        return std::unique_ptr<ndarray_base>(new ndarray_float(values));
-    }, py::arg("values"), py::arg("dtype") = "float64");
-    m.def("array", [](const std::vector<std::vector<float64>>& values, std::string dtype) {
-        if(dtype == "bool") {
-            std::vector<std::vector<bool_>> bool_values;
-            for(auto& v: values) {
-                bool_values.push_back(std::vector<bool_>(v.begin(), v.end()));
-            }
-            return std::unique_ptr<ndarray_base>(new ndarray_bool(bool_values));
-        } else if(dtype == "int32") {
-            std::vector<std::vector<int32>> int32_values;
-            for(auto& v: values) {
-                int32_values.push_back(std::vector<int32>(v.begin(), v.end()));
-            }
-            return std::unique_ptr<ndarray_base>(new ndarray_int32(int32_values));
-        } else if(dtype == "int64") {
-            std::vector<std::vector<int_>> int_values;
-            for(auto& v: values) {
-                int_values.push_back(std::vector<int_>(v.begin(), v.end()));
-            }
-            return std::unique_ptr<ndarray_base>(new ndarray_int(int_values));
-        }
-        return std::unique_ptr<ndarray_base>(new ndarray_float(values));
-    }, py::arg("values"), py::arg("dtype") = "float64");
-    m.def("array", [](const std::vector<std::vector<std::vector<float64>>>& values, std::string dtype) {
-        if(dtype == "bool") {
-            std::vector<std::vector<std::vector<bool_>>> bool_values;
-            for(auto& v: values) {
-                std::vector<std::vector<bool_>> temp;
-                for(auto& vv: v) {
-                    temp.push_back(std::vector<bool_>(vv.begin(), vv.end()));
-                }
-                bool_values.push_back(temp);
-            }
-            return std::unique_ptr<ndarray_base>(new ndarray_bool(bool_values));
-        } else if(dtype == "int32") {
-            std::vector<std::vector<std::vector<int32>>> int32_values;
-            for(auto& v: values) {
-                std::vector<std::vector<int32>> temp;
-                for(auto& vv: v) {
-                    temp.push_back(std::vector<int32>(vv.begin(), vv.end()));
-                }
-                int32_values.push_back(temp);
-            }
-            return std::unique_ptr<ndarray_base>(new ndarray_int32(int32_values));
-        } else if(dtype == "int64") {
-            std::vector<std::vector<std::vector<int_>>> int_values;
-            for(auto& v: values) {
-                std::vector<std::vector<int_>> temp;
-                for(auto& vv: v) {
-                    temp.push_back(std::vector<int_>(vv.begin(), vv.end()));
-                }
-                int_values.push_back(temp);
-            }
-            return std::unique_ptr<ndarray_base>(new ndarray_int(int_values));
-        }
-        return std::unique_ptr<ndarray_base>(new ndarray_float(values));
-    }, py::arg("values"), py::arg("dtype") = "float64");
-    m.def("array", [](const std::vector<std::vector<std::vector<std::vector<float64>>>>& values, std::string dtype) {
-        if(dtype == "bool") {
-            std::vector<std::vector<std::vector<std::vector<bool_>>>> bool_values;
-            for(auto& v: values) {
-                std::vector<std::vector<std::vector<bool_>>>
-                    temp1;
-                for(auto& vv: v) {
-                    std::vector<std::vector<bool_>> temp2;
-                    for(auto& vvv: vv) {
-                        temp2.push_back(std::vector<bool_>(vvv.begin(), vvv.end()));
-                    }
-                    temp1.push_back(temp2);
-                }
-                bool_values.push_back(temp1);
-            }
-            return std::unique_ptr<ndarray_base>(new ndarray_bool(bool_values));
-        } else if(dtype == "int32") {
-            std::vector<std::vector<std::vector<std::vector<int32>>>> int32_values;
-            for(auto& v: values) {
-                std::vector<std::vector<std::vector<int32>>>
-                    temp1;
-                for(auto& vv: v) {
-                    std::vector<std::vector<int32>> temp2;
-                    for(auto& vvv: vv) {
-                        temp2.push_back(std::vector<int32>(vvv.begin(), vvv.end()));
-                    }
-                    temp1.push_back(temp2);
-                }
-                int32_values.push_back(temp1);
-            }
-            return std::unique_ptr<ndarray_base>(new ndarray_int32(int32_values));
-        } else if(dtype == "int64") {
-            std::vector<std::vector<std::vector<std::vector<int_>>>> int_values;
-            for(auto& v: values) {
-                std::vector<std::vector<std::vector<int_>>>
-                    temp1;
-                for(auto& vv: v) {
-                    std::vector<std::vector<int_>> temp2;
-                    for(auto& vvv: vv) {
-                        temp2.push_back(std::vector<int_>(vvv.begin(), vvv.end()));
-                    }
-                    temp1.push_back(temp2);
-                }
-                int_values.push_back(temp1);
-            }
-            return std::unique_ptr<ndarray_base>(new ndarray_int(int_values));
-        }
-        return std::unique_ptr<ndarray_base>(new ndarray_float(values));
-    }, py::arg("values"), py::arg("dtype") = "float64");
-    m.def("array", [](const std::vector<std::vector<std::vector<std::vector<std::vector<float64>>>>>& values, std::string dtype) {
-        if(dtype == "bool") {
-            std::vector<std::vector<std::vector<std::vector<std::vector<bool_>>>>> bool_values;
-            for(auto& v: values) {
-                std::vector<std::vector<std::vector<std::vector<bool_>>>>
-                    temp1;
-                for(auto& vv: v) {
-                    std::vector<std::vector<std::vector<bool_>>>
-                        temp2;
-                    for(auto& vvv: vv) {
-                        std::vector<std::vector<bool_>> temp3;
-                        for(auto& vvvv: vvv) {
-                            temp3.push_back(std::vector<bool_>(vvvv.begin(), vvvv.end()));
-                        }
-                        temp2.push_back(temp3);
-                    }
-                    temp1.push_back(temp2);
-                }
-                bool_values.push_back(temp1);
-            }
-            return std::unique_ptr<ndarray_base>(new ndarray_bool(bool_values));
-        } else if(dtype == "int32") {
-            std::vector<std::vector<std::vector<std::vector<std::vector<int32>>>>> int32_values;
-            for(auto& v: values) {
-                std::vector<std::vector<std::vector<std::vector<int32>>>>
-                    temp1;
-                for(auto& vv: v) {
-                    std::vector<std::vector<std::vector<int32>>>
-                        temp2;
-                    for(auto& vvv: vv) {
-                        std::vector<std::vector<int32>> temp3;
-                        for(auto& vvvv: vvv) {
-                            temp3.push_back(std::vector<int32>(vvvv.begin(), vvvv.end()));
-                        }
-                        temp2.push_back(temp3);
-                    }
-                    temp1.push_back(temp2);
-                }
-                int32_values.push_back(temp1);
-            }
-            return std::unique_ptr<ndarray_base>(new ndarray_int32(int32_values));
-        } else if(dtype == "int64") {
-            std::vector<std::vector<std::vector<std::vector<std::vector<int_>>>>> int_values;
-            for(auto& v: values) {
-                std::vector<std::vector<std::vector<std::vector<int_>>>>
-                    temp1;
-                for(auto& vv: v) {
-                    std::vector<std::vector<std::vector<int_>>>
-                        temp2;
-                    for(auto& vvv: vv) {
-                        std::vector<std::vector<int_>> temp3;
-                        for(auto& vvvv: vvv) {
-                            temp3.push_back(std::vector<int_>(vvvv.begin(), vvvv.end()));
-                        }
-                        temp2.push_back(temp3);
-                    }
-                    temp1.push_back(temp2);
-                }
-                int_values.push_back(temp1);
-            }
-            return std::unique_ptr<ndarray_base>(new ndarray_int(int_values));
-        }
-        return std::unique_ptr<ndarray_base>(new ndarray_float(values));
-    }, py::arg("values"), py::arg("dtype") = "float64");
+    array_creation_registry(m);
 
     m.def("array", [](bool_ value) {
     return std::unique_ptr<ndarray_base>(new ndarray_bool(value));
