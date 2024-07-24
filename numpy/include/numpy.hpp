@@ -18,7 +18,6 @@
 #include <xtensor/xrandom.hpp>
 #include <xtensor/xsort.hpp>
 #include <xtensor/xview.hpp>
-#include <xtensor-blas/xlinalg.hpp>
 
 namespace pkpy {
 
@@ -228,14 +227,6 @@ public:
     auto pow_impl(const U& other) const {
         xt::xarray<float_> result = xt::pow(xt::cast<float_>(_array), other);
         return ndarray<float_>(result);
-    }
-
-    template <typename U>
-    auto matmul(const ndarray<U>& other) const {
-        using result_type = std::common_type_t<T, U>;
-        xt::xarray<result_type> result =
-            xt::linalg::dot(xt::cast<result_type>(_array), xt::cast<result_type>(other.get_array()));
-        return ndarray<result_type>(result);
     }
 
     template <typename U>
