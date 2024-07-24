@@ -180,8 +180,6 @@ public:
 
     virtual ndarray_base* rpow_float(float64 other) const = 0;
 
-    virtual ndarray_base* matmul(const ndarray_base& other) const = 0;
-
     virtual py::object get_item_int(int index) const = 0;
 
     virtual py::object get_item_tuple(py::tuple indices) const = 0;
@@ -702,25 +700,6 @@ public:
         return new ndarray<float64>(pkpy::numpy::pow(other, data));
     }
 
-    ndarray_base* matmul(const ndarray_base& other) const override {
-        if constexpr(std::is_same_v<T, int_>) {
-            if(auto p = dynamic_cast<const ndarray<float64>*>(&other)) { /* int @ float */
-                return new ndarray<float64>(data.matmul(p->data));
-            } else if(auto p = dynamic_cast<const ndarray<int_>*>(&other)) { /* int @ int */
-                return new ndarray<int_>(data.matmul(p->data));
-            }
-        } else if constexpr(std::is_same_v<T, float64>) {
-            if(auto p = dynamic_cast<const ndarray<int_>*>(&other)) { /* float @ int */
-                return new ndarray<float64>(data.matmul(p->data));
-            } else if(auto p = dynamic_cast<const ndarray<float64>*>(&other)) { /* float @ float */
-                return new ndarray<float64>(data.matmul(p->data));
-            }
-        }
-
-        const ndarray<T>& other_ = dynamic_cast<const ndarray<T>&>(other);
-        return new ndarray<T>(data.matmul(other_.data));
-    }
-
     int len() const override { return data.shape()[0]; }
 
     py::object get_item_int(int index) const override {
@@ -1227,7 +1206,6 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         .def("__pow__", &ndarray_base::pow_float)
         .def("__rpow__", &ndarray_base::rpow_int)
         .def("__rpow__", &ndarray_base::rpow_float)
-        .def("__matmul__", &ndarray_base::matmul)
         .def("__len__", &ndarray_base::len)
         .def("__getitem__", &ndarray_base::get_item_int)
         .def("__getitem__", &ndarray_base::get_item_tuple)
