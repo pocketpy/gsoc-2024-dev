@@ -170,6 +170,8 @@ public:
 
     virtual ndarray_base* rdiv_float(float64 other) const = 0;
 
+    virtual ndarray_base* matmul(const ndarray_base& other) const = 0;
+
     virtual ndarray_base* pow(const ndarray_base& other) const = 0;
 
     virtual ndarray_base* pow_int(int_ other) const = 0;
@@ -670,6 +672,24 @@ public:
     ndarray_base* rdiv_int(int_ other) const override { return new ndarray<float64>(other / data); }
 
     ndarray_base* rdiv_float(float64 other) const override { return new ndarray<float64>(other / data); }
+
+    ndarray_base* matmul(const ndarray_base& other) const override {
+        if constexpr(std::is_same_v<T, int_>) {
+            if(auto p = dynamic_cast<const ndarray<float64>*>(&other)) { /* int @ float */
+                return new ndarray<float64>(pkpy::numpy::matmul(data, p->data));
+            } else if(auto p = dynamic_cast<const ndarray<int_>*>(&other)) { /* int @ int */
+                return new ndarray<int_>(pkpy::numpy::matmul(data, p->data));
+            }
+        } else if constexpr(std::is_same_v<T, float64>) {
+            if(auto p = dynamic_cast<const ndarray<int_>*>(&other)) { /* float @ int */
+                return new ndarray<float64>(pkpy::numpy::matmul(data, p->data));
+            } else if(auto p = dynamic_cast<const ndarray<float64>*>(&other)) { /* float @ float */
+                return new ndarray<float64>(pkpy::numpy::matmul(data, p->data));
+            }
+        }
+        const ndarray<T>& other_ = dynamic_cast<const ndarray<T>&>(other);
+        return new ndarray<T>(pkpy::numpy::matmul(data, other_.data));
+    }
 
     ndarray_base* pow(const ndarray_base& other) const override {
         if constexpr(std::is_same_v<T, int_>) {
@@ -1201,6 +1221,7 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         .def("__rtruediv__", &ndarray_base::rdiv_bool)
         .def("__rtruediv__", &ndarray_base::rdiv_int)
         .def("__rtruediv__", &ndarray_base::rdiv_float)
+        .def("__matmul__", &ndarray_base::matmul)
         .def("__pow__", &ndarray_base::pow)
         .def("__pow__", &ndarray_base::pow_int)
         .def("__pow__", &ndarray_base::pow_float)
