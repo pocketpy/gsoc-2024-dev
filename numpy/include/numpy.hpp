@@ -531,6 +531,144 @@ public:
     }
 };
 
+    template<typename T, typename U>
+    xt::xarray<std::common_type_t<T, U>> matrix_mul(const xt::xarray<T>& a, const xt::xarray<U>& b) {
+        using result_type = std::common_type_t<T, U>;
+        using Mat = xt::xarray<result_type>;
+        bool first_is_1d = false;
+        bool second_is_1d = false;
+
+        xt::xarray<T> a_copy = a;
+        xt::xarray<U> b_copy = b;
+
+        if (a.dimension() == 1) {
+            first_is_1d = true;
+            a_copy = xt::reshape_view(a_copy, {1, 3});
+        }
+        if(b_copy.dimension() == 1) {
+            second_is_1d = true;
+            b_copy = xt::reshape_view(b_copy, {3, 1});
+        }
+        if (a_copy.dimension() == 2 && b_copy.dimension() == 2)
+        {
+            int m = a_copy.shape()[0];
+            int n = a_copy.shape()[1];
+            int p = b_copy.shape()[1];
+
+            Mat result = xt::zeros<result_type>({m, p});
+
+            for (int i = 0; i < m; i++)
+            {
+                for (int j = 0; j < p; j++)
+                {
+                    for (int k = 0; k < n; k++)
+                    {
+                        result(i, j) += a_copy(i, k) * b_copy(k, j);
+                    }
+                }
+            }
+
+            if (first_is_1d) {
+                result = xt::squeeze(result, {result.dimension()-2});
+            }
+            if (second_is_1d) {
+                result = xt::squeeze(result, {result.dimension()-1});
+            }
+
+            return result;
+        }
+        else {
+            if (a_copy.dimension() == b_copy.dimension()) {
+                assert(a_copy.shape()[0] == b_copy.shape()[0]);
+                size_t layers = a_copy.shape()[0];
+                Mat sub;
+                {
+                    Mat a0 = xt::view(a_copy, 0);
+                    Mat b0 = xt::view(b_copy, 0);
+                    sub = matrix_mul(a0, b0);
+                }
+
+                auto out_shape = sub.shape();
+                out_shape.insert(out_shape.begin(), layers);
+                auto result = Mat::from_shape(out_shape);
+                xt::view(result, 0) = sub;
+
+                for (size_t i = 1; i < layers; i++) {
+                    Mat ai = xt::view(a_copy, i);
+                    Mat bi = xt::view(b_copy, i);
+                    xt::view(result, i) = matrix_mul(ai, bi);
+                }
+
+                if (first_is_1d) {
+                    result = xt::squeeze(result, {result.dimension()-2});
+                }
+                if (second_is_1d) {
+                    result = xt::squeeze(result, {result.dimension()-1});
+                }
+
+                return result;
+            } else if (a_copy.dimension() > b_copy.dimension()) {
+                size_t layers = a_copy.shape()[0];
+                Mat sub;
+                {
+                    Mat a0 = xt::view(a_copy, 0);
+                    sub = matrix_mul(a0, b_copy);
+                }
+
+                auto out_shape = sub.shape();
+                out_shape.insert(out_shape.begin(), layers);
+                auto result = Mat::from_shape(out_shape);
+                xt::view(result, 0) = sub;
+
+                for (size_t i = 1; i < layers; i++) {
+                    Mat ai = xt::view(a_copy, i);
+                    xt::view(result, i) = matrix_mul(ai, b_copy);
+                }
+
+                if (first_is_1d) {
+                    result = xt::squeeze(result, {result.dimension()-2});
+                }
+                if (second_is_1d) {
+                    result = xt::squeeze(result, {result.dimension()-1});
+                }
+
+                return result;
+            } else {
+
+                assert(a_copy.dimension() < b_copy.dimension());
+                size_t layers = b_copy.shape()[0];
+                Mat sub;
+                {
+                    Mat b0 = xt::view(b_copy, 0);
+                    sub = matrix_mul(a_copy, b0);
+                }
+
+                auto out_shape = sub.shape();
+                out_shape.insert(out_shape.begin(), layers);
+                auto result = Mat::from_shape(out_shape);
+                xt::view(result, 0) = sub;
+
+                for (size_t i = 1; i < layers; i++) {
+                    Mat bi = xt::view(b_copy, i);
+                    xt::view(result, i) = matrix_mul(a_copy, bi);
+                }
+
+                if (first_is_1d) {
+                    result = xt::squeeze(result, {result.dimension()-2});
+                }
+                if (second_is_1d) {
+                    result = xt::squeeze(result, {result.dimension()-1});
+                }
+
+                return result;
+            }
+        }
+    }
+    template <typename T, typename U>
+    ndarray<std::common_type_t<T, U>> matmul(const ndarray<T>& a, const ndarray<U>& b) {
+        return ndarray<std::common_type_t<T, U>>(matrix_mul(a.get_array(), b.get_array()));
+    }
+
 template <typename T>
 ndarray<T> adapt(const std::vector<T>& init_list) {
     return ndarray<T>(xt::adapt(init_list));
