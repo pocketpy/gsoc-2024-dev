@@ -565,10 +565,10 @@ xt::xarray<std::common_type_t<T, U>> matrix_mul(const xt::xarray<T>& a, const xt
         }
 
         if (first_is_1d) {
-            result = xt::squeeze(result, {result.dimension()-2});
+            result = xt::squeeze(result, std::vector<std::size_t>{result.dimension()-2});
         }
         if (second_is_1d) {
-            result = xt::squeeze(result, {result.dimension()-1});
+            result = xt::squeeze(result, std::vector<std::size_t>{result.dimension()-1});
         }
 
         return result;
@@ -597,10 +597,10 @@ xt::xarray<std::common_type_t<T, U>> matrix_mul(const xt::xarray<T>& a, const xt
             }
 
             if (first_is_1d) {
-                result = xt::squeeze(result, {result.dimension()-2});
+                result = xt::squeeze(result, std::vector<std::size_t>{result.dimension()-2});
             }
             if (second_is_1d) {
-                result = xt::squeeze(result, {result.dimension()-1});
+                result = xt::squeeze(result, std::vector<std::size_t>{result.dimension()-1});
             }
 
             return result;
@@ -625,10 +625,10 @@ xt::xarray<std::common_type_t<T, U>> matrix_mul(const xt::xarray<T>& a, const xt
             }
 
             if (first_is_1d) {
-                result = xt::squeeze(result, {result.dimension()-2});
+                result = xt::squeeze(result, std::vector<std::size_t>{result.dimension()-2});
             }
             if (second_is_1d) {
-                result = xt::squeeze(result, {result.dimension()-1});
+                result = xt::squeeze(result, std::vector<std::size_t>{result.dimension()-1});
             }
 
             return result;
@@ -653,10 +653,10 @@ xt::xarray<std::common_type_t<T, U>> matrix_mul(const xt::xarray<T>& a, const xt
             }
 
             if (first_is_1d) {
-                result = xt::squeeze(result, {result.dimension()-2});
+                result = xt::squeeze(result, std::vector<std::size_t>{result.dimension()-2});
             }
             if (second_is_1d) {
-                result = xt::squeeze(result, {result.dimension()-1});
+                result = xt::squeeze(result, std::vector<std::size_t>{result.dimension()-1});
             }
 
             return result;
