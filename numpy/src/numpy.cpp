@@ -730,9 +730,8 @@ public:
             } else if constexpr(std::is_same_v<T, float64>) {
                 return py::float_(data(index));
             }
-        } else {
-            return py::cast(ndarray<T>(data[index]));
-        }
+        } 
+        return py::cast(ndarray<T>(data[index]));
     }
 
     py::object get_item_tuple(py::tuple args) const override {
@@ -754,9 +753,8 @@ public:
             } else if constexpr(std::is_same_v<T, float64>) {
                 return py::float_(store(indices[indices.size() - 1]));
             }
-        } else {
-            return py::cast(ndarray<T>(store[indices[indices.size() - 1]]));
-        }
+        } 
+        return py::cast(ndarray<T>(store[indices[indices.size() - 1]]));
     }
 
     ndarray_base* get_item_vector(const std::vector<int>& indices) const override {
