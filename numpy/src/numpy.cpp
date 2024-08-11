@@ -240,6 +240,8 @@ public:
 
     ndarray(const int_ value) : data(value) {}
 
+    ndarray(const float32 value) : data(value) {}
+
     ndarray(const float64 value) : data(value) {}
 
     ndarray(const pkpy::numpy::ndarray<T>& _arr) : data(_arr) {}
@@ -482,6 +484,8 @@ public:
             return new ndarray<int32>(data.template astype<int32>());
         } else if(dtype == "int_") {
             return new ndarray<int_>(data.template astype<int_>());
+        } else if(dtype == "float32") {
+            return new ndarray<float32>(data.template astype<float32>());
         } else if(dtype == "float64") {
             return new ndarray<float64>(data.template astype<float64>());
         } else {
@@ -512,6 +516,8 @@ public:
                 return new ndarray<bool_>(data == p->data);
             } else if(auto p = dynamic_cast<const ndarray<int_>*>(&other)) { /* int8 == int64 */
                 return new ndarray<bool_>(data == p->data);
+            } else if(auto p = dynamic_cast<const ndarray<float32>*>(&other)) { /* int8 == float32 */
+                return new ndarray<bool_>(data == p->data);
             } else if(auto p = dynamic_cast<const ndarray<float64>*>(&other)) { /* int8 == float64 */
                 return new ndarray<bool_>(data == p->data);
             }
@@ -523,6 +529,8 @@ public:
             } else if(auto p = dynamic_cast<const ndarray<int32>*>(&other)) { /* int16 == int32 */
                 return new ndarray<bool_>(data == p->data);
             } else if(auto p = dynamic_cast<const ndarray<int_>*>(&other)) { /* int16 == int64 */
+                return new ndarray<bool_>(data == p->data);
+            } else if(auto p = dynamic_cast<const ndarray<float32>*>(&other)) { /* int16 == float32 */
                 return new ndarray<bool_>(data == p->data);
             } else if(auto p = dynamic_cast<const ndarray<float64>*>(&other)) { /* int16 == float64 */
                 return new ndarray<bool_>(data == p->data);
@@ -536,6 +544,8 @@ public:
                 return new ndarray<bool_>(data == p->data);
             } else if(auto p = dynamic_cast<const ndarray<int_>*>(&other)) { /* int32 == int64 */
                 return new ndarray<bool_>(data == p->data);
+            } else if(auto p = dynamic_cast<const ndarray<float32>*>(&other)) { /* int32 == float32 */
+                return new ndarray<bool_>(data == p->data);
             } else if(auto p = dynamic_cast<const ndarray<float64>*>(&other)) { /* int32 == float64 */
                 return new ndarray<bool_>(data == p->data);
             }
@@ -548,7 +558,23 @@ public:
                 return new ndarray<bool_>(data == p->data);
             } else if(auto p = dynamic_cast<const ndarray<int_>*>(&other)) { /* int64 == int64 */
                 return new ndarray<bool_>(data == p->data);
+            } else if(auto p = dynamic_cast<const ndarray<float32>*>(&other)) { /* int64 == float32 */
+                return new ndarray<bool_>(data == p->data);
             } else if(auto p = dynamic_cast<const ndarray<float64>*>(&other)) { /* int64 == float64 */
+                return new ndarray<bool_>(data == p->data);
+            }
+        } else if constexpr(std::is_same_v<T, float32>) {
+            if(auto p = dynamic_cast<const ndarray<int8>*>(&other)) { /* float32 == int8 */
+                return new ndarray<bool_>(data == p->data);
+            } else if(auto p = dynamic_cast<const ndarray<int16>*>(&other)) { /* float32 == int16 */
+                return new ndarray<bool_>(data == p->data);
+            } else if(auto p = dynamic_cast<const ndarray<int32>*>(&other)) { /* float32 == int32 */
+                return new ndarray<bool_>(data == p->data);
+            } else if(auto p = dynamic_cast<const ndarray<int_>*>(&other)) { /* float32 == int64 */
+                return new ndarray<bool_>(data == p->data);
+            } else if(auto p = dynamic_cast<const ndarray<float32>*>(&other)) { /* float32 == float32 */
+                return new ndarray<bool_>(data == p->data);
+            } else if(auto p = dynamic_cast<const ndarray<float64>*>(&other)) { /* float32 == float64 */
                 return new ndarray<bool_>(data == p->data);
             }
         } else if constexpr(std::is_same_v<T, float64>) {
@@ -559,6 +585,8 @@ public:
             } else if(auto p = dynamic_cast<const ndarray<int32>*>(&other)) { /* float64 == int32 */
                 return new ndarray<bool_>(data == p->data);
             } else if(auto p = dynamic_cast<const ndarray<int_>*>(&other)) { /* float64 == int64 */
+                return new ndarray<bool_>(data == p->data);
+            } else if(auto p = dynamic_cast<const ndarray<float32>*>(&other)) { /* float64 == float32 */
                 return new ndarray<bool_>(data == p->data);
             } else if(auto p = dynamic_cast<const ndarray<float64>*>(&other)) { /* float64 == float64 */
                 return new ndarray<bool_>(data == p->data);
@@ -609,6 +637,8 @@ public:
             return new ndarray<int32>((data + other).template astype<int32>());
         } else if constexpr(std::is_same_v<T, int_>) {
             return new ndarray<int64>(data + other);
+        } else if constexpr(std::is_same_v<T, float32>) {
+            return new ndarray<float32>(data + other);
         } else if constexpr(std::is_same_v<T, float64>) {
             return new ndarray<float64>(data + other);
         }
@@ -646,6 +676,8 @@ public:
             return new ndarray<int32>((data - other).template astype<int32>());
         } else if constexpr(std::is_same_v<T, int_>) {
             return new ndarray<int64>(data - other);
+        } else if constexpr(std::is_same_v<T, float32>) {
+            return new ndarray<float32>(data - other);
         } else if constexpr(std::is_same_v<T, float64>) {
             return new ndarray<float64>(data - other);
         }
@@ -664,6 +696,8 @@ public:
             return new ndarray<int32>((other - data).template astype<int32>());
         } else if constexpr(std::is_same_v<T, int_>) {
             return new ndarray<int64>(other - data);
+        } else if constexpr(std::is_same_v<T, float32>) {
+            return new ndarray<float32>(other - data);
         } else if constexpr(std::is_same_v<T, float64>) {
             return new ndarray<float64>(other - data);
         }
@@ -711,6 +745,8 @@ public:
             return new ndarray<int32>((data * other).template astype<int32>());
         } else if constexpr(std::is_same_v<T, int_>) {
             return new ndarray<int64>(data * other);
+        } else if constexpr(std::is_same_v<T, float32>) {
+            return new ndarray<float32>(data * other);
         } else if constexpr(std::is_same_v<T, float64>) {
             return new ndarray<float64>(data * other);
         }
@@ -1143,6 +1179,8 @@ void register_array_int(py::module_& m) {
             return std::unique_ptr<ndarray_base>(new ndarray_int16(value));
         } else if (dtype == "int32") {
             return std::unique_ptr<ndarray_base>(new ndarray_int32(value));
+        } else if (dtype == "float32") {
+            return std::unique_ptr<ndarray_base>(new ndarray_float32(value));
         } else if (dtype == "float64") {
             return std::unique_ptr<ndarray_base>(new ndarray_float(value));
         }
@@ -1161,6 +1199,8 @@ void register_array_int(py::module_& m) {
             return std::unique_ptr<ndarray_base>(new ndarray<int16>(transform<int_, int16, N>(values)));
         } else if (dtype == "int32") {
             return std::unique_ptr<ndarray_base>(new ndarray<int32>(transform<int_, int32, N>(values)));
+        } else if (dtype == "float32") {
+            return std::unique_ptr<ndarray_base>(new ndarray<float32>(transform<int_, float32, N>(values)));
         } else if (dtype == "float64") {
             return std::unique_ptr<ndarray_base>(new ndarray<float64>(transform<int_, float64, N>(values)));
         }
@@ -1180,6 +1220,8 @@ void register_array_float(py::module_& m) {
             return std::unique_ptr<ndarray_base>(new ndarray_int32(value));
         } else if (dtype == "int64") {
             return std::unique_ptr<ndarray_base>(new ndarray_int(value));
+        } else if (dtype == "float32") {
+            return std::unique_ptr<ndarray_base>(new ndarray_float32(value));
         }
         return std::unique_ptr<ndarray_base>(new ndarray_float(value));
     }, py::arg("value"), py::arg("dtype") = "float64");
@@ -1198,6 +1240,8 @@ void register_array_float(py::module_& m) {
             return std::unique_ptr<ndarray_base>(new ndarray<int32>(transform<float64, int32, N>(values)));
         } else if (dtype == "int64") {
             return std::unique_ptr<ndarray_base>(new ndarray<int_>(transform<float64, int_, N>(values)));
+        } else if (dtype == "float32") {
+            return std::unique_ptr<ndarray_base>(new ndarray<float32>(transform<float64, float32, N>(values)));
         }
         return std::unique_ptr<ndarray_base>(new ndarray<float64>(values));
     }, py::arg("values"), py::arg("dtype") = "float64");
@@ -1545,6 +1589,15 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
             return ndarray<int_>(~v.data);
         });
 
+    py::class_<ndarray<float32>, ndarray_base>(m, "ndarray_float32")
+        .def(py::init<>())
+        .def(py::init<float32>())
+        .def(py::init<const std::vector<float32>&>())
+        .def(py::init<const std::vector<std::vector<float32>>&>())
+        .def(py::init<const std::vector<std::vector<std::vector<float32>>>&>())
+        .def(py::init<const std::vector<std::vector<std::vector<std::vector<float32>>>>&>())
+        .def(py::init<const std::vector<std::vector<std::vector<std::vector<std::vector<float32>>>>>&>());
+
     py::class_<ndarray<float64>, ndarray_base>(m, "ndarray_float")
         .def(py::init<>())
         .def(py::init<float64>())
@@ -1638,6 +1691,25 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
     });
     m.def("array", [](const std::vector<std::vector<std::vector<std::vector<std::vector<int32>>>>>& values) {
     return std::unique_ptr<ndarray_base>(new ndarray_int32(values));
+    });
+
+    m.def("array", [](float32 value) {
+    return std::unique_ptr<ndarray_base>(new ndarray_float32(value));
+    });
+    m.def("array", [](const std::vector<float32>& values) {
+    return std::unique_ptr<ndarray_base>(new ndarray_float32(values));
+    });
+    m.def("array", [](const std::vector<std::vector<float32>>& values) {
+    return std::unique_ptr<ndarray_base>(new ndarray_float32(values));
+    });
+    m.def("array", [](const std::vector<std::vector<std::vector<float32>>>& values) {
+    return std::unique_ptr<ndarray_base>(new ndarray_float32(values));
+    });
+    m.def("array", [](const std::vector<std::vector<std::vector<std::vector<float32>>>>& values) {
+    return std::unique_ptr<ndarray_base>(new ndarray_float32(values));
+    });
+    m.def("array", [](const std::vector<std::vector<std::vector<std::vector<std::vector<float32>>>>>& values) {
+    return std::unique_ptr<ndarray_base>(new ndarray_float32(values));
     });
 
     // Array Creation Functions
