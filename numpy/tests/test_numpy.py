@@ -58,19 +58,19 @@ def test_array_properties():
     arr1 = np.array([1, 2, 3])
     assert arr1.size == 3
     assert arr1.ndim == 1
-    assert arr1.shape == [3]
-    assert arr1.dtype == 'int32'
+    assert arr1.shape == (3,)
+    assert arr1.dtype == 'int64'
 
     arr2 = np.array([[1, 2, 2, 1], [3, 4, 4, 3], [5, 6, 6, 5]])
     assert arr2.size == 12
     assert arr2.ndim == 2
-    assert arr2.shape == [3, 4]
-    assert arr2.dtype == 'int32'
+    assert arr2.shape == (3, 4)
+    assert arr2.dtype == 'int64'
 
     arr3 = np.array([[[[[1.5, 2.5], [3.5, 4.5], [5.5, 6.5]]]]])
     assert arr3.size == 6
     assert arr3.ndim == 5
-    assert arr3.shape == [1, 1, 1, 3, 2]
+    assert arr3.shape == (1, 1, 1, 3, 2)
     assert arr3.dtype == 'float64'
 
 
@@ -336,11 +336,11 @@ def test_array_copy():
 def test_array_astype():
     arr1 = np.array([1, 2, 2.5])
 
-    assert arr1.astype('int') == np.array([1, 2, 2])
-    assert arr1.dtype() == 'float64'
+    assert arr1.astype('int_') == np.array([1, 2, 2])
+    assert arr1.dtype == 'float64'
 
     assert arr1.astype('float64') == np.array([1.0, 2.0, 2.5])
-    assert arr1.dtype() == 'float64'
+    assert arr1.dtype == 'float64'
 
 
 def test_array_round():
@@ -612,7 +612,7 @@ def test_array_getitem():
                                       [15, 16, 17, 18, 19]],
                                      [[20, 21, 22, 23, 24],
                                       [25, 26, 27, 28, 29]]])
-    assert arr1[3:2:-1].shape() == np.array([]).reshape([0, 2, 5]).shape()
+    assert arr1[3:2:-1].shape == np.array([]).reshape([0, 2, 5]).shape
     assert arr1[3::-2] == np.array([[[20, 21, 22, 23, 24],
                                      [25, 26, 27, 28, 29]],
                                     [[0, 1, 2, 3, 4],
