@@ -901,6 +901,8 @@ auto abs(const ndarray<T>& arr) {
     }
 }
 
+// Xtensor only supports concatenation of initialized objects.
+// https://github.com/xtensor-stack/xtensor/issues/1450
 template <typename T, typename U>
 auto concatenate(const ndarray<T>& arr1, const ndarray<U>& arr2, int axis = 0) {
     using result_type = std::common_type_t<T, U>;
