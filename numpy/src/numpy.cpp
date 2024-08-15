@@ -310,9 +310,10 @@ public:
 
     // Aggregation Functions
     py::object sum() const override {
-        if constexpr(std::is_same_v<T, int_>) {
+        if constexpr (std::is_same_v<T, bool_> || std::is_same_v<T, int8> || std::is_same_v<T, int16> ||
+                      std::is_same_v<T, int32> || std::is_same_v<T, int64>) {
             return py::int_(data.sum());
-        } else if constexpr(std::is_same_v<T, float64>) {
+        } else if constexpr(std::is_same_v<T, float32> || std::is_same_v<T, float64>) {
             return py::float_(data.sum());
         } else {
             throw std::runtime_error("Unsupported type");
@@ -329,9 +330,10 @@ public:
     }
 
     py::object prod() const override {
-        if constexpr(std::is_same_v<T, int_>) {
+        if constexpr (std::is_same_v<T, bool_> || std::is_same_v<T, int8> || std::is_same_v<T, int16> ||
+                      std::is_same_v<T, int32> || std::is_same_v<T, int64>) {
             return py::int_(data.prod());
-        } else if constexpr(std::is_same_v<T, float64>) {
+        } else if constexpr(std::is_same_v<T, float32> || std::is_same_v<T, float64>) {
             return py::float_(data.prod());
         } else {
             throw std::runtime_error("Unsupported type");
@@ -348,9 +350,10 @@ public:
     }
 
     py::object min() const override {
-        if constexpr(std::is_same_v<T, int_>) {
+        if constexpr (std::is_same_v<T, bool_> || std::is_same_v<T, int8> || std::is_same_v<T, int16> ||
+                      std::is_same_v<T, int32> || std::is_same_v<T, int64>) {
             return py::int_(data.min());
-        } else if constexpr(std::is_same_v<T, float64>) {
+        } else if constexpr(std::is_same_v<T, float32> || std::is_same_v<T, float64>) {
             return py::float_(data.min());
         } else {
             throw std::runtime_error("Unsupported type");
@@ -367,9 +370,10 @@ public:
     }
 
     py::object max() const override {
-        if constexpr(std::is_same_v<T, int_>) {
+        if constexpr (std::is_same_v<T, bool_> || std::is_same_v<T, int8> || std::is_same_v<T, int16> ||
+                      std::is_same_v<T, int32> || std::is_same_v<T, int64>) {
             return py::int_(data.max());
-        } else if constexpr(std::is_same_v<T, float64>) {
+        } else if constexpr(std::is_same_v<T, float32> || std::is_same_v<T, float64>) {
             return py::float_(data.max());
         } else {
             throw std::runtime_error("Unsupported type");
@@ -386,7 +390,9 @@ public:
     }
 
     py::object mean() const override {
-        if constexpr(std::is_same_v<T, int_> || std::is_same_v<T, float64>) {
+        if constexpr (std::is_same_v<T, bool_> || std::is_same_v<T, int8> || std::is_same_v<T, int16> ||
+                      std::is_same_v<T, int32> || std::is_same_v<T, int64> || std::is_same_v<T, float32> ||
+                        std::is_same_v<T, float64>) {
             return py::float_(data.mean());
         } else {
             throw std::runtime_error("Unsupported type");
@@ -403,7 +409,9 @@ public:
     }
 
     py::object std() const override {
-        if constexpr(std::is_same_v<T, int_> || std::is_same_v<T, float64>) {
+        if constexpr (std::is_same_v<T, bool_> || std::is_same_v<T, int8> || std::is_same_v<T, int16> ||
+                      std::is_same_v<T, int32> || std::is_same_v<T, int64> || std::is_same_v<T, float32> ||
+                        std::is_same_v<T, float64>) {
             return py::float_(data.std());
         } else {
             throw std::runtime_error("Unsupported type");
@@ -420,7 +428,9 @@ public:
     }
 
     py::object var() const override {
-        if constexpr(std::is_same_v<T, int_> || std::is_same_v<T, float64>) {
+        if constexpr (std::is_same_v<T, bool_> || std::is_same_v<T, int8> || std::is_same_v<T, int16> ||
+                      std::is_same_v<T, int32> || std::is_same_v<T, int64> || std::is_same_v<T, float32> ||
+                        std::is_same_v<T, float64>) {
             return py::float_(data.var());
         } else {
             throw std::runtime_error("Unsupported type");
@@ -437,9 +447,10 @@ public:
     }
 
     py::object argmin() const override {
-        if constexpr(std::is_same_v<T, int_>) {
+        if constexpr (std::is_same_v<T, bool_> || std::is_same_v<T, int8> || std::is_same_v<T, int16> ||
+                      std::is_same_v<T, int32> || std::is_same_v<T, int64>) {
             return py::int_(data.argmin());
-        } else if constexpr(std::is_same_v<T, float64>) {
+        } else if constexpr(std::is_same_v<T, float32> || std::is_same_v<T, float64>) {
             return py::float_(data.argmin());
         } else {
             throw std::runtime_error("Unsupported type");
@@ -449,9 +460,10 @@ public:
     ndarray_base* argmin_axis(int axis) const override { return new ndarray<T>(data.argmin(axis)); }
 
     py::object argmax() const override {
-        if constexpr(std::is_same_v<T, int_>) {
+        if constexpr (std::is_same_v<T, bool_> || std::is_same_v<T, int8> || std::is_same_v<T, int16> ||
+                      std::is_same_v<T, int32> || std::is_same_v<T, int64>) {
             return py::int_(data.argmax());
-        } else if constexpr(std::is_same_v<T, float64>) {
+        } else if constexpr(std::is_same_v<T, float32> || std::is_same_v<T, float64>) {
             return py::float_(data.argmax());
         } else {
             throw std::runtime_error("Unsupported type");
