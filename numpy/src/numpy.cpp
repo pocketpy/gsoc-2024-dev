@@ -194,9 +194,21 @@ public:
 
     virtual void set_item_index_int(int index, const std::vector<int_>& value) = 0;
 
+    virtual void set_item_index_int_2d(int index, const std::vector<std::vector<int_>>& value) = 0;
+
+    virtual void set_item_index_int_3d(int index, const std::vector<std::vector<std::vector<int_>>>& value) = 0;
+
+    virtual void set_item_index_int_4d(int index, const std::vector<std::vector<std::vector<std::vector<int_>>>>& value) = 0;
+
     virtual void set_item_float(int index, float64 value) = 0;
 
     virtual void set_item_index_float(int index, const std::vector<float64>& value) = 0;
+
+    virtual void set_item_index_float_2d(int index, const std::vector<std::vector<float64>>& value) = 0;
+
+    virtual void set_item_index_float_3d(int index, const std::vector<std::vector<std::vector<float64>>>& value) = 0;
+
+    virtual void set_item_index_float_4d(int index, const std::vector<std::vector<std::vector<std::vector<float64>>>>& value) = 0;
 
     virtual void set_item_tuple_int(py::tuple args, int_ value) = 0;
 
@@ -206,17 +218,41 @@ public:
 
     virtual void set_item_vector_int2(const std::vector<int>& indices, const std::vector<int_>& value) = 0;
 
+    virtual void set_item_vector_int3(const std::vector<int>& indices, const std::vector<std::vector<int_>>& value) = 0;
+
+    virtual void set_item_vector_int4(const std::vector<int>& indices, const std::vector<std::vector<std::vector<int_>>>& value) = 0;
+
+    virtual void set_item_vector_int5(const std::vector<int>& indices, const std::vector<std::vector<std::vector<std::vector<int_>>>>& value) = 0;
+
     virtual void set_item_vector_float1(const std::vector<int>& indices, float64 value) = 0;
 
     virtual void set_item_vector_float2(const std::vector<int>& indices, const std::vector<float64>& value) = 0;
+
+    virtual void set_item_vector_float3(const std::vector<int>& indices, const std::vector<std::vector<float64>>& value) = 0;
+
+    virtual void set_item_vector_float4(const std::vector<int>& indices, const std::vector<std::vector<std::vector<float64>>>& value) = 0;
+
+    virtual void set_item_vector_float5(const std::vector<int>& indices, const std::vector<std::vector<std::vector<std::vector<float64>>>>& value) = 0;
 
     virtual void set_item_slice_int1(py::slice slice, int_ value) = 0;
 
     virtual void set_item_slice_int2(py::slice slice, const std::vector<int_>& value) = 0;
 
+    virtual void set_item_slice_int3(py::slice slice, const std::vector<std::vector<int_>>& value) = 0;
+
+    virtual void set_item_slice_int4(py::slice slice, const std::vector<std::vector<std::vector<int_>>>& value) = 0;
+
+    virtual void set_item_slice_int5(py::slice slice, const std::vector<std::vector<std::vector<std::vector<int_>>>>& value) = 0;
+
     virtual void set_item_slice_float1(py::slice slice, float64 value) = 0;
 
     virtual void set_item_slice_float2(py::slice slice, const std::vector<float64>& value) = 0;
+
+    virtual void set_item_slice_float3(py::slice slice, const std::vector<std::vector<float64>>& value) = 0;
+
+    virtual void set_item_slice_float4(py::slice slice, const std::vector<std::vector<std::vector<float64>>>& value) = 0;
+
+    virtual void set_item_slice_float5(py::slice slice, const std::vector<std::vector<std::vector<std::vector<float64>>>>& value) = 0;
 
     virtual int len() const = 0;
 
@@ -906,6 +942,30 @@ public:
         }
     }
 
+    void set_item_index_int_2d(int index, const std::vector<std::vector<int_>>& value) override {
+        if constexpr(std::is_same_v<T, int_>) {
+            data.set_item(index, pkpy::numpy::adapt<int_>(value));
+        } else if constexpr(std::is_same_v<T, float64>) {
+            data.set_item(index, (pkpy::numpy::adapt<int_>(value)).astype<float64>());
+        }
+    }
+
+    void set_item_index_int_3d(int index, const std::vector<std::vector<std::vector<int_>>>& value) override {
+        if constexpr(std::is_same_v<T, int_>) {
+            data.set_item(index, pkpy::numpy::adapt<int_>(value));
+        } else if constexpr(std::is_same_v<T, float64>) {
+            data.set_item(index, (pkpy::numpy::adapt<int_>(value)).astype<float64>());
+        }
+    }
+
+    void set_item_index_int_4d(int index, const std::vector<std::vector<std::vector<std::vector<int_>>>>& value) override {
+        if constexpr(std::is_same_v<T, int_>) {
+            data.set_item(index, pkpy::numpy::adapt<int_>(value));
+        } else if constexpr(std::is_same_v<T, float64>) {
+            data.set_item(index, (pkpy::numpy::adapt<int_>(value)).astype<float64>());
+        }
+    }
+
     void set_item_float(int index, float64 value) override {
         if constexpr(std::is_same_v<T, float64>) {
             data.set_item(index, pkpy::numpy::adapt<float64>(std::vector{value}));
@@ -915,6 +975,30 @@ public:
     }
 
     void set_item_index_float(int index, const std::vector<float64>& value) override {
+        if constexpr(std::is_same_v<T, float64>) {
+            data.set_item(index, pkpy::numpy::adapt<float64>(value));
+        } else if constexpr(std::is_same_v<T, int_>) {
+            data.set_item(index, (pkpy::numpy::adapt<float64>(value)).astype<int_>());
+        }
+    }
+
+    void set_item_index_float_2d(int index, const std::vector<std::vector<float64>>& value) override {
+        if constexpr(std::is_same_v<T, float64>) {
+            data.set_item(index, pkpy::numpy::adapt<float64>(value));
+        } else if constexpr(std::is_same_v<T, int_>) {
+            data.set_item(index, (pkpy::numpy::adapt<float64>(value)).astype<int_>());
+        }
+    }
+
+    void set_item_index_float_3d(int index, const std::vector<std::vector<std::vector<float64>>>& value) override {
+        if constexpr(std::is_same_v<T, float64>) {
+            data.set_item(index, pkpy::numpy::adapt<float64>(value));
+        } else if constexpr(std::is_same_v<T, int_>) {
+            data.set_item(index, (pkpy::numpy::adapt<float64>(value)).astype<int_>());
+        }
+    }
+
+    void set_item_index_float_4d(int index, const std::vector<std::vector<std::vector<std::vector<float64>>>>& value) override {
         if constexpr(std::is_same_v<T, float64>) {
             data.set_item(index, pkpy::numpy::adapt<float64>(value));
         } else if constexpr(std::is_same_v<T, int_>) {
@@ -982,6 +1066,30 @@ public:
         }
     }
 
+    void set_item_vector_int3(const std::vector<int>& indices, const std::vector<std::vector<int_>>& value) override {
+        if constexpr(std::is_same_v<T, int_>) {
+            data.set_item(indices, pkpy::numpy::adapt<int_>(value));
+        } else if constexpr(std::is_same_v<T, float64>) {
+            data.set_item(indices, (pkpy::numpy::adapt<int_>(value)).astype<float64>());
+        }
+    }
+
+    void set_item_vector_int4(const std::vector<int>& indices, const std::vector<std::vector<std::vector<int_>>>& value) override {
+        if constexpr(std::is_same_v<T, int_>) {
+            data.set_item(indices, pkpy::numpy::adapt<int_>(value));
+        } else if constexpr(std::is_same_v<T, float64>) {
+            data.set_item(indices, (pkpy::numpy::adapt<int_>(value)).astype<float64>());
+        }
+    }
+
+    void set_item_vector_int5(const std::vector<int>& indices, const std::vector<std::vector<std::vector<std::vector<int_>>>>& value) override {
+        if constexpr(std::is_same_v<T, int_>) {
+            data.set_item(indices, pkpy::numpy::adapt<int_>(value));
+        } else if constexpr(std::is_same_v<T, float64>) {
+            data.set_item(indices, (pkpy::numpy::adapt<int_>(value)).astype<float64>());
+        }
+    }
+
     void set_item_vector_float1(const std::vector<int>& indices, float64 value) override {
         if constexpr(std::is_same_v<T, float64>) {
             data.set_item(indices, pkpy::numpy::adapt<float64>(std::vector{value}));
@@ -991,6 +1099,30 @@ public:
     }
 
     void set_item_vector_float2(const std::vector<int>& indices, const std::vector<float64>& value) override {
+        if constexpr(std::is_same_v<T, float64>) {
+            data.set_item(indices, pkpy::numpy::adapt<float64>(value));
+        } else if constexpr(std::is_same_v<T, int_>) {
+            data.set_item(indices, (pkpy::numpy::adapt<float64>(value)).astype<int_>());
+        }
+    }
+
+    void set_item_vector_float3(const std::vector<int>& indices, const std::vector<std::vector<float64>>& value) override {
+        if constexpr(std::is_same_v<T, float64>) {
+            data.set_item(indices, pkpy::numpy::adapt<float64>(value));
+        } else if constexpr(std::is_same_v<T, int_>) {
+            data.set_item(indices, (pkpy::numpy::adapt<float64>(value)).astype<int_>());
+        }
+    }
+
+    void set_item_vector_float4(const std::vector<int>& indices, const std::vector<std::vector<std::vector<float64>>>& value) override {
+        if constexpr(std::is_same_v<T, float64>) {
+            data.set_item(indices, pkpy::numpy::adapt<float64>(value));
+        } else if constexpr(std::is_same_v<T, int_>) {
+            data.set_item(indices, (pkpy::numpy::adapt<float64>(value)).astype<int_>());
+        }
+    }
+
+    void set_item_vector_float5(const std::vector<int>& indices, const std::vector<std::vector<std::vector<std::vector<float64>>>>& value) override {
         if constexpr(std::is_same_v<T, float64>) {
             data.set_item(indices, pkpy::numpy::adapt<float64>(value));
         } else if constexpr(std::is_same_v<T, int_>) {
@@ -1039,6 +1171,66 @@ public:
         }
     }
 
+    void set_item_slice_int3(py::slice slice, const std::vector<std::vector<int_>>& value) override {
+        int start = parseAttr(getattr(slice, "start"));
+        int stop = parseAttr(getattr(slice, "stop"));
+        int step = parseAttr(getattr(slice, "step"));
+
+        if(step == INT_MAX) step = 1;
+        if(step > 0) {
+            if(start == INT_MAX) start = 0;
+            if(stop == INT_MAX) stop = data.shape()[0];
+        } else if(step < 0) {
+            if(start == INT_MAX) start = data.shape()[0] - 1;
+            if(stop == INT_MAX) stop = -(1 + data.shape()[0]);
+        }
+        if constexpr(std::is_same_v<T, int_>) {
+            data.set_item(std::make_tuple(start, stop, step), pkpy::numpy::adapt<int_>(value));
+        } else if constexpr(std::is_same_v<T, float64>) {
+            data.set_item(std::make_tuple(start, stop, step), (pkpy::numpy::adapt<int_>(value)).astype<float64>());
+        }
+    }
+
+    void set_item_slice_int4(py::slice slice, const std::vector<std::vector<std::vector<int_>>>& value) override {
+        int start = parseAttr(getattr(slice, "start"));
+        int stop = parseAttr(getattr(slice, "stop"));
+        int step = parseAttr(getattr(slice, "step"));
+
+        if(step == INT_MAX) step = 1;
+        if(step > 0) {
+            if(start == INT_MAX) start = 0;
+            if(stop == INT_MAX) stop = data.shape()[0];
+        } else if(step < 0) {
+            if(start == INT_MAX) start = data.shape()[0] - 1;
+            if(stop == INT_MAX) stop = -(1 + data.shape()[0]);
+        }
+        if constexpr(std::is_same_v<T, int_>) {
+            data.set_item(std::make_tuple(start, stop, step), pkpy::numpy::adapt<int_>(value));
+        } else if constexpr(std::is_same_v<T, float64>) {
+            data.set_item(std::make_tuple(start, stop, step), (pkpy::numpy::adapt<int_>(value)).astype<float64>());
+        }
+    }
+
+    void set_item_slice_int5(py::slice slice, const std::vector<std::vector<std::vector<std::vector<int_>>>>& value) override {
+        int start = parseAttr(getattr(slice, "start"));
+        int stop = parseAttr(getattr(slice, "stop"));
+        int step = parseAttr(getattr(slice, "step"));
+
+        if(step == INT_MAX) step = 1;
+        if(step > 0) {
+            if(start == INT_MAX) start = 0;
+            if(stop == INT_MAX) stop = data.shape()[0];
+        } else if(step < 0) {
+            if(start == INT_MAX) start = data.shape()[0] - 1;
+            if(stop == INT_MAX) stop = -(1 + data.shape()[0]);
+        }
+        if constexpr(std::is_same_v<T, int_>) {
+            data.set_item(std::make_tuple(start, stop, step), pkpy::numpy::adapt<int_>(value));
+        } else if constexpr(std::is_same_v<T, float64>) {
+            data.set_item(std::make_tuple(start, stop, step), (pkpy::numpy::adapt<int_>(value)).astype<float64>());
+        }
+    }
+
     void set_item_slice_float1(py::slice slice, float64 value) override {
         int start = parseAttr(getattr(slice, "start"));
         int stop = parseAttr(getattr(slice, "stop"));
@@ -1061,6 +1253,66 @@ public:
     }
 
     void set_item_slice_float2(py::slice slice, const std::vector<float64>& value) override {
+        int start = parseAttr(getattr(slice, "start"));
+        int stop = parseAttr(getattr(slice, "stop"));
+        int step = parseAttr(getattr(slice, "step"));
+
+        if(step == INT_MAX) step = 1;
+        if(step > 0) {
+            if(start == INT_MAX) start = 0;
+            if(stop == INT_MAX) stop = data.shape()[0];
+        } else if(step < 0) {
+            if(start == INT_MAX) start = data.shape()[0] - 1;
+            if(stop == INT_MAX) stop = -(1 + data.shape()[0]);
+        }
+        if constexpr(std::is_same_v<T, float64>) {
+            data.set_item(std::make_tuple(start, stop, step), pkpy::numpy::adapt<float64>(value));
+        } else if constexpr(std::is_same_v<T, int_>) {
+            data.set_item(std::make_tuple(start, stop, step), (pkpy::numpy::adapt<float64>(value)).astype<int_>());
+        }
+    }
+
+    void set_item_slice_float3(py::slice slice, const std::vector<std::vector<float64>>& value) override {
+        int start = parseAttr(getattr(slice, "start"));
+        int stop = parseAttr(getattr(slice, "stop"));
+        int step = parseAttr(getattr(slice, "step"));
+
+        if(step == INT_MAX) step = 1;
+        if(step > 0) {
+            if(start == INT_MAX) start = 0;
+            if(stop == INT_MAX) stop = data.shape()[0];
+        } else if(step < 0) {
+            if(start == INT_MAX) start = data.shape()[0] - 1;
+            if(stop == INT_MAX) stop = -(1 + data.shape()[0]);
+        }
+        if constexpr(std::is_same_v<T, float64>) {
+            data.set_item(std::make_tuple(start, stop, step), pkpy::numpy::adapt<float64>(value));
+        } else if constexpr(std::is_same_v<T, int_>) {
+            data.set_item(std::make_tuple(start, stop, step), (pkpy::numpy::adapt<float64>(value)).astype<int_>());
+        }
+    }
+
+    void set_item_slice_float4(py::slice slice, const std::vector<std::vector<std::vector<float64>>>& value) override {
+        int start = parseAttr(getattr(slice, "start"));
+        int stop = parseAttr(getattr(slice, "stop"));
+        int step = parseAttr(getattr(slice, "step"));
+
+        if(step == INT_MAX) step = 1;
+        if(step > 0) {
+            if(start == INT_MAX) start = 0;
+            if(stop == INT_MAX) stop = data.shape()[0];
+        } else if(step < 0) {
+            if(start == INT_MAX) start = data.shape()[0] - 1;
+            if(stop == INT_MAX) stop = -(1 + data.shape()[0]);
+        }
+        if constexpr(std::is_same_v<T, float64>) {
+            data.set_item(std::make_tuple(start, stop, step), pkpy::numpy::adapt<float64>(value));
+        } else if constexpr(std::is_same_v<T, int_>) {
+            data.set_item(std::make_tuple(start, stop, step), (pkpy::numpy::adapt<float64>(value)).astype<int_>());
+        }
+    }
+
+    void set_item_slice_float5(py::slice slice, const std::vector<std::vector<std::vector<std::vector<float64>>>>& value) override {
         int start = parseAttr(getattr(slice, "start"));
         int stop = parseAttr(getattr(slice, "stop"));
         int step = parseAttr(getattr(slice, "step"));
@@ -1368,18 +1620,36 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         .def("__getitem__", &ndarray_base::get_item_slice)
         .def("__setitem__", &ndarray_base::set_item_int)
         .def("__setitem__", &ndarray_base::set_item_index_int)
+        .def("__setitem__", &ndarray_base::set_item_index_int_2d)
+        .def("__setitem__", &ndarray_base::set_item_index_int_3d)
+        .def("__setitem__", &ndarray_base::set_item_index_int_4d)
         .def("__setitem__", &ndarray_base::set_item_float)
         .def("__setitem__", &ndarray_base::set_item_index_float)
+        .def("__setitem__", &ndarray_base::set_item_index_float_2d)
+        .def("__setitem__", &ndarray_base::set_item_index_float_3d)
+        .def("__setitem__", &ndarray_base::set_item_index_float_4d)
         .def("__setitem__", &ndarray_base::set_item_tuple_int)
         .def("__setitem__", &ndarray_base::set_item_tuple_float)
         .def("__setitem__", &ndarray_base::set_item_vector_int1)
         .def("__setitem__", &ndarray_base::set_item_vector_int2)
+        .def("__setitem__", &ndarray_base::set_item_vector_int3)
+        .def("__setitem__", &ndarray_base::set_item_vector_int4)
+        .def("__setitem__", &ndarray_base::set_item_vector_int5)
         .def("__setitem__", &ndarray_base::set_item_vector_float1)
         .def("__setitem__", &ndarray_base::set_item_vector_float2)
+        .def("__setitem__", &ndarray_base::set_item_vector_float3)
+        .def("__setitem__", &ndarray_base::set_item_vector_float4)
+        .def("__setitem__", &ndarray_base::set_item_vector_float5)
         .def("__setitem__", &ndarray_base::set_item_slice_int1)
         .def("__setitem__", &ndarray_base::set_item_slice_int2)
+        .def("__setitem__", &ndarray_base::set_item_slice_int3)
+        .def("__setitem__", &ndarray_base::set_item_slice_int4)
+        .def("__setitem__", &ndarray_base::set_item_slice_int5)
         .def("__setitem__", &ndarray_base::set_item_slice_float1)
         .def("__setitem__", &ndarray_base::set_item_slice_float2)
+        .def("__setitem__", &ndarray_base::set_item_slice_float3)
+        .def("__setitem__", &ndarray_base::set_item_slice_float4)
+        .def("__setitem__", &ndarray_base::set_item_slice_float5)
 
         .def("__str__",
              [](const ndarray_base& self) {
