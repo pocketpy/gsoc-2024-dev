@@ -11,11 +11,26 @@ def test_array_int():
     arr6 = np.array([[[[[1], [10], [100], [1000], [10000]]]]])
     arr7 = np.array([[[2147483647]]])
 
+    arr8 = np.array([1, 2, 3, 4, 5], dtype='int8')
+    arr8 = np.array([1, 2, 3, 4, 5], np.int8)
+
+    arr9 = np.array([1, 2, 3, 4, 5], dtype='int16')
+    arr9 = np.array([1, 2, 3, 4, 5], np.int16)
+
+    arr10 = np.array([1, 2, 3, 4, 5], dtype='int32')
+    arr10 = np.array([1, 2, 3, 4, 5], np.int32)
+
+    arr11 = np.array([1, 2, 3, 4, 5], dtype='int64')
+    arr11 = np.array([1, 2, 3, 4, 5], np.int64)
+
 
 def test_array_bool():
     arr1 = np.array([True, False, True, False])
     arr2 = np.array([[True, False], [False, True]])
     arr3 = np.array([[[True, False, True], [False, True, False]], [[True, False, True], [False, True, False]]])
+
+    arr8 = np.array([[1, 0], [0, 1]], dtype='bool')
+    arr8 = np.array([[1, 0], [0, 1]], np.bool_)
 
 
 def test_array_float():
@@ -25,6 +40,12 @@ def test_array_float():
     arr4 = np.array([[[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]], [[7.0, 8.0, 9.0], [10.0, 11.0, 12.0]]])
     arr5 = np.array([[[[[1.0], [10.0], [100.0], [1000.0], [10000.0]]]]])
     arr6 = np.array([[[3.141592653589793]]])
+
+    arr7 = np.array([1.0, 2.0, 3.0, 4.0, 5.0], dtype='float32')
+    arr7 = np.array([1.0, 2.0, 3.0, 4.0, 5.0], np.float32)
+
+    arr8 = np.array([1.0, 2.0, 3.0, 4.0, 5.0], dtype='float64')
+    arr8 = np.array([1.0, 2.0, 3.0, 4.0, 5.0], np.float64)
 
 
 def test_array_creation():
@@ -629,6 +650,87 @@ def test_array_getitem():
                                   [15, 16, 17, 18, 19]],
                                  [[20, 21, 22, 23, 24],
                                   [25, 26, 27, 28, 29]]])
+
+
+def test_array_set_item():
+    arr1 = np.arange(30).reshape([3, 2, 5])
+
+    arr1[0] = 10
+    assert arr1[0] == np.array([[10, 10, 10, 10, 10],
+                                [10, 10, 10, 10, 10]])
+
+    arr1[1] = [1, 2, 3, 4, 5]
+    assert arr1[1] == np.array([[1, 2, 3, 4, 5],
+                                [1, 2, 3, 4, 5]])
+
+    arr1[2] = [[1, 2, 3, 4, 5], [6, 7, 8, 9, 10]]
+    assert arr1[2] == np.array([[1, 2, 3, 4, 5],
+                                [6, 7, 8, 9, 10]])
+
+    arr1[-1] = 0
+    assert arr1[-1] == np.array([[0, 0, 0, 0, 0],
+                                [0, 0, 0, 0, 0]])
+
+    arr1[0, 0] = 5
+    assert arr1[0, 0] == np.array([5, 5, 5, 5, 5])
+
+    arr1[1, 1] = [1, 2, 3, 4, 5]
+    assert arr1[1, 1] == np.array([1, 2, 3, 4, 5])
+
+    arr1[2, 0] = [2.5]
+    assert arr1[2, 0] == np.array([2, 2, 2, 2, 2])
+
+    arr1[(0,)] = 10.5
+    assert arr1[(0,)] == np.array([[10, 10, 10, 10, 10],
+                                    [10, 10, 10, 10, 10]])
+
+    arr1[(0, 1)] = 0
+    assert arr1[(0, 1)] == np.array([0, 0, 0, 0, 0])
+
+    arr1[(-3, -1)] = 1
+    assert arr1[(-3, -1)] == np.array([1, 1, 1, 1, 1])
+
+    arr1[(-1, -2, -3)] = 3.14159
+    assert arr1[(-1, -2, -3)] == 3
+
+    arr1[[0, ]] = 0
+    assert arr1[[0, ]] == np.array([[[0, 0, 0, 0, 0],
+                                    [0, 0, 0, 0, 0]]])
+
+    arr1[[0, 1]] = 1
+    assert arr1[[0, 1]] == np.array([[[1, 1, 1, 1, 1],
+                                      [1, 1, 1, 1, 1]],
+                                     [[1, 1, 1, 1, 1],
+                                      [1, 1, 1, 1, 1]]])
+
+    arr1[[2, 2]] = [[1, 2, 3, 4, 5], [6, 7, 8, 9, 10]]
+    assert arr1[[2, 2]] == np.array([[[1, 2, 3, 4, 5],
+                                     [6, 7, 8, 9, 10]],
+                                    [[1, 2, 3, 4, 5],
+                                     [6, 7, 8, 9, 10]]])
+
+    arr1[0:1] = 0
+    assert arr1[0:1] == np.array([[[0, 0, 0, 0, 0],
+                                    [0, 0, 0, 0, 0]]])
+
+    arr1[2:3] = 1
+    assert arr1[2:3] == np.array([[[1, 1, 1, 1, 1],
+                                    [1, 1, 1, 1, 1]]])
+
+    arr1[::2] = [[1, 2, 3, 4, 5], [6, 7, 8, 9, 10]]
+    assert arr1[::2] == np.array([[[1, 2, 3, 4, 5],
+                                   [6, 7, 8, 9, 10]],
+                                  [[1, 2, 3, 4, 5],
+                                   [6, 7, 8, 9, 10]]])
+
+    arr1[-2:3:1] = [[[1, 2, 3, 4, 5],
+                     [6, 7, 8, 9, 10]],
+                    [[11, 12, 13, 14, 15],
+                     [16, 17, 18, 19, 20]]]
+    assert arr1[-2:3:1] == np.array([[[1, 2, 3, 4, 5],
+                                      [6, 7, 8, 9, 10]],
+                                     [[11, 12, 13, 14, 15],
+                                      [16, 17, 18, 19, 20]]])
 
 
 def test_array_trigonometry():
