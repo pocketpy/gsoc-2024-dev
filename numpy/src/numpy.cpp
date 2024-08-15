@@ -2489,15 +2489,31 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
 
     // Trigonometric Functions
     m.def("sin", [](const ndarray_base& arr) {
-        if(auto p = dynamic_cast<const ndarray<int_>*>(&arr)) {
+        if (auto p = dynamic_cast<const ndarray<int8>*>(&arr)) {
             return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::sin(p->data)));
-        } else if(auto p = dynamic_cast<const ndarray<float64>*>(&arr)) {
+        } else if (auto p = dynamic_cast<const ndarray<int16>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::sin(p->data)));
+        } else if (auto p = dynamic_cast<const ndarray<int32>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::sin(p->data)));
+        } else if (auto p = dynamic_cast<const ndarray<int_>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::sin(p->data)));
+        } else if (auto p = dynamic_cast<const ndarray<float32>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::sin(p->data)));
+        } else if (auto p = dynamic_cast<const ndarray<float64>*>(&arr)) {
             return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::sin(p->data)));
         }
         throw std::invalid_argument("Invalid dtype");
     });
     m.def("cos", [](const ndarray_base& arr) {
-        if(auto p = dynamic_cast<const ndarray<int_>*>(&arr)) {
+        if(auto p = dynamic_cast<const ndarray<int8>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::cos(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int16>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::cos(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int32>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::cos(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int_>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::cos(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<float32>*>(&arr)) {
             return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::cos(p->data)));
         } else if(auto p = dynamic_cast<const ndarray<float64>*>(&arr)) {
             return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::cos(p->data)));
@@ -2505,7 +2521,15 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         throw std::invalid_argument("Invalid dtype");
     });
     m.def("tan", [](const ndarray_base& arr) {
-        if(auto p = dynamic_cast<const ndarray<int_>*>(&arr)) {
+        if(auto p = dynamic_cast<const ndarray<int8>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::tan(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int16>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::tan(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int32>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::tan(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int_>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::tan(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<float32>*>(&arr)) {
             return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::tan(p->data)));
         } else if(auto p = dynamic_cast<const ndarray<float64>*>(&arr)) {
             return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::tan(p->data)));
@@ -2513,7 +2537,15 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         throw std::invalid_argument("Invalid dtype");
     });
     m.def("arcsin", [](const ndarray_base& arr) {
-        if(auto p = dynamic_cast<const ndarray<int_>*>(&arr)) {
+        if(auto p = dynamic_cast<const ndarray<int8>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::arcsin(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int16>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::arcsin(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int32>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::arcsin(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int_>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::arcsin(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<float32>*>(&arr)) {
             return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::arcsin(p->data)));
         } else if(auto p = dynamic_cast<const ndarray<float64>*>(&arr)) {
             return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::arcsin(p->data)));
@@ -2521,7 +2553,15 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         throw std::invalid_argument("Invalid dtype");
     });
     m.def("arccos", [](const ndarray_base& arr) {
-        if(auto p = dynamic_cast<const ndarray<int_>*>(&arr)) {
+        if(auto p = dynamic_cast<const ndarray<int8>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::arccos(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int16>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::arccos(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int32>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::arccos(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int_>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::arccos(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<float32>*>(&arr)) {
             return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::arccos(p->data)));
         } else if(auto p = dynamic_cast<const ndarray<float64>*>(&arr)) {
             return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::arccos(p->data)));
@@ -2529,7 +2569,15 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         throw std::invalid_argument("Invalid dtype");
     });
     m.def("arctan", [](const ndarray_base& arr) {
-        if(auto p = dynamic_cast<const ndarray<int_>*>(&arr)) {
+        if(auto p = dynamic_cast<const ndarray<int8>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::arctan(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int16>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::arctan(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int32>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::arctan(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int_>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::arctan(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<float32>*>(&arr)) {
             return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::arctan(p->data)));
         } else if(auto p = dynamic_cast<const ndarray<float64>*>(&arr)) {
             return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::arctan(p->data)));
@@ -2539,7 +2587,15 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
 
     // Exponential and Logarithmic Functions
     m.def("exp", [](const ndarray_base& arr) {
-        if(auto p = dynamic_cast<const ndarray<int_>*>(&arr)) {
+        if(auto p = dynamic_cast<const ndarray<int8>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::exp(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int16>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::exp(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int32>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::exp(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int_>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::exp(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<float32>*>(&arr)) {
             return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::exp(p->data)));
         } else if(auto p = dynamic_cast<const ndarray<float64>*>(&arr)) {
             return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::exp(p->data)));
@@ -2547,7 +2603,15 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         throw std::invalid_argument("Invalid dtype");
     });
     m.def("log", [](const ndarray_base& arr) {
-        if(auto p = dynamic_cast<const ndarray<int_>*>(&arr)) {
+        if(auto p = dynamic_cast<const ndarray<int8>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::log(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int16>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::log(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int32>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::log(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int_>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::log(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<float32>*>(&arr)) {
             return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::log(p->data)));
         } else if(auto p = dynamic_cast<const ndarray<float64>*>(&arr)) {
             return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::log(p->data)));
@@ -2555,7 +2619,15 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         throw std::invalid_argument("Invalid dtype");
     });
     m.def("log2", [](const ndarray_base& arr) {
-        if(auto p = dynamic_cast<const ndarray<int_>*>(&arr)) {
+        if(auto p = dynamic_cast<const ndarray<int8>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::log2(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int16>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::log2(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int32>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::log2(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int_>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::log2(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<float32>*>(&arr)) {
             return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::log2(p->data)));
         } else if(auto p = dynamic_cast<const ndarray<float64>*>(&arr)) {
             return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::log2(p->data)));
@@ -2563,7 +2635,15 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         throw std::invalid_argument("Invalid dtype");
     });
     m.def("log10", [](const ndarray_base& arr) {
-        if(auto p = dynamic_cast<const ndarray<int_>*>(&arr)) {
+        if(auto p = dynamic_cast<const ndarray<int8>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::log10(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int16>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::log10(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int32>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::log10(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int_>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::log10(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<float32>*>(&arr)) {
             return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::log10(p->data)));
         } else if(auto p = dynamic_cast<const ndarray<float64>*>(&arr)) {
             return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::log10(p->data)));
@@ -2573,32 +2653,64 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
 
     // Miscellaneous Functions
     m.def("round", [](const ndarray_base& arr) {
-        if(auto p = dynamic_cast<const ndarray<int_>*>(&arr)) {
+        if(auto p = dynamic_cast<const ndarray<int8>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<int8>(pkpy::numpy::round(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int16>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<int16>(pkpy::numpy::round(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int32>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<int32>(pkpy::numpy::round(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int_>*>(&arr)) {
             return std::unique_ptr<ndarray_base>(new ndarray<int_>(pkpy::numpy::round(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<float32>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float32>(pkpy::numpy::round(p->data)));
         } else if(auto p = dynamic_cast<const ndarray<float64>*>(&arr)) {
             return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::round(p->data)));
         }
         throw std::invalid_argument("Invalid dtype");
     });
     m.def("floor", [](const ndarray_base& arr) {
-        if(auto p = dynamic_cast<const ndarray<int_>*>(&arr)) {
+        if(auto p = dynamic_cast<const ndarray<int8>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<int8>(pkpy::numpy::floor(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int16>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<int16>(pkpy::numpy::floor(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int32>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<int32>(pkpy::numpy::floor(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int_>*>(&arr)) {
             return std::unique_ptr<ndarray_base>(new ndarray<int_>(pkpy::numpy::floor(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<float32>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float32>(pkpy::numpy::floor(p->data)));
         } else if(auto p = dynamic_cast<const ndarray<float64>*>(&arr)) {
             return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::floor(p->data)));
         }
         throw std::invalid_argument("Invalid dtype");
     });
     m.def("ceil", [](const ndarray_base& arr) {
-        if(auto p = dynamic_cast<const ndarray<int_>*>(&arr)) {
+        if(auto p = dynamic_cast<const ndarray<int8>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<int8>(pkpy::numpy::ceil(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int16>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<int16>(pkpy::numpy::ceil(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int32>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<int32>(pkpy::numpy::ceil(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int_>*>(&arr)) {
             return std::unique_ptr<ndarray_base>(new ndarray<int_>(pkpy::numpy::ceil(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<float32>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float32>(pkpy::numpy::ceil(p->data)));
         } else if(auto p = dynamic_cast<const ndarray<float64>*>(&arr)) {
             return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::ceil(p->data)));
         }
         throw std::invalid_argument("Invalid dtype");
     });
     m.def("abs", [](const ndarray_base& arr) {
-        if(auto p = dynamic_cast<const ndarray<int_>*>(&arr)) {
+        if(auto p = dynamic_cast<const ndarray<int8>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<int8>(pkpy::numpy::abs(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int16>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<int16>(pkpy::numpy::abs(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int32>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<int32>(pkpy::numpy::abs(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<int_>*>(&arr)) {
             return std::unique_ptr<ndarray_base>(new ndarray<int_>(pkpy::numpy::abs(p->data)));
+        } else if(auto p = dynamic_cast<const ndarray<float32>*>(&arr)) {
+            return std::unique_ptr<ndarray_base>(new ndarray<float32>(pkpy::numpy::abs(p->data)));
         } else if(auto p = dynamic_cast<const ndarray<float64>*>(&arr)) {
             return std::unique_ptr<ndarray_base>(new ndarray<float64>(pkpy::numpy::abs(p->data)));
         }
