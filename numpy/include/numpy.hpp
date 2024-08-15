@@ -121,6 +121,11 @@ public:
     }
 
     template <typename U>
+    auto operator!= (const ndarray<U>& other) const {
+        return ndarray<bool_>(xt::not_equal(_array, other.get_array()));
+    }
+
+    template <typename U>
     auto operator+ (const ndarray<U>& other) const {
         using result_type = std::common_type_t<T, U>;
         xt::xarray<result_type> result = xt::cast<result_type>(_array) + xt::cast<result_type>(other.get_array());
