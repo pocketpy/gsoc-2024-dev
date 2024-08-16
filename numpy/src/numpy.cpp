@@ -450,7 +450,7 @@ public:
         if ((data.mean(axis)).ndim() == 0) {
             return py::cast((data.mean(axis))());
         } else {
-            return py::cast(ndarray<T>(data.mean(axis)));
+            return py::cast(ndarray<float64>(data.mean(axis)));
         }
     }
 
@@ -461,7 +461,7 @@ public:
         if ((data.mean(axes_)).ndim() == 0) {
             return py::cast((data.mean(axes_))());
         } else {
-            return py::cast(ndarray<T>(data.mean(axes_)));
+            return py::cast(ndarray<float64>(data.mean(axes_)));
         }
     }
 
@@ -479,7 +479,7 @@ public:
         if ((data.std(axis)).ndim() == 0) {
             return py::cast((data.std(axis))());
         } else {
-            return py::cast(ndarray<T>(data.std(axis)));
+            return py::cast(ndarray<float64>(data.std(axis)));
         }
     }
 
@@ -490,7 +490,7 @@ public:
         if ((data.std(axes_)).ndim() == 0) {
             return py::cast((data.std(axes_))());
         } else {
-            return py::cast(ndarray<T>(data.std(axes_)));
+            return py::cast(ndarray<float64>(data.std(axes_)));
         }
     }
 
@@ -508,7 +508,7 @@ public:
         if ((data.var(axis)).ndim() == 0) {
             return py::cast((data.var(axis))());
         } else {
-            return py::cast(ndarray<T>(data.var(axis)));
+            return py::cast(ndarray<float64>(data.var(axis)));
         }
     }
 
@@ -519,7 +519,7 @@ public:
         if ((data.var(axes_)).ndim() == 0) {
             return py::cast((data.var(axes_))());
         } else {
-            return py::cast(ndarray<T>(data.var(axes_)));
+            return py::cast(ndarray<float64>(data.var(axes_)));
         }
     }
 
