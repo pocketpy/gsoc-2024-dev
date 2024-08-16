@@ -2011,6 +2011,10 @@ public:
     static ndarray_base* randint_shape(int_ low, int_ high, const std::vector<int>& shape) {
         return new ndarray<int_>(pkpy::numpy::random::randint<int_>(low, high, shape));
     }
+
+    static ndarray_base* uniform(float64 low, float64 high, const std::vector<int>& shape) {
+        return new ndarray<float64>(pkpy::numpy::random::uniform<float64>(low, high, shape));
+    }
 };
 
 // Declare ndarray types
@@ -2513,7 +2517,8 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         .def_static("randn", &Random::randn)
         .def_static("randn_shape", &Random::randn_shape)
         .def_static("randint", &Random::randint)
-        .def_static("randint_shape", &Random::randint_shape);
+        .def_static("randint_shape", &Random::randint_shape)
+        .def_static("uniform", &Random::uniform);
 
     array_creation_registry(m);
 
