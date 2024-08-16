@@ -34,9 +34,7 @@ git submodule update --init --recursive
 # Build and test on Linux
 
 ```sh
-mkdir build
-cd build
-cmake ..
-cmake --build .
-./gsoc2024
+cmake -B build
+cmake --build build
+build/gsoc2024
 ```
