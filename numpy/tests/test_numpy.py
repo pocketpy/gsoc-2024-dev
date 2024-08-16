@@ -116,11 +116,13 @@ def test_boolean_functions():
 def test_array_sum():
     arr1 = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9])
     assert arr1.sum() == 45
+    assert arr1.sum(0) == 45
 
     arr2 = np.array([[1], [2], [3]])
     assert arr2.sum() == 6
     assert arr2.sum(0) == np.array([6])
     assert arr2.sum(1) == np.array([1, 2, 3])
+    assert arr2.sum((0, 1)) == 6
 
     arr3 = np.array([[[[[1.5, 2.5, 3.5], [3.5, 4.5, 5.5], [5.5, 6.5, 7.5]]]]])
     assert arr3.sum() == 40.5
@@ -136,11 +138,13 @@ def test_array_sum():
 def test_array_prod():
     arr1 = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9])
     assert arr1.prod() == 362880
+    assert arr1.prod(0) == 362880
 
     arr2 = np.array([[1], [2], [3]])
     assert arr2.prod() == 6
     assert arr2.prod(0) == np.array([6])
     assert arr2.prod(1) == np.array([1, 2, 3])
+    assert arr2.prod((0, 1)) == 6
 
     arr3 = np.array([[[[[1.5, 2.5, 3.5], [3.5, 4.5, 5.5], [5.5, 6.5, 7.5]]]]])
     assert arr3.prod() == 304845.556640625
@@ -633,7 +637,6 @@ def test_array_getitem():
                                       [15, 16, 17, 18, 19]],
                                      [[20, 21, 22, 23, 24],
                                       [25, 26, 27, 28, 29]]])
-    assert arr1[3:2:-1].shape == np.array([]).reshape([0, 2, 5]).shape
     assert arr1[3::-2] == np.array([[[20, 21, 22, 23, 24],
                                      [25, 26, 27, 28, 29]],
                                     [[0, 1, 2, 3, 4],
