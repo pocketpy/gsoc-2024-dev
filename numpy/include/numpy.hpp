@@ -363,38 +363,32 @@ public:
 
     pkpy::float64 mean() const { return (xt::mean(_array))[0]; }
 
-    ndarray<T> mean(int axis) const {
-        xt::xarray<T> result = xt::mean(_array, {axis});
-        return ndarray<T>(result);
+    ndarray<pkpy::float64> mean(int axis) const {
+        return ndarray<pkpy::float64>(xt::mean(_array, {axis}));
     }
 
-    ndarray<T> mean(const _ShapeLike& axes) const {
-        xt::xarray<T> result = xt::mean(_array, axes);
-        return ndarray<T>(result);
+    ndarray<pkpy::float64> mean(const _ShapeLike& axes) const {
+        return ndarray<pkpy::float64>(xt::mean(_array, axes));
     }
 
     pkpy::float64 std() const { return (xt::stddev(_array))[0]; }
 
-    ndarray<T> std(int axis) const {
-        xt::xarray<T> result = xt::stddev(_array, {axis});
-        return ndarray<T>(result);
+    ndarray<pkpy::float64> std(int axis) const {
+        return ndarray<pkpy::float64>(xt::stddev(_array, {axis}));
     }
 
-    ndarray<T> std(const _ShapeLike& axes) const {
-        xt::xarray<T> result = xt::stddev(_array, axes);
-        return ndarray<T>(result);
+    ndarray<pkpy::float64> std(const _ShapeLike& axes) const {
+        return ndarray<pkpy::float64>(xt::stddev(_array, axes));
     }
 
     pkpy::float64 var() const { return (xt::variance(_array))[0]; }
 
-    ndarray<T> var(int axis) const {
-        xt::xarray<T> result = xt::variance(_array, {axis});
-        return ndarray<T>(result);
+    ndarray<pkpy::float64> var(int axis) const {
+        return ndarray<pkpy::float64>(xt::variance(_array, {axis}));
     }
 
-    ndarray<T> var(const _ShapeLike& axes) const {
-        xt::xarray<T> result = xt::variance(_array, axes);
-        return ndarray<T>(result);
+    ndarray<pkpy::float64> var(const _ShapeLike& axes) const {
+        return ndarray<pkpy::float64>(xt::variance(_array, axes));
     }
 
     // Searching and Sorting Functions
