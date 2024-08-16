@@ -528,6 +528,12 @@ public:
         random random_instance;
         return ndarray<T>(xt::random::randint<T>(shape, low, high));
     }
+
+    template <typename T>
+    static ndarray<T> uniform(T low, T high, const _ShapeLike& shape) {
+        random random_instance;
+        return ndarray<T>(xt::random::rand<T>(shape, low, high));
+    }
 };
 template<typename T, typename U>
 xt::xarray<std::common_type_t<T, U>> matrix_mul(const xt::xarray<T>& a, const xt::xarray<U>& b) {
