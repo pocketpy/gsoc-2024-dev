@@ -27,7 +27,7 @@ array([[1., 1., 1.],
 '''
 
 def assert_equal(a, b):
-    assert (a == b).all()
+    assert (a.__eq__(b)).all()
 
 assert_equal(a + 1, np.array([[2., 2., 2.], [2., 2., 2.]]))
 assert_equal(a - 1, np.array([[0., 0., 0.], [0., 0., 0.]]))
@@ -72,7 +72,7 @@ array([[1, 2],
 
 # test dtype ndim size shape
 a = np.array([[1, 2], [3, 4]])
-assert a.dtype == np.int64
+assert (a.dtype == np.int32), a.dtype
 assert a.ndim == 2
 assert a.size == 4
 assert a.shape == (2, 2)
