@@ -1187,8 +1187,26 @@ public:
     ndarray_base* mul_float(float64 other) const override { return new ndarray<float64>(data * other); }
 
     ndarray_base* div(const ndarray_base& other) const override {
-        if constexpr(std::is_same_v<T, int8>) {
-            if(auto p = dynamic_cast<const ndarray<int8>*>(&other)) { /* int8 / int8 */
+        if constexpr(std::is_same_v<T, bool_>) {
+            if(auto p = dynamic_cast<const ndarray<bool_>*>(&other)) { /* bool / bool */
+                return new ndarray<float64>(data / p->data);
+            } else if(auto p = dynamic_cast<const ndarray<int8>*>(&other)) { /* bool / int8 */
+                return new ndarray<float64>(data / p->data);
+            } else if(auto p = dynamic_cast<const ndarray<int16>*>(&other)) { /* bool / int16 */
+                return new ndarray<float64>(data / p->data);
+            } else if(auto p = dynamic_cast<const ndarray<int32>*>(&other)) { /* bool / int32 */
+                return new ndarray<float64>(data / p->data);
+            } else if(auto p = dynamic_cast<const ndarray<int_>*>(&other)) { /* bool / int64 */
+                return new ndarray<float64>(data / p->data);
+            } else if(auto p = dynamic_cast<const ndarray<float32>*>(&other)) { /* bool / float32 */
+                return new ndarray<float64>(data / p->data);
+            } else if(auto p = dynamic_cast<const ndarray<float64>*>(&other)) { /* bool / float64 */
+                return new ndarray<float64>(data / p->data);
+            }
+        } else if constexpr(std::is_same_v<T, int8>) {
+            if (auto p = dynamic_cast<const ndarray<bool_>*>(&other)) { /* int8 / bool */
+                return new ndarray<float64>(data / p->data);
+            } else if(auto p = dynamic_cast<const ndarray<int8>*>(&other)) { /* int8 / int8 */
                 return new ndarray<int8>(data / p->data);
             } else if(auto p = dynamic_cast<const ndarray<int16>*>(&other)) { /* int8 / int16 */
                 return new ndarray<int16>((data / p->data).template astype<int16>());
@@ -1202,7 +1220,9 @@ public:
                 return new ndarray<float64>(data / p->data);
             }
         } else if constexpr(std::is_same_v<T, int16>) {
-            if(auto p = dynamic_cast<const ndarray<int8>*>(&other)) { /* int16 / int8 */
+            if (auto p = dynamic_cast<const ndarray<bool_>*>(&other)) { /* int16 / bool */
+                return new ndarray<float64>(data / p->data);
+            } else if(auto p = dynamic_cast<const ndarray<int8>*>(&other)) { /* int16 / int8 */
                 return new ndarray<int16>((data / p->data).template astype<int16>());
             } else if(auto p = dynamic_cast<const ndarray<int16>*>(&other)) { /* int16 / int16 */
                 return new ndarray<int16>(data / p->data);
@@ -1216,7 +1236,9 @@ public:
                 return new ndarray<float64>(data / p->data);
             }
         } else if constexpr(std::is_same_v<T, int32>) {
-            if(auto p = dynamic_cast<const ndarray<int8>*>(&other)) { /* int32 / int8 */
+            if (auto p = dynamic_cast<const ndarray<bool_>*>(&other)) { /* int32 / bool */
+                return new ndarray<float64>(data / p->data);
+            } else if(auto p = dynamic_cast<const ndarray<int8>*>(&other)) { /* int32 / int8 */
                 return new ndarray<int32>(data / p->data);
             } else if(auto p = dynamic_cast<const ndarray<int16>*>(&other)) { /* int32 / int16 */
                 return new ndarray<int32>(data / p->data);
@@ -1230,7 +1252,9 @@ public:
                 return new ndarray<float64>(data / p->data);
             }
         } else if constexpr(std::is_same_v<T, int_>) {
-            if (auto p = dynamic_cast<const ndarray<int8>*>(&other)) { /* int64 / int8 */
+            if (auto p = dynamic_cast<const ndarray<bool_>*>(&other)) { /* int64 / bool */
+                return new ndarray<float64>(data / p->data);
+            } else if (auto p = dynamic_cast<const ndarray<int8>*>(&other)) { /* int64 / int8 */
                 return new ndarray<int_>(data / p->data);
             } else if (auto p = dynamic_cast<const ndarray<int16>*>(&other)) { /* int64 / int16 */
                 return new ndarray<int_>(data / p->data);
@@ -1244,7 +1268,9 @@ public:
                 return new ndarray<float64>(data / p->data);
             }
         } else if constexpr(std::is_same_v<T, float32>) {
-            if (auto p = dynamic_cast<const ndarray<int8>*>(&other)) { /* float32 / int8 */
+            if (auto p = dynamic_cast<const ndarray<bool_>*>(&other)) { /* float32 / bool */
+                return new ndarray<float64>(data / p->data);
+            } else if (auto p = dynamic_cast<const ndarray<int8>*>(&other)) { /* float32 / int8 */
                 return new ndarray<float32>(data / p->data);
             } else if (auto p = dynamic_cast<const ndarray<int16>*>(&other)) { /* float32 / int16 */
                 return new ndarray<float32>(data / p->data);
@@ -1258,7 +1284,9 @@ public:
                 return new ndarray<float64>(data / p->data);
             }
         } else if constexpr(std::is_same_v<T, float64>) {
-            if (auto p = dynamic_cast<const ndarray<int8>*>(&other)) { /* float64 / int8 */
+            if (auto p = dynamic_cast<const ndarray<bool_>*>(&other)) { /* float64 / bool */
+                return new ndarray<float64>(data / p->data);
+            } else if (auto p = dynamic_cast<const ndarray<int8>*>(&other)) { /* float64 / int8 */
                 return new ndarray<float64>(data / p->data);
             } else if (auto p = dynamic_cast<const ndarray<int16>*>(&other)) { /* float64 / int16 */
                 return new ndarray<float64>(data / p->data);
@@ -1273,8 +1301,8 @@ public:
             }
         }
 
-        const ndarray<T>& other_ = dynamic_cast<const ndarray<T>&>(other);
-        return new ndarray<T>(data / other_.data);
+        const ndarray<float64>& other_ = dynamic_cast<const ndarray<float64>&>(other);
+        return new ndarray<float64>(data / other_.data);
     }
 
     ndarray_base* div_bool(bool_ other) const override { return new ndarray<float64>(data / other); }
