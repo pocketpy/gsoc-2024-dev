@@ -236,7 +236,7 @@ public:
 
     template <typename U>
     ndarray operator& (const ndarray<U>& other) const {
-        xt::xarray<int_> result = _array & other.get_array();
+        xt::xarray<int_> result = _array & xt::cast<int_>(other.get_array());
         return ndarray(result);
     }
 
@@ -248,7 +248,7 @@ public:
 
     template <typename U>
     ndarray operator| (const ndarray<U>& other) const {
-        xt::xarray<int_> result = _array | other.get_array();
+        xt::xarray<int_> result = _array | xt::cast<int_>(other.get_array());
         return ndarray(result);
     }
 
@@ -260,7 +260,7 @@ public:
 
     template <typename U>
     ndarray operator^ (const ndarray<U>& other) const {
-        xt::xarray<int_> result = _array ^ other.get_array();
+        xt::xarray<int_> result = _array ^ xt::cast<int_>(other.get_array());
         return ndarray(result);
     }
 
