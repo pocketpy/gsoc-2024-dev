@@ -234,11 +234,6 @@ public:
         return ndarray<float_>(result);
     }
 
-    ndarray operator& (const ndarray<bool>& other) const {
-        xt::xarray<bool> result = _array & other.get_array();
-        return ndarray(result);
-    }
-
     template <typename U>
     ndarray operator& (const ndarray<U>& other) const {
         xt::xarray<int_> result = _array & other.get_array();
@@ -251,11 +246,6 @@ public:
         return ndarray(result);
     }
 
-    ndarray operator| (const ndarray<bool>& other) const {
-        xt::xarray<bool> result = _array | other.get_array();
-        return ndarray(result);
-    }
-
     template <typename U>
     ndarray operator| (const ndarray<U>& other) const {
         xt::xarray<int_> result = _array | other.get_array();
@@ -265,11 +255,6 @@ public:
     template <typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
     ndarray operator| (const U& other) const {
         xt::xarray<int_> result = _array | other;
-        return ndarray(result);
-    }
-
-    ndarray operator^ (const ndarray<bool>& other) const {
-        xt::xarray<bool> result = _array ^ other.get_array();
         return ndarray(result);
     }
 
