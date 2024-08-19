@@ -211,7 +211,7 @@ public:
 
     template <typename U>
     auto binary_operator_truediv_impl(const U& other) const {
-        xt::xarray<float_> result = xt::cast<float_>(_array) / other;
+        xt::xarray<float_> result = xt::cast<float_>(_array) / static_cast<float_>(other);
         return ndarray<float_>(result);
     }
 
