@@ -234,9 +234,14 @@ public:
         return ndarray<float_>(result);
     }
 
+    ndarray operator& (const ndarray<bool>& other) const {
+        xt::xarray<bool> result = _array & other.get_array();
+        return ndarray(result);
+    }
+
     template <typename U>
     ndarray operator& (const ndarray<U>& other) const {
-        xt::xarray<int_> result = _array & xt::cast<int_>(other.get_array());
+        xt::xarray<int_> result = _array & other.get_array();
         return ndarray(result);
     }
 
@@ -246,9 +251,14 @@ public:
         return ndarray(result);
     }
 
+    ndarray operator| (const ndarray<bool>& other) const {
+        xt::xarray<bool> result = _array | other.get_array();
+        return ndarray(result);
+    }
+
     template <typename U>
     ndarray operator| (const ndarray<U>& other) const {
-        xt::xarray<int_> result = _array | xt::cast<int_>(other.get_array());
+        xt::xarray<int_> result = _array | other.get_array();
         return ndarray(result);
     }
 
@@ -258,9 +268,14 @@ public:
         return ndarray(result);
     }
 
+    ndarray operator^ (const ndarray<bool>& other) const {
+        xt::xarray<bool> result = _array ^ other.get_array();
+        return ndarray(result);
+    }
+
     template <typename U>
     ndarray operator^ (const ndarray<U>& other) const {
-        xt::xarray<int_> result = _array ^ xt::cast<int_>(other.get_array());
+        xt::xarray<int_> result = _array ^ other.get_array();
         return ndarray(result);
     }
 
