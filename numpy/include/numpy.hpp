@@ -243,7 +243,8 @@ public:
 
     template <typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
     ndarray operator& (const U& other) const {
-        xt::xarray<T> result = _array & ((std::is_same_v<U, bool> && !std::is_same_v<T, bool>) ? static_cast<T>(other) : other);
+        using result_type = std::conditional_t<std::is_same_v<T, bool> && std::is_same_v<U, bool>, bool, T>;
+        xt::xarray<result_type> result = _array & static_cast<result_type>(other);
         return ndarray(result);
     }
 
@@ -256,7 +257,8 @@ public:
 
     template <typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
     ndarray operator| (const U& other) const {
-        xt::xarray<T> result = _array | ((std::is_same_v<U, bool> && !std::is_same_v<T, bool>) ? static_cast<T>(other) : other);
+        using result_type = std::conditional_t<std::is_same_v<T, bool> && std::is_same_v<U, bool>, bool, T>;
+        xt::xarray<result_type> result = _array | static_cast<result_type>(other);
         return ndarray(result);
     }
 
@@ -269,7 +271,8 @@ public:
 
     template <typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
     ndarray operator^ (const U& other) const {
-        xt::xarray<T> result = _array ^ ((std::is_same_v<U, bool> && !std::is_same_v<T, bool>) ? static_cast<T>(other) : other);
+        using result_type = std::conditional_t<std::is_same_v<T, bool> && std::is_same_v<U, bool>, bool, T>;
+        xt::xarray<result_type> result = _array ^ static_cast<result_type>(other);
         return ndarray(result);
     }
 
@@ -985,17 +988,17 @@ auto pow(const U& scalar, const ndarray<T>& array) {
 
 template <typename T, typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
 auto operator& (const U& scalar, const ndarray<T>& array) {
-    return array & ((std::is_same_v<U, bool> && !std::is_same_v<T, bool>) ? static_cast<T>(scalar) : scalar);
+    return array & scalar;
 }
 
 template <typename T, typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
 auto operator| (const U& scalar, const ndarray<T>& array) {
-    return array | ((std::is_same_v<U, bool> && !std::is_same_v<T, bool>) ? static_cast<T>(scalar) : scalar);
+    return array | scalar;
 }
 
 template <typename T, typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
 auto operator^ (const U& scalar, const ndarray<T>& array) {
-    return array ^ ((std::is_same_v<U, bool> && !std::is_same_v<T, bool>) ? static_cast<T>(scalar) : scalar);
+    return array ^ scalar;
 }
 
 template <typename T>
