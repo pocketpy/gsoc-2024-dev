@@ -982,17 +982,17 @@ auto pow(const U& scalar, const ndarray<T>& array) {
 
 template <typename T, typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
 auto operator& (const U& scalar, const ndarray<T>& array) {
-    return array & scalar;
+    return array & (std::is_same_v<U, bool> ? static_cast<int_>(scalar) : scalar);
 }
 
 template <typename T, typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
 auto operator| (const U& scalar, const ndarray<T>& array) {
-    return array | scalar;
+    return array | (std::is_same_v<U, bool> ? static_cast<int_>(scalar) : scalar);
 }
 
 template <typename T, typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
 auto operator^ (const U& scalar, const ndarray<T>& array) {
-    return array ^ scalar;
+    return array ^ (std::is_same_v<U, bool> ? static_cast<int_>(scalar) : scalar);
 }
 
 template <typename T>
