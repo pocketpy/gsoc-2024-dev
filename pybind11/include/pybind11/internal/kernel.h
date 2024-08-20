@@ -71,7 +71,10 @@ struct object_pool {
         indices_ = new std::vector<int>(size, 0);
     }
 
-    static void finalize() noexcept { delete indices_; }
+    static void finalize() noexcept {
+        delete indices_;
+        indices_ = nullptr;
+    }
 
     /// alloc an object from pool, note that the object is uninitialized.
     static object_ref alloc() {
@@ -101,6 +104,7 @@ struct object_pool {
     }
 
     static void inc_ref(object_ref ref) {
+        if(!indices_) { return; }
         if(ref.data == py_tuple_getitem(pool, ref.index)) {
             auto& indices = *indices_;
             indices[ref.index] += 1;
@@ -110,6 +114,7 @@ struct object_pool {
     }
 
     static void dec_ref(object_ref ref) {
+        if(!indices_) { return; }
         if(ref.data == py_tuple_getitem(pool, ref.index)) {
             auto& indices = *indices_;
             indices[ref.index] -= 1;
@@ -162,26 +167,32 @@ inline reg_t<N> reg;
 
 inline retv_t retv;
 
+inline bool initialized = false;
+
 /// initialize the vm.
 inline void initialize(int object_pool_size = 1024) {
     py_initialize();
-    reg<0> = {py_getreg(0)};
-    reg<1> = {py_getreg(1)};
-    reg<2> = {py_getreg(2)};
-    reg<3> = {py_getreg(3)};
-    reg<4> = {py_getreg(4)};
-    reg<5> = {py_getreg(5)};
-    reg<6> = {py_getreg(6)};
-    retv = {py_retval()};
+    reg<0>.value = py_getreg(0);
+    reg<1> = py_getreg(1);
+    reg<2>.value = py_getreg(2);
+    reg<3>.value = py_getreg(3);
+    reg<4>.value = py_getreg(4);
+    reg<5>.value = py_getreg(5);
+    reg<6>.value = py_getreg(6);
+    retv.value = py_retval();
     object_pool::initialize(object_pool_size);
     action::initialize();
+    initialized = true;
 }
 
 /// finalize the vm.
 inline void finalize() {
+    if(!initialized) { return; }
     action::finalize();
     object_pool::finalize();
-    py_finalize();
+    // py_finalize();
+    py_resetvm(0);
+    initialized = false;
 }
 
 }  // namespace pkbind

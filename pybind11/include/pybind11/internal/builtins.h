@@ -5,13 +5,23 @@
 namespace pkbind {
 
 inline object eval(const char* code, handle globals = none(), handle locals = none()) {
-    raise_call<py_eval>(code, nullptr);
-    return object::from_ret();
+    if(globals.is_none() && locals.is_none()) {
+        raise_call<py_eval>(code, nullptr);
+        return object::from_ret();
+    } else {
+        handle eval = py_getbuiltin(name("eval").index());
+        return eval(str(code), globals.is_none() ? dict() : globals, locals.is_none() ? dict() : locals);
+    }
 }
 
 inline object exec(const char* code, handle globals = none(), handle locals = none()) {
-    raise_call<py_exec>(code, "exec", py_CompileMode::EXEC_MODE, nullptr);
-    return object::from_ret();
+    if(globals.is_none() && locals.is_none()) {
+        raise_call<py_exec>(code, "exec", EXEC_MODE, nullptr);
+        return object::from_ret();
+    } else {
+        handle exec = py_getbuiltin(name("exec").index());
+        return exec(str(code), globals, locals);
+    }
 }
 
 inline bool hasattr(handle obj, name name) {
@@ -105,8 +115,8 @@ object cast(T&& value, return_value_policy policy = return_value_policy::automat
     // decay_t can resolve c-array type, but remove_cv_ref_t can't.
     using underlying_type = std::decay_t<T>;
 
-    if constexpr(std::is_convertible_v<underlying_type, handle>) {
-        return object(std::forward<T>(value), true);
+    if constexpr(std::is_convertible_v<underlying_type, handle> && !is_pyobject_v<underlying_type>) {
+        return object(std::forward<T>(value), object::realloc_t{});
     } else if constexpr(is_unique_pointer_v<underlying_type>) {
         using pointer = typename underlying_type::pointer;
         return type_caster<pointer>::cast(value.release(), return_value_policy::take_ownership, parent);

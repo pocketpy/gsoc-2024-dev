@@ -150,7 +150,7 @@ struct type_caster<T, std::enable_if_t<is_pyobject_v<T>>> {
 
     bool load(handle src, bool) {
         if(isinstance<T>(src)) {
-            data = T(src.ptr(), true);
+            data = T(src.ptr(), object::realloc_t{});
             return true;
         }
 

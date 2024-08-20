@@ -232,6 +232,8 @@ public:
     bool in_pool() const { return m_ptr && m_index != -1; }
 
 public:
+    static auto type_or_check() { return tp_object; }
+
     struct alloc_t {};
 
     struct realloc_t {};
