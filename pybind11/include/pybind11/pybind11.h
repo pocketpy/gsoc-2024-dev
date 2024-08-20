@@ -61,3 +61,5 @@ public:
 };
 
 }  // namespace pkbind
+
+namespace pybind11 = pkbind;

@@ -10,9 +10,10 @@ inline void print(Args&&... args) {
     print(std::forward<Args>(args)...);
 }
 
-inline object eval(const char* code, handle globals = none(), handle locals = none()) {
+inline object eval(std::string_view code, handle globals = none(), handle locals = none()) {
     if(globals.is_none() && locals.is_none()) {
-        raise_call<py_eval>(code, nullptr);
+        std::string src{code};
+        raise_call<py_eval>(src.c_str(), nullptr);
         return object::from_ret();
     } else {
         handle eval = py_getbuiltin(py_name("eval"));
@@ -20,9 +21,10 @@ inline object eval(const char* code, handle globals = none(), handle locals = no
     }
 }
 
-inline object exec(const char* code, handle globals = none(), handle locals = none()) {
+inline object exec(std::string_view code, handle globals = none(), handle locals = none()) {
     if(globals.is_none() && locals.is_none()) {
-        raise_call<py_exec>(code, "exec", EXEC_MODE, nullptr);
+        std::string src{code};
+        raise_call<py_exec>(src.c_str(), "exec", EXEC_MODE, nullptr);
         return object::from_ret();
     } else {
         handle exec = py_getbuiltin(py_name("exec"));

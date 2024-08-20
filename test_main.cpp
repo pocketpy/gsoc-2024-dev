@@ -20,7 +20,7 @@ int main() {
   try{
     py::exec(script);
   }catch(py::error_already_set& e){
-    std::cerr << e.summary() << std::endl;
+    std::cerr << e.what() << std::endl;
   }
 
   return 0;
