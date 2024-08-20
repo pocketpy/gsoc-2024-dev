@@ -117,7 +117,6 @@ TEST_F(PYBIND11_TEST, inheritance) {
         int z;
 
         Point3D() : Point(), z(0) {
-            std::cout << "123sssssssss\n";
             constructor_calls++;
         }
 

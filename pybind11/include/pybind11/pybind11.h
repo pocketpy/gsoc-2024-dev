@@ -42,7 +42,6 @@ inline void initialize(int object_pool_size = 1024) {
 /// finalize the vm.
 inline void finalize(bool test = false) {
     if(!initialized) { return; }
-    action::finalize();
     delete m_type_map;
     m_type_map = nullptr;
     object_pool::finalize();

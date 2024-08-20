@@ -198,6 +198,8 @@ TEST_F(PYBIND11_TEST, return_value_policy) {
         bool operator== (const Point& p) const { return x == p.x && y == p.y; }
     };
 
+    py::finalize(true);
+
     auto test = [](py::return_value_policy policy, auto bound_fn, auto fn) {
         py::initialize();
         copy_constructor_calls = 0;

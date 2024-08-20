@@ -130,38 +130,16 @@ struct object_pool {
 
 struct action {
     using function = void (*)();
-    inline static std::vector<function>* starts = nullptr;
-    inline static std::vector<function>* ends = nullptr;
+    inline static std::vector<function> starts;
 
     static void initialize() noexcept {
-        if(starts) {
-            for(auto func: *starts) {
-                func();
-            }
-            delete starts;
-        }
-    }
-
-    static void finalize() noexcept {
-        if(ends) {
-            for(auto func: *ends) {
-                func();
-            }
-            delete ends;
+        for(auto func: starts) {
+            func();
         }
     }
 
     // register a function to be called at the start of the vm.
-    static void register_start(function func) {
-        if(!starts) { starts = new std::vector<function>(); }
-        starts->push_back(func);
-    }
-
-    // register a function to be called at the end of the vm.
-    static void register_end(function func) {
-        if(!ends) { ends = new std::vector<function>(); }
-        ends->push_back(func);
-    }
+    static void register_start(function func) { starts.push_back(func); }
 };
 
 template <int N>
