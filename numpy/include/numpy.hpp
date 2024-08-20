@@ -211,7 +211,7 @@ public:
 
     template <typename U>
     auto binary_operator_truediv_impl(const U& other) const {
-        xt::xarray<float_> result = xt::cast<float_>(_array) / other;
+        xt::xarray<float_> result = xt::cast<float_>(_array) / static_cast<float_>(other);
         return ndarray<float_>(result);
     }
 
@@ -236,37 +236,43 @@ public:
 
     template <typename U>
     ndarray operator& (const ndarray<U>& other) const {
-        xt::xarray<int_> result = _array & other.get_array();
+        using result_type = std::conditional_t<std::is_same_v<T, bool> && std::is_same_v<U, bool>, bool_, std::common_type_t<T, U>>;
+        xt::xarray<result_type> result = xt::cast<result_type>(_array) & xt::cast<result_type>(other.get_array());
         return ndarray(result);
     }
 
     template <typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
     ndarray operator& (const U& other) const {
-        xt::xarray<int_> result = _array & other;
+        using result_type = std::conditional_t<std::is_same_v<T, bool> && std::is_same_v<U, bool>, bool, T>;
+        xt::xarray<result_type> result = _array & static_cast<result_type>(other);
         return ndarray(result);
     }
 
     template <typename U>
     ndarray operator| (const ndarray<U>& other) const {
-        xt::xarray<int_> result = _array | other.get_array();
+        using result_type = std::conditional_t<std::is_same_v<T, bool> && std::is_same_v<U, bool>, bool_, std::common_type_t<T, U>>;
+        xt::xarray<result_type> result = xt::cast<result_type>(_array) | xt::cast<result_type>(other.get_array());
         return ndarray(result);
     }
 
     template <typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
     ndarray operator| (const U& other) const {
-        xt::xarray<int_> result = _array | other;
+        using result_type = std::conditional_t<std::is_same_v<T, bool> && std::is_same_v<U, bool>, bool, T>;
+        xt::xarray<result_type> result = _array | static_cast<result_type>(other);
         return ndarray(result);
     }
 
     template <typename U>
     ndarray operator^ (const ndarray<U>& other) const {
-        xt::xarray<int_> result = _array ^ other.get_array();
+        using result_type = std::conditional_t<std::is_same_v<T, bool> && std::is_same_v<U, bool>, bool_, std::common_type_t<T, U>>;
+        xt::xarray<result_type> result = xt::cast<result_type>(_array) ^ xt::cast<result_type>(other.get_array());
         return ndarray(result);
     }
 
     template <typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
     ndarray operator^ (const U& other) const {
-        xt::xarray<int_> result = _array ^ other;
+        using result_type = std::conditional_t<std::is_same_v<T, bool> && std::is_same_v<U, bool>, bool, T>;
+        xt::xarray<result_type> result = _array ^ static_cast<result_type>(other);
         return ndarray(result);
     }
 
@@ -564,7 +570,7 @@ xt::xarray<std::common_type_t<T, U>> matrix_mul(const xt::xarray<T>& a, const xt
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < p; j++) {
                 for (int k = 0; k < n; k++) {
-                    result(i, j) += a_copy(i, k) * b_copy(k, j);
+                    result(i, j) = result(i, j) + a_copy(i, k) * b_copy(k, j);
                 }
             }
         }
@@ -969,7 +975,7 @@ auto operator* (const U& scalar, const ndarray<T>& array) {
 template <typename T, typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
 auto operator/ (const U& scalar, const ndarray<T>& array) {
     xt::xarray<T> arr = array.get_array();
-    xt::xarray<float_> result = scalar / xt::cast<float_>(arr);
+    xt::xarray<float_> result = static_cast<float_>(scalar) / xt::cast<float_>(arr);
     return ndarray<float_>(result);
 }
 
