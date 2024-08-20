@@ -487,19 +487,29 @@ struct template_parser<Callable, std::tuple<Extras...>, std::tuple<Args...>, std
 }  // namespace impl
 
 class cpp_function : public function {
-    inline static py_Type type = 0;
+    inline static py_Type m_type = 0;
 
     PKBIND_TYPE_IMPL(function, tp_function);
+
+    static void register_() {
+        m_type = py_newtype("function_record", tp_object, nullptr, [](void* data) {
+            static_cast<impl::function_record*>(data)->~function_record();
+        });
+    }
+
+    static bool is_function_record(handle h) {
+        if(isinstance<function>(h)) {
+            auto slot = py_getslot(h.ptr(), 0);
+            if(slot) { return py_typeof(slot) == m_type; }
+        }
+        return false;
+    }
 
     template <typename Fn, typename... Extras>
     cpp_function(bool is_method, const char* name, Fn&& fn, const Extras&... extras) : function(alloc_t{}) {
         // bind the function
         std::string sig = name;
-        if(is_method) {
-            sig += "(self, *args, **kwargs)";
-        } else {
-            sig += "(*args, **kwargs)";
-        }
+        sig += is_method ? "(self, *args, **kwargs)" : "(*args, **kwargs)";
         auto call = [](int argc, py_Ref stack) {
             handle func = py_inspect_currentfunction();
             auto& record = *static_cast<impl::function_record*>(py_touserdata(py_getslot(func.ptr(), 0)));
@@ -507,14 +517,9 @@ class cpp_function : public function {
         };
         py_newfunction(m_ptr, sig.c_str(), call, nullptr, 1);
 
-        if(type == 0) {
-            type = py_newtype("function_record", tp_object, nullptr, [](void* data) {
-                static_cast<impl::function_record*>(data)->~function_record();
-            });
-        }
-
+        assert(m_type != 0 && "function record type not registered");
         auto slot = py_getslot(m_ptr, 0);
-        void* data = py_newobject(slot, type, 0, sizeof(impl::function_record));
+        void* data = py_newobject(slot, m_type, 0, sizeof(impl::function_record));
         new (data) impl::function_record(std::forward<Fn>(fn), extras...);
     }
 
@@ -549,7 +554,7 @@ namespace impl {
 
 template <bool is_method, bool is_static, typename Fn, typename... Extras>
 void bind_function(handle obj, const char* name, Fn&& fn, const Extras&... extras) {
-    if(hasattr(obj, name)) {
+    if(hasattr(obj, name) && cpp_function::is_function_record(getattr(obj, name))) {
         auto slot = py_getslot(obj.ptr(), 0);
         auto& record = *static_cast<function_record*>(py_touserdata(slot));
         record.append(new function_record(std::forward<Fn>(fn), extras...));

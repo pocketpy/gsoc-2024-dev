@@ -39,11 +39,6 @@ public:
         return *this;
     }
 
-    template <typename T>
-    T cast() const {
-        return operator handle ().template cast<T>();
-    }
-
     operator handle () const { return ptr(); }
 };
 
@@ -73,6 +68,11 @@ struct item {
     }
 
     static void set(handle obj, handle key, handle value) { raise_call<py_setitem>(obj.ptr(), key.ptr(), value.ptr()); }
+
+    template <typename Value>
+    static void set(handle obj, handle key, Value&& value) {
+        raise_call<py_setitem>(obj.ptr(), key.ptr(), pkbind::cast(std::forward<Value>(value)).ptr());
+    }
 };
 
 struct tuple {
@@ -114,8 +114,13 @@ inline attr_accessor interface<Derived>::attr(name key) const {
 }
 
 template <typename Derived>
-inline item_accessor interface<Derived>::operator[] (int index) const {
-    return item_accessor(ptr(), int_(index));
+inline item_accessor interface<Derived>::operator[] (int key) const {
+    return item_accessor(ptr(), int_(key));
+}
+
+template <typename Derived>
+inline item_accessor interface<Derived>::operator[] (name key) const {
+    return item_accessor(ptr(), str(key));
 }
 
 template <typename Derived>

@@ -10,26 +10,27 @@ template <typename T, typename Base = void>
 class class_ : public type {
 protected:
     handle m_scope;
-    py_Type m_type;
 
 public:
     using type::type;
     using underlying_type = T;
 
     template <typename... Args>
-    class_(handle scope, const char* name, const Args&... args) : type(0), m_scope(scope) {
-        py_Type base = std::is_same_v<Base, void> ? tp_object : type::of<Base>().index();
-
-        m_type = py_newtype(name, base, scope.ptr(), [](void* data) {
-            static_cast<instance*>(data)->~instance();
-        });
+    class_(handle scope, const char* name, const Args&... args) :
+        type(py_newtype(name,
+                        std::is_same_v<Base, void> ? tp_object : type::of<Base>().index(),
+                        scope.ptr(),
+                        [](void* data) {
+                            static_cast<instance*>(data)->~instance();
+                        })),
+        m_scope(scope) {
         m_type_map.try_emplace(typeid(T), *this);
 
         auto& info = type_info::of<T>();
         info.name = name;
 
         py_newfunction(
-            py_tpgetmagic(m_type, py_MagicNames::__new__),
+            py_tpgetmagic(this->index(), py_MagicNames::__new__),
             "__new__(type, *args, **kwargs)",
             [](int, py_Ref stack) {
                 auto cls = py_offset(stack, 0);

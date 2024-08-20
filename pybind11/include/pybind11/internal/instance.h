@@ -100,7 +100,7 @@ public:
 
         object result(object::alloc_t{});
         void* temp = py_newobject(result.ptr(), type.index(), 1, sizeof(instance));
-        new (temp) instance{instance::Flag::Own, data, info};
+        new (temp) instance{flag, data, info};
         return result;
     }
 

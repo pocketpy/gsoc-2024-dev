@@ -21,17 +21,8 @@ struct Point {
     bool operator== (const Point& p) const { return x == p.x && y == p.y; }
 };
 
-// TEST_F(PYBIND11_TEST, globals) {
-//     auto m = py::module_::__main__();
-//
-//     m.attr("x") = py::int_(1);
-//
-//     auto globals = py::globals();
-//     EXPECT_EQ(globals["x"].cast<int>(), 1);
-// }
-
-TEST_F(PYBIND11_TEST, exec_or_eval) {
-    auto m = py::module_::__main__();
+TEST_F(PYBIND11_TEST, exec_and_eval) {
+    auto m = py::module::__main__();
 
     py::dict locals = {py::arg("x") = 1, py::arg("y") = 2};
     py::object obj = py::eval("x + y", py::none{}, locals);
@@ -47,8 +38,18 @@ TEST_F(PYBIND11_TEST, exec_or_eval) {
     EXPECT_EQ(locals["y"].cast<int>(), 2);
 }
 
-TEST_F(PYBIND11_TEST, cpp_cast_py) {
-    auto m = py::module_::__main__();
+TEST_F(PYBIND11_TEST, locals_and_globals) {
+    py::exec("x = 1");
+
+    auto globals = py::globals();
+    EXPECT_EQ(globals["x"].cast<int>(), 1);
+
+    globals["y"] = "y";
+    EXPECT_EQ(py::eval("y").cast<int>(), 2);
+}
+
+TEST_F(PYBIND11_TEST, cast) {
+    auto m = py::module::__main__();
 
     py::class_<Point>(m, "Point")
         .def(py::init<int, int>())
@@ -78,13 +79,13 @@ TEST_F(PYBIND11_TEST, cpp_cast_py) {
     EXPECT_EQ(copy_constructor_calls, 1);
     EXPECT_EQ(move_constructor_calls, 1);
 
-    py::finalize();
+    py::finalize(true);
 
     EXPECT_EQ(destructor_calls, 2);
 }
 
 TEST_F(PYBIND11_TEST, cpp_call_py) {
-    auto m = py::module_::__main__();
+    auto m = py::module::__main__();
 
     py::exec(R"(
 class Test:

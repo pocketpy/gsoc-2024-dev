@@ -322,4 +322,7 @@ class kwargs : public dict {
     PKBIND_TYPE_IMPL(dict, tp_dict);
 };
 
+// TODO:
+class capsule : public object {};
+
 }  // namespace pkbind

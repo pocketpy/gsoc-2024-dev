@@ -24,6 +24,16 @@ inline object exec(const char* code, handle globals = none(), handle locals = no
     }
 }
 
+inline object locals() {
+    handle locals = py_getbuiltin(name("locals").index());
+    return locals();
+}
+
+inline object globals() {
+    handle globals = py_getbuiltin(name("globals").index());
+    return globals();
+}
+
 inline bool hasattr(handle obj, name name) {
     auto pc = py_peek(0);
     auto result = py_getattr(obj.ptr(), name.index());
