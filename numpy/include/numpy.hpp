@@ -242,7 +242,7 @@ public:
 
     template <typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
     ndarray operator& (const U& other) const {
-        xt::xarray<int_> result = _array & other;
+        xt::xarray<int_> result = _array & (std::is_same_v<U, bool> ? static_cast<int_>(other) : other);
         return ndarray(result);
     }
 
@@ -254,7 +254,7 @@ public:
 
     template <typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
     ndarray operator| (const U& other) const {
-        xt::xarray<int_> result = _array | other;
+        xt::xarray<int_> result = _array | (std::is_same_v<U, bool> ? static_cast<int_>(other) : other);
         return ndarray(result);
     }
 
@@ -266,7 +266,7 @@ public:
 
     template <typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
     ndarray operator^ (const U& other) const {
-        xt::xarray<int_> result = _array ^ other;
+        xt::xarray<int_> result = _array ^ (std::is_same_v<U, bool> ? static_cast<int_>(other) : other);
         return ndarray(result);
     }
 
