@@ -570,7 +570,7 @@ xt::xarray<std::common_type_t<T, U>> matrix_mul(const xt::xarray<T>& a, const xt
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < p; j++) {
                 for (int k = 0; k < n; k++) {
-                    result(i, j) += a_copy(i, k) * b_copy(k, j);
+                    result(i, j) = result(i, j) + a_copy(i, k) * b_copy(k, j);
                 }
             }
         }
