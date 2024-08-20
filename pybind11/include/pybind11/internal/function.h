@@ -382,7 +382,7 @@ struct template_parser<Callable, std::tuple<Extras...>, std::tuple<Args...>, std
                     sig += record.arguments->names[index].c_str();
                     sig += ": ";
                     sig += type_info::of<T>().name;
-                    if(record.arguments->defaults[index]) {
+                    if(!record.arguments->defaults[index].is_empty()) {
                         sig += " = ";
                         // FIXME:
                         // sig += record.arguments->defaults[index].repr();
@@ -554,15 +554,26 @@ namespace impl {
 
 template <bool is_method, bool is_static, typename Fn, typename... Extras>
 void bind_function(handle obj, const char* name, Fn&& fn, const Extras&... extras) {
+
+    constexpr bool has_named_args = ((std::is_same_v<Extras, arg> || std::is_same_v<Extras, arg_with_default>) || ...);
+
     if(hasattr(obj, name) && cpp_function::is_function_record(getattr(obj, name))) {
         auto slot = py_getslot(obj.ptr(), 0);
         auto& record = *static_cast<function_record*>(py_touserdata(slot));
-        record.append(new function_record(std::forward<Fn>(fn), extras...));
+        if constexpr(has_named_args && is_method) {
+            record.append(new function_record(std::forward<Fn>(fn), arg("self"), extras...));
+        } else {
+            record.append(new function_record(std::forward<Fn>(fn), extras...));
+        }
     } else {
         if constexpr(is_static) {
-            setattr(obj, name, staticmethod(cpp_function(std::forward<Fn>(fn), extras...)));
+            setattr(obj, name, staticmethod(cpp_function(is_method, name, std::forward<Fn>(fn), extras...)));
         } else {
-            setattr(obj, name, cpp_function(is_method, name, std::forward<Fn>(fn), extras...));
+            if constexpr(has_named_args && is_method) {
+                setattr(obj, name, cpp_function(is_method, name, std::forward<Fn>(fn), arg("self"), extras...));
+            } else {
+                setattr(obj, name, cpp_function(is_method, name, std::forward<Fn>(fn), extras...));
+            }
         }
     }
 }
