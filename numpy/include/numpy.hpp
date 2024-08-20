@@ -549,8 +549,8 @@ xt::xarray<std::common_type_t<T, U>> matrix_mul(const xt::xarray<T>& a, const xt
     bool first_is_1d = false;
     bool second_is_1d = false;
 
-    xt::xarray<T> a_copy = a;
-    xt::xarray<U> b_copy = b;
+    xt::xarray<result_type> a_copy = xt::cast<result_type>(a);
+    xt::xarray<result_type> b_copy = xt::cast<result_type>(b);
 
     if (a.dimension() == 1) {
         first_is_1d = true;
