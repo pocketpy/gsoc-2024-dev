@@ -584,4 +584,10 @@ void bind_property(handle obj, const char* name, Getter&& getter_, Setter&& sett
 
 }  // namespace impl
 
+inline dict::dict(std::initializer_list<arg_with_default> args) : dict() {
+    for(auto& arg: args) {
+        this->operator[] (arg.name) = arg.value;
+    }
+}
+
 }  // namespace pkbind

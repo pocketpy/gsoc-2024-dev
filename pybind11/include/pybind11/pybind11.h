@@ -29,6 +29,8 @@ inline void initialize(int object_pool_size = 1024) {
     // initialize object pool.
     object_pool::initialize(object_pool_size);
 
+    // register types.
+    capsule::register_();
     cpp_function::register_();
 
     action::initialize();

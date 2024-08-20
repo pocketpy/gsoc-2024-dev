@@ -44,7 +44,7 @@ TEST_F(PYBIND11_TEST, locals_and_globals) {
     auto globals = py::globals();
     EXPECT_EQ(globals["x"].cast<int>(), 1);
 
-    globals["y"] = "y";
+    globals["y"] = 2;
     EXPECT_EQ(py::eval("y").cast<int>(), 2);
 }
 

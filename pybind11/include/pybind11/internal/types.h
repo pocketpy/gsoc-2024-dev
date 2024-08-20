@@ -141,8 +141,12 @@ class tuple : public object {
 
     tuple(int size) : object(alloc_t{}) { py_newtuple(m_ptr, size); }
 
-    template <typename... Args, typename = std::enable_if_t<(sizeof...(Args) > 1)>>
-    tuple(Args&&... args);
+    tuple(std::initializer_list<handle> args) : tuple(args.size()) {
+        int index = 0;
+        for(auto& arg: args) {
+            py_tuple_setitem(m_ptr, index++, arg.ptr());
+        }
+    }
 
     tuple_accessor operator[] (int index) const;
 
@@ -184,8 +188,12 @@ class list : public object {
 
     list(int size) : object(alloc_t{}) { py_newlistn(m_ptr, size); }
 
-    template <typename... Args, typename = std::enable_if_t<(sizeof...(Args) > 1)>>
-    list(Args&&... args);
+    list(std::initializer_list<handle> args) : list(args.size()) {
+        int index = 0;
+        for(auto& arg: args) {
+            py_list_setitem(m_ptr, index++, arg.ptr());
+        }
+    }
 
     list_accessor operator[] (int index) const;
 
@@ -237,15 +245,13 @@ class dict : public object {
 
     dict() : object(alloc_t{}) { py_newdict(m_ptr); }
 
-    template <typename... Args,
-              typename = std::enable_if_t<(std::is_same_v<remove_cvref_t<Args>, class arg_with_default> && ...)>>
-    dict(Args&&... args);
+    dict(std::initializer_list<arg_with_default> args);
 
-    dict_accessor operator[] (int key) const;
+    dict_accessor<int> operator[] (int key) const;
 
-    dict_accessor operator[] (name key) const;
+    dict_accessor<name> operator[] (name key) const;
 
-    dict_accessor operator[] (handle key) const;
+    dict_accessor<handle> operator[] (handle key) const;
 
     int size() const { return py_dict_len(m_ptr); }
 
@@ -323,6 +329,34 @@ class kwargs : public dict {
 };
 
 // TODO:
-class capsule : public object {};
+class capsule : public object {
+    struct capsule_impl {
+        void* data;
+        void (*destructor)(void*);
+    };
+
+    inline static py_Type m_type = 0;
+
+    PKBIND_TYPE_IMPL(object, m_type);
+
+    static void register_() {
+        m_type = py_newtype("capsule", tp_object, nullptr, [](void* data) {
+            auto impl = static_cast<capsule_impl*>(data);
+            if(impl->data && impl->destructor) { impl->destructor(impl->data); }
+        });
+    }
+
+    capsule(void* data, void (*destructor)(void*) = nullptr) : object(alloc_t{}) {
+        void* impl = py_newobject(m_ptr, m_type, 0, sizeof(capsule_impl));
+        new (impl) capsule_impl{data, destructor};
+    }
+
+    void* data() { return static_cast<capsule_impl*>(py_touserdata(m_ptr))->data; }
+
+    template <typename T>
+    T& cast() {
+        return *static_cast<T*>(data());
+    }
+};
 
 }  // namespace pkbind

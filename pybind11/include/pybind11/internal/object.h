@@ -10,6 +10,7 @@ class iterator;
 class str;
 
 struct arg;
+struct arg_with_default;
 struct args_proxy;
 
 enum class return_value_policy : uint8_t {
@@ -83,18 +84,22 @@ class accessor;
 namespace policy {
 
 struct attr;
+template <typename Key>
 struct item;
 struct tuple;
 struct list;
+template <typename Key>
 struct dict;
 
 }  // namespace policy
 
 using attr_accessor = accessor<policy::attr>;
-using item_accessor = accessor<policy::item>;
+template <typename Key>
+using item_accessor = accessor<policy::item<Key>>;
 using tuple_accessor = accessor<policy::tuple>;
 using list_accessor = accessor<policy::list>;
-using dict_accessor = accessor<policy::dict>;
+template <typename Key>
+using dict_accessor = accessor<policy::dict<Key>>;
 
 /// call a pkpy function which may raise a python exception.
 template <auto Fn, typename... Args>
@@ -152,9 +157,9 @@ public:
     object operator~() const;
     args_proxy operator* () const;
 
-    item_accessor operator[] (int index) const;
-    item_accessor operator[] (name key) const;
-    item_accessor operator[] (handle key) const;
+    item_accessor<int> operator[] (int index) const;
+    item_accessor<name> operator[] (name key) const;
+    item_accessor<handle> operator[] (handle key) const;
 
     template <return_value_policy policy = return_value_policy::automatic, typename... Args>
     object operator() (Args&&... args) const;

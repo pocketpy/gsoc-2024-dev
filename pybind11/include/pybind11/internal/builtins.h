@@ -4,12 +4,18 @@
 
 namespace pkbind {
 
+template <typename... Args>
+inline void print(Args&&... args) {
+    handle print = py_getbuiltin(py_name("print"));
+    print(std::forward<Args>(args)...);
+}
+
 inline object eval(const char* code, handle globals = none(), handle locals = none()) {
     if(globals.is_none() && locals.is_none()) {
         raise_call<py_eval>(code, nullptr);
         return object::from_ret();
     } else {
-        handle eval = py_getbuiltin(name("eval").index());
+        handle eval = py_getbuiltin(py_name("eval"));
         return eval(str(code), globals.is_none() ? dict() : globals, locals.is_none() ? dict() : locals);
     }
 }
@@ -19,18 +25,18 @@ inline object exec(const char* code, handle globals = none(), handle locals = no
         raise_call<py_exec>(code, "exec", EXEC_MODE, nullptr);
         return object::from_ret();
     } else {
-        handle exec = py_getbuiltin(name("exec").index());
+        handle exec = py_getbuiltin(py_name("exec"));
         return exec(str(code), globals, locals);
     }
 }
 
 inline object locals() {
-    handle locals = py_getbuiltin(name("locals").index());
+    handle locals = py_getbuiltin(py_name("locals"));
     return locals();
 }
 
 inline object globals() {
-    handle globals = py_getbuiltin(name("globals").index());
+    handle globals = py_getbuiltin(py_name("globals"));
     return globals();
 }
 
@@ -179,27 +185,6 @@ template <typename Derived>
 template <typename T>
 T interface<Derived>::cast() {
     return pkbind::cast<T>(handle(this->ptr()), true);
-}
-
-template <typename... Args, typename>
-tuple::tuple(Args&&... args) : tuple(sizeof...(Args)) {
-    std::array temp = {pkbind::cast(std::forward<Args>(args))...};
-    for(int i = 0; i < sizeof...(Args); ++i) {
-        py_tuple_setitem(m_ptr, i, temp[i].ptr());
-    }
-}
-
-template <typename... Args, typename>
-list::list(Args&&... args) : list(sizeof...(Args)) {
-    std::array temp = {pkbind::cast(std::forward<Args>(args))...};
-    for(int i = 0; i < sizeof...(Args); ++i) {
-        py_list_setitem(m_ptr, i, temp[i].ptr());
-    }
-}
-
-template <typename... Args, typename>
-dict::dict(Args&&... args) : dict() {
-    (py_dict_setitem_by_str(m_ptr, args.name, args.value.ptr()), ...);
 }
 
 }  // namespace pkbind
