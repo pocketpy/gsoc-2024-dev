@@ -78,7 +78,7 @@ struct type_caster<T, std::enable_if_t<is_integer_v<T>>> {
     static object cast(T src, return_value_policy, handle) { return int_(src); }
 
     bool load(handle src, bool) {
-        if(isinstance<pkbind::int_>(src)) {
+        if(isinstance<int_>(src)) {
             data = py_toint(src.ptr());
             return true;
         }

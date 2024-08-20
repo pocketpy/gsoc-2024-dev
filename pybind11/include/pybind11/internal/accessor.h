@@ -146,4 +146,11 @@ inline dict_accessor<name> dict::operator[] (name key) const { return {m_ptr, ke
 
 inline dict_accessor<handle> dict::operator[] (handle key) const { return {m_ptr, key}; }
 
+inline dict::iterator::iterator(handle h) : items(h.attr("items")()), iter(items.begin()) {}
+
+inline std::pair<handle, handle> dict::iterator::operator* () const {
+    tuple pair = tuple(*iter, object::ref_t{});
+    return {pair[0], pair[1]};
+}
+
 }  // namespace pkbind

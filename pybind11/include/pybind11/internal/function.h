@@ -322,6 +322,8 @@ struct template_parser<Callable, std::tuple<Extras...>, std::tuple<Args...>, std
     static_assert(doc_count <= 1, "doc can occur at most once");
     static_assert(policy_count <= 1, "return_value_policy can occur at most once");
 
+    constexpr inline static auto policy_pos = extras::template find<pkbind::return_value_policy>;
+
     constexpr inline static auto last_arg_without_default_pos = types::template find_last<pkbind::arg>;
     constexpr inline static auto first_arg_with_default_pos = types::template find<pkbind::arg_with_default>;
     static_assert(last_arg_without_default_pos < first_arg_with_default_pos || first_arg_with_default_pos == -1,
@@ -342,9 +344,7 @@ struct template_parser<Callable, std::tuple<Extras...>, std::tuple<Args...>, std
     static void initialize(function_record& record, const Extras&... extras) {
         auto extras_tuple = std::make_tuple(extras...);
         constexpr static bool has_named_args = (named_argc > 0);
-        // set return value policy
-        // FIXME:
-        // if constexpr(policy_pos != -1) { record.policy = std::get<extras_info.policy_pos>(extras_tuple); }
+        if constexpr(policy_pos != -1) { record.policy = std::get<policy_pos>(extras_tuple); }
 
         // TODO: set others
 
@@ -424,7 +424,7 @@ struct template_parser<Callable, std::tuple<Extras...>, std::tuple<Args...>, std
             if constexpr(args_pos == -1) { return false; }
         }
 
-        for(std::size_t i = 0; i < normal_argc; ++i) {
+        for(std::size_t i = 0; i < std::min(normal_argc, (int)args.size()); ++i) {
             stack[i] = args[i];
         }
 
@@ -442,6 +442,7 @@ struct template_parser<Callable, std::tuple<Extras...>, std::tuple<Args...>, std
         // pack the kwargs
         int index = 0;
         bool init_dict = false;
+        dict pack2;
 
         kwargs.apply([&](handle key, handle value) {
             if constexpr(named_argc != 0) {
@@ -454,18 +455,10 @@ struct template_parser<Callable, std::tuple<Extras...>, std::tuple<Args...>, std
                 }
             }
 
-            if constexpr(kwargs_pos != -1) {
-                if(index == named_argc) {
-                    if(!init_dict) {
-                        reg<1> = dict();
-                        stack[kwargs_pos] = reg<1>;
-                        init_dict = true;
-                    }
-                    auto pack = dict(reg<0>, object::ref_t{});
-                    pack[key] = value;
-                }
-            }
+            if constexpr(kwargs_pos != -1) { pack2[key] = value; }
         });
+
+        if constexpr(kwargs_pos != -1) { stack[kwargs_pos] = pack2; }
 
         // check if all the arguments are valid
         for(std::size_t i = 0; i < argc; ++i) {
@@ -553,12 +546,13 @@ class staticmethod : public object {
 namespace impl {
 
 template <bool is_method, bool is_static, typename Fn, typename... Extras>
-void bind_function(handle obj, const char* name, Fn&& fn, const Extras&... extras) {
-
+void bind_function(handle obj, const char* name_, Fn&& fn, const Extras&... extras) {
     constexpr bool has_named_args = ((std::is_same_v<Extras, arg> || std::is_same_v<Extras, arg_with_default>) || ...);
+    auto name = py_name(name_);
+    auto func = py_getdict(obj.ptr(), name);
 
-    if(hasattr(obj, name) && cpp_function::is_function_record(getattr(obj, name))) {
-        auto slot = py_getslot(obj.ptr(), 0);
+    if(func && cpp_function::is_function_record(func)) {
+        auto slot = py_getslot(func, 0);
         auto& record = *static_cast<function_record*>(py_touserdata(slot));
         if constexpr(has_named_args && is_method) {
             record.append(new function_record(std::forward<Fn>(fn), arg("self"), extras...));
@@ -567,12 +561,16 @@ void bind_function(handle obj, const char* name, Fn&& fn, const Extras&... extra
         }
     } else {
         if constexpr(is_static) {
-            setattr(obj, name, staticmethod(cpp_function(is_method, name, std::forward<Fn>(fn), extras...)));
+            py_setdict(obj.ptr(),
+                       name,
+                       staticmethod(cpp_function(is_method, name_, std::forward<Fn>(fn), extras...)).ptr());
         } else {
             if constexpr(has_named_args && is_method) {
-                setattr(obj, name, cpp_function(is_method, name, std::forward<Fn>(fn), arg("self"), extras...));
+                py_setdict(obj.ptr(),
+                           name,
+                           cpp_function(is_method, name_, std::forward<Fn>(fn), arg("self"), extras...).ptr());
             } else {
-                setattr(obj, name, cpp_function(is_method, name, std::forward<Fn>(fn), extras...));
+                py_setdict(obj.ptr(), name, cpp_function(is_method, name_, std::forward<Fn>(fn), extras...).ptr());
             }
         }
     }
@@ -581,13 +579,25 @@ void bind_function(handle obj, const char* name, Fn&& fn, const Extras&... extra
 template <typename Getter, typename Setter, typename... Extras>
 void bind_property(handle obj, const char* name, Getter&& getter_, Setter&& setter_, const Extras&... extras) {
     if constexpr(std::is_same_v<std::decay_t<Setter>, std::nullptr_t>) {
-        cpp_function getter(true, name, std::forward<Getter>(getter_), extras...);
+        cpp_function getter(true,
+                            name,
+                            std::forward<Getter>(getter_),
+                            return_value_policy::reference_internal,
+                            extras...);
         property prop(getter);
         setattr(obj, name, prop);
         return;
     } else {
-        cpp_function getter(true, name, std::forward<Getter>(getter_), extras...);
-        cpp_function setter(true, name, std::forward<Setter>(setter_), extras...);
+        cpp_function getter(true,
+                            name,
+                            std::forward<Getter>(getter_),
+                            return_value_policy::reference_internal,
+                            extras...);
+        cpp_function setter(true,
+                            name,
+                            std::forward<Setter>(setter_),
+                            return_value_policy::reference_internal,
+                            extras...);
         property prop(getter, setter);
         setattr(obj, name, prop);
     }

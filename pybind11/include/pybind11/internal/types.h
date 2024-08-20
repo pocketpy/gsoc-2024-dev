@@ -16,12 +16,9 @@ public:                                                                         
 
 class type : public object {
 protected:
-    inline static std::unordered_map<std::type_index, type> m_type_map;
-
     template <typename T>
     constexpr inline static bool is_check_v = std::is_invocable_r_v<bool, decltype(T::type_or_check()), handle>;
 
-public:
     PKBIND_TYPE_IMPL(object, tp_type);
 
     // note: type is global instance, so we use ref_t.
@@ -276,10 +273,9 @@ class dict : public object {
     class iterator {
         friend dict;
 
-        iterator(py_Ref ptr) : ptr(ptr) {
-            raise_call<py_iter>(ptr);
-            iter = py_retval();
-        }
+        iterator() : iter(pkbind::iterator::sentinel()) {}
+
+        iterator(handle ptr);
 
     public:
         iterator(const iterator&) = default;
@@ -288,30 +284,21 @@ class dict : public object {
 
         bool operator!= (const iterator& other) const { return !(*this == other); }
 
-        iterator& operator++ () {
-            int result = raise_call<py_next>(iter);
-            if(result == 1) {
-                py_setreg(2, py_retval());
-                raise_call<py_dict_getitem>(ptr, py_getreg(2));
-                py_setreg(3, py_retval());
-                temp = {py_getreg(2), py_getreg(3)};
-            } else if(result == 0) {
-                iter = nullptr;
-            }
+        iterator operator++ () {
+            ++iter;
             return *this;
         }
 
-        std::pair<handle, handle> operator* () const { return temp; }
+        std::pair<handle, handle> operator* () const;
 
     private:
-        py_Ref ptr;
-        py_Ref iter;
-        std::pair<handle, handle> temp;
+        object items;
+        pkbind::iterator iter;
     };
 
     iterator begin() const { return iterator(m_ptr); }
 
-    iterator end() const { return iterator(nullptr); }
+    iterator end() const { return iterator(); }
 };
 
 class slice : public object {

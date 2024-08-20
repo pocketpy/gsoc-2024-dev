@@ -169,4 +169,6 @@ inline reg_t<N> reg;
 
 inline retv_t retv;
 
+inline std::unordered_map<std::type_index, py_Type>* m_type_map = nullptr;
+
 }  // namespace pkbind

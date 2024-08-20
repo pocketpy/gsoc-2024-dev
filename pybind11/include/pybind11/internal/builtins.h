@@ -82,8 +82,8 @@ inline type type::of() {
             return T::type_or_check();
         }
     } else {
-        auto it = m_type_map.find(typeid(T));
-        if(it != m_type_map.end()) {
+        auto it = m_type_map->find(typeid(T));
+        if(it != m_type_map->end()) {
             return it->second;
         } else {
             // if not found, raise error
