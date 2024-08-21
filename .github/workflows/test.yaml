@@ -3,10 +3,10 @@ name: CMake Build and Test
 on:
   push:
     branches:
-      - main
+      - pkpy-v2
   pull_request:
     branches:
-      - main
+      - pkpy-v2
 
 jobs:
   build_linux:
