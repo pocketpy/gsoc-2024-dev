@@ -1514,7 +1514,9 @@ public:
     py::object get_item_int(int index) const override {
         if(index < 0) index += data.shape()[0];
         if(data.ndim() == 1) {
-            if constexpr(std::is_same_v<T, int_>) {
+            if constexpr(std::is_same_v<T, bool_>) {
+                return py::bool_(data(index));
+            } else if constexpr(std::is_same_v<T, int_>) {
                 return py::int_(data(index));
             } else if constexpr(std::is_same_v<T, float64>) {
                 return py::float_(data(index));
@@ -1537,7 +1539,9 @@ public:
 
         if(indices[indices.size() - 1] < 0) indices[indices.size() - 1] += store.shape()[0];
         if(store.ndim() == 1) {
-            if constexpr(std::is_same_v<T, int_>) {
+            if constexpr(std::is_same_v<T, bool_>) {
+                return py::bool_(store(indices[indices.size() - 1]));
+            } else if constexpr(std::is_same_v<T, int_>) {
                 return py::int_(store(indices[indices.size() - 1]));
             } else if constexpr(std::is_same_v<T, float64>) {
                 return py::float_(store(indices[indices.size() - 1]));
@@ -2003,6 +2007,19 @@ public:
         while ((pos = result.find('}', pos)) != std::string::npos) {
             result.replace(pos, 1, "]");
             pos += 1;
+        }
+
+        if constexpr(std::is_same_v<T, bool_>) {
+            size_t pos = 0;
+            while ((pos = result.find("true", pos)) != std::string::npos) {
+                result.replace(pos, 4, "True");
+                pos += 4;
+            }
+            pos = 0;
+            while ((pos = result.find("false", pos)) != std::string::npos) {
+                result.replace(pos, 5, "False");
+                pos += 5;
+            }
         }
 
         for(int i = 0; i < result.size(); i++) {
