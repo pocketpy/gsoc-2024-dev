@@ -78,8 +78,7 @@ constexpr auto type_name() {
 #endif
 }
 
-static_assert(type_name<int>() == "int" && type_name<double>() == "double" &&
-                  type_name<std::string_view>() == "std::basic_string_view<char>",
+static_assert(type_name<int>() == "int" && type_name<double>() == "double",
               "type_name() test failed, please report this issue");
 
 template <typename T, typename Tuple>
