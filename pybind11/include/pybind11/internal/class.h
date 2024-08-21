@@ -45,8 +45,7 @@ public:
                 auto type = pkbind::type(cls, object::ref_t{});
                 auto info = &type_info::of<T>();
                 void* data = py_newobject(py_retval(), type.index(), 1, sizeof(instance));
-                new (data)
-                    instance{instance::Flag::Own, operator new (info->size, std::align_val_t(info->alignment)), info};
+                new (data) instance{instance::Flag::Own, operator new (info->size), info};
 
                 return true;
             },

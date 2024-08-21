@@ -20,8 +20,7 @@ struct type_info {
             sizeof(T),
             alignof(T),
             [](void* ptr) {
-                ((T*)ptr)->~T();
-                operator delete (ptr, std::align_val_t(alignof(T)));
+                delete static_cast<T*>(ptr);
             },
             &typeid(T),
         };
@@ -74,8 +73,7 @@ public:
             flag = Flag::Own;
         } else if(policy == return_value_policy::copy) {
             if constexpr(std::is_copy_constructible_v<primary>) {
-                data = operator new (info->size, std::align_val_t(info->alignment));
-                new (data) auto(value);
+                data = new auto(value);
                 flag = Flag::Own;
             } else {
                 std::string msg = "cannot use copy policy on non-copyable type: ";
@@ -84,8 +82,7 @@ public:
             }
         } else if(policy == return_value_policy::move) {
             if constexpr(std::is_move_constructible_v<primary>) {
-                data = operator new (info->size, std::align_val_t(info->alignment));
-                new (data) auto(std::move(value));
+                data = new auto(std::move(value));
                 flag = Flag::Own;
             } else {
                 std::string msg = "cannot use move policy on non-moveable type: ";
