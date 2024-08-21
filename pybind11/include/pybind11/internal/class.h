@@ -191,7 +191,6 @@ class enum_ : public class_<T, Others...> {
 
 public:
     using Base = class_<T, Others...>;
-    using class_<T, Others...>::class_;
 
     template <typename... Args>
     enum_(const handle& scope, const char* name, Args&&... args) :

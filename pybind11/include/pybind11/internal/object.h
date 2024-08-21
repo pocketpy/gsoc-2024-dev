@@ -164,8 +164,10 @@ public:
     template <return_value_policy policy = return_value_policy::automatic, typename... Args>
     object operator() (Args&&... args) const;
 
+    auto doc() const { return attr("__doc__"); }
+
     template <typename T>
-    T cast();
+    T cast() const;
 
 private:
     py_Ref ptr() const { return static_cast<const Derived*>(this)->ptr(); }

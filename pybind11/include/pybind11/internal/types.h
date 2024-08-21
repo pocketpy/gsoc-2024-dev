@@ -4,7 +4,7 @@
 
 namespace pkbind {
 
-#define PKBIND_TYPE_IMPL(parent, expr)                                                                                 \
+#define PKBIND_TYPE_IMPL(parent, child, expr)                                                                          \
                                                                                                                        \
 private:                                                                                                               \
     friend class type;                                                                                                 \
@@ -12,23 +12,29 @@ private:                                                                        
                                                                                                                        \
 public:                                                                                                                \
     using parent::parent;                                                                                              \
-    using parent::operator=;
+    using parent::operator=;                                                                                           \
+    child(const object& o) : parent(o) {}                                                                              \
+    child(object&& o) : parent(std::move(o)) {}
 
 class type : public object {
 protected:
     template <typename T>
     constexpr inline static bool is_check_v = std::is_invocable_r_v<bool, decltype(T::type_or_check()), handle>;
 
-    PKBIND_TYPE_IMPL(object, tp_type);
+    static auto type_or_check() { return tp_type; }
+
+public:
+    using object ::object;
+    using object ::operator=;
 
     // note: type is global instance, so we use ref_t.
-    type(py_Type type) : object(py_tpobject(type), ref_t{}) {}
+    explicit type(py_Type type) : object(py_tpobject(type), ref_t{}) {}
 
     py_Type index() const { return py_totype(ptr()); }
 
     const char* name() const { return py_tpname(index()); }
 
-    static type of(handle h) { return py_typeof(h.ptr()); }
+    static type of(handle h) { return type(py_typeof(h.ptr())); }
 
     template <typename T>
     static type of();
@@ -38,14 +44,14 @@ protected:
 };
 
 class none : public object {
-    PKBIND_TYPE_IMPL(object, tp_NoneType);
+    PKBIND_TYPE_IMPL(object, none, tp_NoneType);
 
     // note: none is global instance, so we use ref_t.
     none() : object(py_None, ref_t{}) {}
 };
 
 class bool_ : public object {
-    PKBIND_TYPE_IMPL(object, tp_bool);
+    PKBIND_TYPE_IMPL(object, bool_, tp_bool);
 
     // same as none, bool is a singleton.
     bool_(bool value) : object(value ? py_True : py_False, ref_t{}) {}
@@ -54,7 +60,7 @@ class bool_ : public object {
 };
 
 class int_ : public object {
-    PKBIND_TYPE_IMPL(object, tp_int);
+    PKBIND_TYPE_IMPL(object, int_, tp_int);
 
     int_(py_i64 value) : object(alloc_t{}) { py_newint(m_ptr, value); }
 
@@ -62,7 +68,7 @@ class int_ : public object {
 };
 
 class float_ : public object {
-    PKBIND_TYPE_IMPL(object, tp_float);
+    PKBIND_TYPE_IMPL(object, float_, tp_float);
 
     float_(py_f64 value) : object(alloc_t{}) { py_newfloat(m_ptr, value); }
 
@@ -72,7 +78,7 @@ class float_ : public object {
 bool hasattr(handle obj, name name);
 
 class iterable : public object {
-    PKBIND_TYPE_IMPL(object, [](handle h) {
+    PKBIND_TYPE_IMPL(object, iterable, [](handle h) {
         return hasattr(h, "__iter__");
     });
 };
@@ -86,7 +92,7 @@ class iterator : public object {
     iterator(handle h) : object(h, realloc_t{}), m_value() { operator++ (); }
 
 public:
-    PKBIND_TYPE_IMPL(object, [](handle h) {
+    PKBIND_TYPE_IMPL(object, iterator, [](handle h) {
         return hasattr(h, "__iter__") && hasattr(h, "__next__");
     });
 
@@ -124,7 +130,7 @@ iterator interface<Dervied>::end() const {
 }
 
 class str : public object {
-    PKBIND_TYPE_IMPL(object, tp_str);
+    PKBIND_TYPE_IMPL(object, str, tp_str);
 
     str(const char* data, int size) : object(alloc_t{}) { py_newstrn(m_ptr, data, size); }
 
@@ -134,7 +140,7 @@ class str : public object {
 };
 
 class tuple : public object {
-    PKBIND_TYPE_IMPL(object, tp_tuple);
+    PKBIND_TYPE_IMPL(object, tuple, tp_tuple);
 
     tuple(int size) : object(alloc_t{}) { py_newtuple(m_ptr, size); }
 
@@ -179,7 +185,7 @@ class tuple : public object {
 };
 
 class list : public object {
-    PKBIND_TYPE_IMPL(object, tp_list);
+    PKBIND_TYPE_IMPL(object, list, tp_list);
 
     list() : object(alloc_t{}) { py_newlist(m_ptr); }
 
@@ -238,7 +244,7 @@ class list : public object {
 };
 
 class dict : public object {
-    PKBIND_TYPE_IMPL(object, tp_dict);
+    PKBIND_TYPE_IMPL(object, dict, tp_dict);
 
     dict() : object(alloc_t{}) { py_newdict(m_ptr); }
 
@@ -302,17 +308,17 @@ class dict : public object {
 };
 
 class slice : public object {
-    PKBIND_TYPE_IMPL(object, tp_slice);
+    PKBIND_TYPE_IMPL(object, slice, tp_slice);
 };
 
 class set : public object {};
 
 class args : public tuple {
-    PKBIND_TYPE_IMPL(tuple, tp_tuple);
+    PKBIND_TYPE_IMPL(tuple, args, tp_tuple);
 };
 
 class kwargs : public dict {
-    PKBIND_TYPE_IMPL(dict, tp_dict);
+    PKBIND_TYPE_IMPL(dict, kwargs, tp_dict);
 };
 
 // TODO:
@@ -324,7 +330,7 @@ class capsule : public object {
 
     inline static py_Type m_type = 0;
 
-    PKBIND_TYPE_IMPL(object, m_type);
+    PKBIND_TYPE_IMPL(object, capsule, m_type);
 
     static void register_() {
         m_type = py_newtype("capsule", tp_object, nullptr, [](void* data) {

@@ -343,11 +343,9 @@ TEST_F(PYBIND11_TEST, lambda) {
     EXPECT_EQ(destructor_calls, 4);
 }
 
-namespace {
 int add(int a, int b) { return a + b; }
 
 int add(int a, int b, int c) { return a + b + c; }
-}  // namespace
 
 TEST_F(PYBIND11_TEST, overload_cast) {
     auto m = py::module_::__main__();

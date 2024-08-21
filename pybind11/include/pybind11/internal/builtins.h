@@ -79,14 +79,14 @@ template <typename T>
 inline type type::of() {
     if constexpr(is_pyobject_v<T>) {
         if constexpr(is_check_v<T>) {
-            return tp_object;
+            return type(tp_object);
         } else {
-            return T::type_or_check();
+            return type(T::type_or_check());
         }
     } else {
         auto it = m_type_map->find(typeid(T));
         if(it != m_type_map->end()) {
-            return it->second;
+            return type(it->second);
         } else {
             // if not found, raise error
             std::string msg = "can not c++ instance cast to object, type: {";
@@ -185,7 +185,7 @@ T cast(handle obj, bool convert = true) {
 
 template <typename Derived>
 template <typename T>
-T interface<Derived>::cast() {
+T interface<Derived>::cast() const {
     return pkbind::cast<T>(handle(this->ptr()), true);
 }
 

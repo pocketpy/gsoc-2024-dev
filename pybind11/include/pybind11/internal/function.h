@@ -114,7 +114,7 @@ object interface<Derived>::operator() (Args&&... args) const {
 }
 
 class function : public object {
-    PKBIND_TYPE_IMPL(object, tp_function);
+    PKBIND_TYPE_IMPL(object, function, tp_function);
 };
 
 namespace impl {
@@ -482,7 +482,7 @@ struct template_parser<Callable, std::tuple<Extras...>, std::tuple<Args...>, std
 class cpp_function : public function {
     inline static py_Type m_type = 0;
 
-    PKBIND_TYPE_IMPL(function, tp_function);
+    PKBIND_TYPE_IMPL(function, cpp_function, tp_function);
 
     static void register_() {
         m_type = py_newtype("function_record", tp_object, nullptr, [](void* data) {
@@ -521,7 +521,7 @@ class cpp_function : public function {
 };
 
 class property : public object {
-    PKBIND_TYPE_IMPL(object, tp_property);
+    PKBIND_TYPE_IMPL(object, property, tp_property);
 
     property(handle getter, handle setter = none()) : object() {
         auto start = py_peek(0);
@@ -533,7 +533,7 @@ class property : public object {
 };
 
 class staticmethod : public object {
-    PKBIND_TYPE_IMPL(object, tp_staticmethod);
+    PKBIND_TYPE_IMPL(object, staticmethod, tp_staticmethod);
 
     staticmethod(handle method) : object() {
         auto start = py_peek(0);
@@ -563,7 +563,7 @@ void bind_function(handle obj, const char* name_, Fn&& fn, const Extras&... extr
         if constexpr(is_static) {
             py_setdict(obj.ptr(),
                        name,
-                       staticmethod(cpp_function(is_method, name_, std::forward<Fn>(fn), extras...)).ptr());
+                       staticmethod(cpp_function(is_method, name_, std::forward<Fn>(fn), extras...).ptr()).ptr());
         } else {
             if constexpr(has_named_args && is_method) {
                 py_setdict(obj.ptr(),
@@ -584,9 +584,8 @@ void bind_property(handle obj, const char* name, Getter&& getter_, Setter&& sett
                             std::forward<Getter>(getter_),
                             return_value_policy::reference_internal,
                             extras...);
-        property prop(getter);
+        property prop(getter.ptr());
         setattr(obj, name, prop);
-        return;
     } else {
         cpp_function getter(true,
                             name,
@@ -598,7 +597,7 @@ void bind_property(handle obj, const char* name, Getter&& getter_, Setter&& sett
                             std::forward<Setter>(setter_),
                             return_value_policy::reference_internal,
                             extras...);
-        property prop(getter, setter);
+        property prop(getter.ptr(), setter.ptr());
         setattr(obj, name, prop);
     }
 }

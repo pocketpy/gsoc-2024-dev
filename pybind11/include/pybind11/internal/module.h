@@ -5,7 +5,7 @@
 namespace pkbind {
 
 class module : public object {
-    PKBIND_TYPE_IMPL(object, tp_module)
+    PKBIND_TYPE_IMPL(object, module, tp_module)
 
     static module __main__() { return module(py_getmodule("__main__"), object::ref_t{}); }
 
@@ -37,7 +37,7 @@ using module_ = module;
     auto _module_##name = [] {                                                                                         \
         ::pkbind::action::register_start([] {                                                                          \
             auto m = ::pkbind::module(py_newmodule(#name), ::pkbind::object::ref_t{});                                 \
-            _pkbind_register_##name(m);                                                                              \
+            _pkbind_register_##name(m);                                                                                \
         });                                                                                                            \
         return 1;                                                                                                      \
     }();                                                                                                               \
