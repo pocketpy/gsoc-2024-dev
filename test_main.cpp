@@ -6,21 +6,23 @@
 namespace py = pybind11;
 using namespace pybind11;
 
+#include "pocketpy.h"
+
+static char buf[2048];
+
 int main() {
   py::scoped_interpreter guard{};
-  std::ifstream file("test_numpy.py");
-  if(!file.is_open()){
-    std::cerr << "Could not open file" << std::endl;
-    return 1;
-  }
-  std::stringstream buffer;
-  buffer << file.rdbuf();
-  std::string script = buffer.str();
 
-  try{
-    py::exec(script);
-  }catch(py::error_already_set& e){
-    std::cerr << e.what() << std::endl;
+  while(true) {
+      int size = py_replinput(buf, sizeof(buf));
+      assert(size < sizeof(buf));
+      if(size >= 0) {
+          py_StackRef p0 = py_peek(0);
+          if(!py_exec(buf, "<stdin>", SINGLE_MODE, NULL)) {
+              py_printexc();
+              py_clearexc(p0);
+          }
+      }
   }
 
   return 0;

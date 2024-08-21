@@ -27,7 +27,7 @@ array([[1., 1., 1.],
 '''
 
 def assert_equal(a, b):
-    assert (a.__eq__(b)).all()
+    assert (a == b).all()
 
 assert_equal(a + 1, np.array([[2., 2., 2.], [2., 2., 2.]]))
 assert_equal(a - 1, np.array([[0., 0., 0.], [0., 0., 0.]]))
@@ -42,9 +42,9 @@ a = np.array([[1, 0], [0, 1]], dtype=np.bool_)
 array([[ True, False],
        [False,  True]])
 '''
-assert_equal(a & 1, np.array([[1, 0], [0, 1]], dtype=np.bool_))
-assert_equal(a | 1, np.array([[1, 1], [1, 1]], dtype=np.bool_))
-assert_equal(a ^ 1, np.array([[0, 1], [1, 0]], dtype=np.bool_))
+assert_equal(a & True, np.array([[1, 0], [0, 1]], dtype=np.bool_))
+assert_equal(a | True, np.array([[1, 1], [1, 1]], dtype=np.bool_))
+assert_equal(a ^ True, np.array([[0, 1], [1, 0]], dtype=np.bool_))
 assert_equal(~a, np.array([[False,  True], [ True, False]], dtype=np.bool_))
 
 # test __getitem__ __setitem__
