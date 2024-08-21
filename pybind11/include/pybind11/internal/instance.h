@@ -76,6 +76,7 @@ public:
             if constexpr(std::is_copy_constructible_v<primary>) {
                 data = operator new (info->size, std::align_val_t(info->alignment));
                 new (data) auto(value);
+                flag = Flag::Own;
             } else {
                 std::string msg = "cannot use copy policy on non-copyable type: ";
                 msg += type_name<primary>();
