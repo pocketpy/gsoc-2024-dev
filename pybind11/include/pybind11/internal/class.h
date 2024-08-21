@@ -210,7 +210,7 @@ public:
     }
 
     enum_& value(const char* name, T value) {
-        auto var = cast(value, return_value_policy::copy);
+        auto var = pkbind::cast(value, return_value_policy::copy);
         setattr(*this, name, var);
         m_values.emplace_back(name, std::move(var));
         return *this;

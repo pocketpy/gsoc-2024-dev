@@ -1,7 +1,5 @@
 #include "test.h"
 
-namespace {
-
 PYBIND11_EMBEDDED_MODULE(example, m) {
     m.def("add", [](int a, int b) {
         return a + b;
@@ -12,6 +10,8 @@ PYBIND11_EMBEDDED_MODULE(example, m) {
         return a - b;
     });
 }
+
+namespace {
 
 TEST_F(PYBIND11_TEST, module) {
     py::exec("import example");
