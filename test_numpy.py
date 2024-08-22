@@ -72,7 +72,7 @@ array([[1, 2],
 
 # test dtype ndim size shape
 a = np.array([[1, 2], [3, 4]])
-assert (a.dtype == np.int32), a.dtype
+assert (a.dtype == np.int64), a.dtype
 assert a.ndim == 2
 assert a.size == 4
 assert a.shape == (2, 2)
