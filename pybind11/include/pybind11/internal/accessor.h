@@ -18,8 +18,8 @@ class accessor : public interface<accessor<policy>> {
 
 public:
     auto ptr() const {
-        if(!m_value) {
-            m_value = policy::get(m_obj, m_key);
+        if(m_value.empty()) {
+            m_value = borrow(policy::get(m_obj, m_key));
         }
         return m_value.ptr();
     }
@@ -40,11 +40,12 @@ public:
 
 private:
     handle m_obj;
-    mutable handle m_value;
+    mutable object m_value;
     key_type m_key;
 };
 
 namespace policy {
+    
 struct attr {
     using key_type = name;
 

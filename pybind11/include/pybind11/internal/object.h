@@ -243,7 +243,7 @@ public:
 
     bool is_singleton() const { return m_ptr && m_index == -1; }
 
-    bool is_empty() const { return m_ptr == nullptr && m_index == -1; }
+    bool empty() const { return m_ptr == nullptr && m_index == -1; }
 
     /// return whether the object is in the object pool.
     bool in_pool() const { return m_ptr && m_index != -1; }
