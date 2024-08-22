@@ -335,7 +335,9 @@ class capsule : public object {
     static void register_() {
         m_type = py_newtype("capsule", tp_object, nullptr, [](void* data) {
             auto impl = static_cast<capsule_impl*>(data);
-            if(impl->data && impl->destructor) { impl->destructor(impl->data); }
+            if(impl->data && impl->destructor) {
+                impl->destructor(impl->data);
+            }
         });
     }
 

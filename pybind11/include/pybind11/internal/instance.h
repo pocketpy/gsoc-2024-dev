@@ -104,7 +104,9 @@ public:
     }
 
     ~instance() {
-        if(flag & Flag::Own) { info->destructor(data); }
+        if(flag & Flag::Own) {
+            info->destructor(data);
+        }
     }
 
     template <typename T>

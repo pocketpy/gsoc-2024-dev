@@ -174,10 +174,18 @@ public:
     function_record& operator= (function_record&&) = delete;
 
     ~function_record() {
-        if(destructor) { destructor(this); }
-        if(arguments) { delete arguments; }
-        if(next) { delete next; }
-        if(signature) { delete[] signature; }
+        if(destructor) {
+            destructor(this);
+        }
+        if(arguments) {
+            delete arguments;
+        }
+        if(next) {
+            delete next;
+        }
+        if(signature) {
+            delete[] signature;
+        }
     }
 
     void append(function_record* record) {
@@ -202,12 +210,14 @@ public:
         return *static_cast<function_record*>(py_touserdata(slot));
     }
 
-    bool operator() (int argc, handle stack) {
+    void operator() (int argc, handle stack) {
         function_record* p = this;
 
         bool has_self = argc == 3;
         std::vector<handle> args2;
-        if(has_self) { args2.push_back(py_offset(stack.ptr(), 0)); }
+        if(has_self) {
+            args2.push_back(py_offset(stack.ptr(), 0));
+        }
 
         tuple args(py_offset(stack.ptr(), 0 + has_self), object::ref_t{});
         for(int i = 0; i < args.size(); ++i) {
@@ -219,7 +229,9 @@ public:
         // foreach function record and call the function with not convert
         while(p != nullptr) {
             auto result = p->wrapper(*p, args2, kwargs, false, {});
-            if(result) { return result; }
+            if(result) {
+                return;
+            }
             p = p->next;
         }
 
@@ -227,7 +239,9 @@ public:
         // foreach function record and call the function with convert
         while(p != nullptr) {
             auto result = p->wrapper(*p, args2, kwargs, true, {});
-            if(result) { return result; }
+            if(result) {
+                return;
+            }
             p = p->next;
         }
 
@@ -344,7 +358,9 @@ struct template_parser<Callable, std::tuple<Extras...>, std::tuple<Args...>, std
     static void initialize(function_record& record, const Extras&... extras) {
         auto extras_tuple = std::make_tuple(extras...);
         constexpr static bool has_named_args = (named_argc > 0);
-        if constexpr(policy_pos != -1) { record.policy = std::get<policy_pos>(extras_tuple); }
+        if constexpr(policy_pos != -1) {
+            record.policy = std::get<policy_pos>(extras_tuple);
+        }
 
         // TODO: set others
 
@@ -392,7 +408,9 @@ struct template_parser<Callable, std::tuple<Extras...>, std::tuple<Args...>, std
                     sig += type_info::of<T>().name;
                 }
 
-                if(index + 1 < argc) { sig += ", "; }
+                if(index + 1 < argc) {
+                    sig += ", ";
+                }
                 index++;
             };
             (append(type_identity<Args>{}), ...);
@@ -421,7 +439,9 @@ struct template_parser<Callable, std::tuple<Extras...>, std::tuple<Args...>, std
 
         // load arguments from call arguments
         if(args.size() > normal_argc) {
-            if constexpr(args_pos == -1) { return false; }
+            if constexpr(args_pos == -1) {
+                return false;
+            }
         }
 
         for(std::size_t i = 0; i < std::min(normal_argc, (int)args.size()); ++i) {
@@ -455,14 +475,20 @@ struct template_parser<Callable, std::tuple<Extras...>, std::tuple<Args...>, std
                 }
             }
 
-            if constexpr(kwargs_pos != -1) { pack2[key] = value; }
+            if constexpr(kwargs_pos != -1) {
+                pack2[key] = value;
+            }
         });
 
-        if constexpr(kwargs_pos != -1) { stack[kwargs_pos] = pack2; }
+        if constexpr(kwargs_pos != -1) {
+            stack[kwargs_pos] = pack2;
+        }
 
         // check if all the arguments are valid
         for(std::size_t i = 0; i < argc; ++i) {
-            if(!stack[i]) { return false; }
+            if(!stack[i]) {
+                return false;
+            }
         }
 
         // ok, all the arguments are valid, call the function
@@ -493,7 +519,9 @@ class cpp_function : public function {
     static bool is_function_record(handle h) {
         if(isinstance<function>(h)) {
             auto slot = py_getslot(h.ptr(), 0);
-            if(slot) { return py_typeof(slot) == m_type; }
+            if(slot) {
+                return py_typeof(slot) == m_type;
+            }
         }
         return false;
     }
@@ -505,8 +533,39 @@ class cpp_function : public function {
         sig += is_method ? "(self, *args, **kwargs)" : "(*args, **kwargs)";
         auto call = [](int argc, py_Ref stack) {
             handle func = py_inspect_currentfunction();
-            auto& record = *static_cast<impl::function_record*>(py_touserdata(py_getslot(func.ptr(), 0)));
-            return record(argc, stack);
+            auto data = py_touserdata(py_getslot(func.ptr(), 0));
+            auto& record = *static_cast<impl::function_record*>(data);
+            try {
+                record(argc, stack);
+                return true;
+            } catch(std::domain_error& e) {
+                py_exception(tp_ValueError, e.what());
+            } catch(std::invalid_argument& e) {
+                py_exception(tp_ValueError, e.what());
+            } catch(std::length_error& e) {
+                py_exception(tp_ValueError, e.what());
+            } catch(std::out_of_range& e) {
+                py_exception(tp_IndexError, e.what());
+            } catch(std::range_error& e) {
+                py_exception(tp_ValueError, e.what());
+            } catch(stop_iteration& e) {
+                StopIteration();
+            } catch(index_error& e) {
+                py_exception(tp_IndexError, e.what());
+            } catch(key_error& e) {
+                py_exception(tp_KeyError, e.what());
+            } catch(value_error& e) {
+                py_exception(tp_ValueError, e.what());
+            } catch(type_error& e) {
+                py_exception(tp_TypeError, e.what());
+            } catch(import_error& e) {
+                py_exception(tp_ImportError, e.what());
+            } catch(attribute_error& e) {
+                py_exception(tp_AttributeError, e.what());
+            } catch(std::exception& e) {
+                py_exception(tp_RuntimeError, e.what());
+            }
+            return false;
         };
         py_newfunction(m_ptr, sig.c_str(), call, nullptr, 1);
 
