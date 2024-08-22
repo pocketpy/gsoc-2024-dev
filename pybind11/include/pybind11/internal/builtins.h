@@ -175,13 +175,12 @@ T cast(handle obj, bool convert = true) {
             return std::move(caster.value());
         }
     } else {
-        std::string msg = "cast python instance to c++ failed, ";
-        msg += "obj type is: {";
+        std::string msg = "cast python instance to c++ failed, obj type is: {";
         msg += type::of(obj).name();
         msg += "}, target type is: {";
         msg += type_name<T>();
         msg += "}.";
-        throw std::runtime_error(msg);
+        throw cast_error(msg);
     }
 }
 

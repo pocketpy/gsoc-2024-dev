@@ -45,7 +45,7 @@ private:
 };
 
 namespace policy {
-    
+
 struct attr {
     using key_type = name;
 
@@ -137,6 +137,11 @@ inline item_accessor<name> interface<Derived>::operator[] (name key) const {
 template <typename Derived>
 inline item_accessor<handle> interface<Derived>::operator[] (handle key) const {
     return {ptr(), key};
+}
+
+template <typename... Args>
+object str::format(Args&&... args) {
+    return attr("format")(std::forward<Args>(args)...);
 }
 
 inline tuple_accessor tuple::operator[] (int index) const { return {m_ptr, index}; }

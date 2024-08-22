@@ -54,6 +54,10 @@ inline auto raise_call(Args&&... args) {
 
 class stop_iteration {};
 
+class cast_error : public std::runtime_error {
+    using std::runtime_error::runtime_error;
+};
+
 class index_error : public std::runtime_error {
     using std::runtime_error::runtime_error;
 };

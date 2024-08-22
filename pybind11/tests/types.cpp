@@ -2,7 +2,7 @@
 
 TEST_F(PYBIND11_TEST, int) {
     py::object obj = py::int_(123);
-    py::handle obj2 = py::eval("123");
+    py::object obj2 = py::eval("123");
 
     EXPECT_EQ(obj, obj2);
 
@@ -13,7 +13,7 @@ TEST_F(PYBIND11_TEST, int) {
 
 TEST_F(PYBIND11_TEST, float) {
     py::object obj = py::float_(123.0);
-    py::handle obj2 = py::eval("123.0");
+    py::object obj2 = py::eval("123.0");
 
     EXPECT_EQ(obj, obj2);
 
@@ -23,17 +23,24 @@ TEST_F(PYBIND11_TEST, float) {
 
 TEST_F(PYBIND11_TEST, str) {
     py::object obj = py::str("123");
-    py::handle obj2 = py::eval("'123'");
+    py::object obj2 = py::eval("'123'");
 
     EXPECT_EQ(obj, obj2);
 
     EXPECT_STREQ(obj.cast<const char*>(), "123");
     EXPECT_EQ(obj.cast<std::string>(), "123");
     EXPECT_EQ(obj.cast<std::string_view>(), "123");
+
+    auto s = py::str("Hello, {}");
+    EXPECT_EQ(s.format("world").cast<std::string>(), "Hello, world");
 }
 
 TEST_F(PYBIND11_TEST, tuple) {
-    py::tuple tuple = py::tuple{py::int_(1), py::str("123"), py::int_(3)};
+    py::tuple tuple = py::tuple{
+        py::int_(1),
+        py::str("123"),
+        py::int_(3),
+    };
     EXPECT_EQ(tuple, py::eval("(1, '123', 3)"));
     EXPECT_EQ(tuple.size(), 3);
     EXPECT_FALSE(tuple.empty());
@@ -42,7 +49,7 @@ TEST_F(PYBIND11_TEST, tuple) {
     tuple[2] = py::int_(1);
     EXPECT_EQ(tuple, py::eval("(3, '123', 1)"));
 
-    // test iterators.
+    // iterators.
     int index = 0;
     for(auto item: tuple) {
         if(index == 0) {
@@ -63,7 +70,11 @@ TEST_F(PYBIND11_TEST, list) {
     EXPECT_EQ(list.size(), 0);
     EXPECT_TRUE(list.empty());
 
-    list = py::list{py::int_(1), py::int_(2), py::int_(3)};
+    list = py::list{
+        py::int_(1),
+        py::int_(2),
+        py::int_(3),
+    };
     EXPECT_EQ(list, py::eval("[1, 2, 3]"));
     EXPECT_EQ(list.size(), 3);
     EXPECT_FALSE(list.empty());
@@ -110,7 +121,7 @@ TEST_F(PYBIND11_TEST, dict) {
               py::dict({
                   {"a", py::int_(1)},
                   {"b", py::int_(2)},
-                  {"c", py::int_(3)}
+                  {"c", py::int_(3)},
     }));
 
     // iterators

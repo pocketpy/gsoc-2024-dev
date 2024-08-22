@@ -137,6 +137,9 @@ class str : public object {
     str(const char* data) : str(data, strlen(data)) {}
 
     str(std::string_view s) : str(s.data(), static_cast<int>(s.size())) {}
+
+    template <typename... Args>
+    object format(Args&&... args);
 };
 
 class tuple : public object {
