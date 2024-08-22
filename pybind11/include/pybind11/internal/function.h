@@ -219,8 +219,9 @@ public:
 
         bool has_self = argc == 3;
         std::vector<handle> args;
+        handle self = py_offset(stack.ptr(), 0);
         if(has_self) {
-            args.push_back(py_offset(stack.ptr(), 0));
+            args.push_back(self);
         }
 
         auto tuple = py_offset(stack.ptr(), 0 + has_self);
@@ -237,7 +238,7 @@ public:
 
         // foreach function record and call the function with not convert
         while(p != nullptr) {
-            auto result = p->wrapper(*p, args, kwargs, false, {});
+            auto result = p->wrapper(*p, args, kwargs, false, self);
             if(result) {
                 return;
             }
@@ -247,7 +248,7 @@ public:
         p = this;
         // foreach function record and call the function with convert
         while(p != nullptr) {
-            auto result = p->wrapper(*p, args, kwargs, true, {});
+            auto result = p->wrapper(*p, args, kwargs, true, self);
             if(result) {
                 return;
             }
