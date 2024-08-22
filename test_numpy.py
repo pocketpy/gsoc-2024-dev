@@ -45,7 +45,7 @@ array([[ True, False],
 assert_equal(a & True, np.array([[1, 0], [0, 1]], dtype=np.bool_))
 assert_equal(a | True, np.array([[1, 1], [1, 1]], dtype=np.bool_))
 assert_equal(a ^ True, np.array([[0, 1], [1, 0]], dtype=np.bool_))
-assert_equal(~a, np.array([[False,  True], [ True, False]], dtype=np.bool_))
+assert_equal(~a, np.array([[False,  True], [ True, False]]))
 
 # test __getitem__ __setitem__
 a = np.array([[1, 2], [3, 4]])
