@@ -26,7 +26,6 @@ jobs:
       - name: Install dependencies
         run: |
           git submodule update --init --recursive
-          git clone https://github.com/google/googletest.git
 
       - name: Build
         run: |
@@ -52,7 +51,6 @@ jobs:
       - name: Install dependencies
         run: |
           git submodule update --init --recursive
-          git clone https://github.com/google/googletest.git
 
       - name: Build
         run: |
@@ -81,7 +79,6 @@ jobs:
       - name: Install dependencies
         run: |
           git submodule update --init --recursive
-          git clone https://github.com/google/googletest.git
 
       - name: Build
         run: |
