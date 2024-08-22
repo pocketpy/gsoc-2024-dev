@@ -2,3 +2,7 @@
 	path = pocketpy
 	url = https://github.com/pocketpy/pocketpy
 	branch = main
+
+[submodule "googletest"]
+  path = googletest
+  url = https://github.com/google/googletest.git
