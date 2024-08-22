@@ -13,8 +13,8 @@ private:                                                                        
 public:                                                                                                                \
     using parent::parent;                                                                                              \
     using parent::operator=;                                                                                           \
-    child(const object& o) : parent(o) {}                                                                              \
-    child(object&& o) : parent(std::move(o)) {}
+    child(const object& o) : parent(type::isinstance<child>(o) ? o : type::of<child>()(o)) {}                          \
+    child(object&& o) : parent(type::isinstance<child>(o) ? std::move(o) : type::of<child>()(std::move(o))) {}
 
 class type : public object {
 protected:
