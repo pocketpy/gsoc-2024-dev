@@ -236,43 +236,40 @@ public:
 
     template <typename U>
     ndarray operator& (const ndarray<U>& other) const {
-        using result_type = std::conditional_t<std::is_same_v<T, bool> && std::is_same_v<U, bool>, bool_, std::common_type_t<T, U>>;
+        using result_type = std::common_type_t<T, U>;
         xt::xarray<result_type> result = xt::cast<result_type>(_array) & xt::cast<result_type>(other.get_array());
         return ndarray(result);
     }
 
     template <typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
     ndarray operator& (const U& other) const {
-        using result_type = std::conditional_t<std::is_same_v<T, bool> && std::is_same_v<U, bool>, bool, T>;
-        xt::xarray<result_type> result = _array & static_cast<result_type>(other);
+        xt::xarray<T> result = _array & static_cast<T>(other);
         return ndarray(result);
     }
 
     template <typename U>
     ndarray operator| (const ndarray<U>& other) const {
-        using result_type = std::conditional_t<std::is_same_v<T, bool> && std::is_same_v<U, bool>, bool_, std::common_type_t<T, U>>;
+        using result_type = std::common_type_t<T, U>;
         xt::xarray<result_type> result = xt::cast<result_type>(_array) | xt::cast<result_type>(other.get_array());
         return ndarray(result);
     }
 
     template <typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
     ndarray operator| (const U& other) const {
-        using result_type = std::conditional_t<std::is_same_v<T, bool> && std::is_same_v<U, bool>, bool, T>;
-        xt::xarray<result_type> result = _array | static_cast<result_type>(other);
+        xt::xarray<T> result = _array | static_cast<T>(other);
         return ndarray(result);
     }
 
     template <typename U>
     ndarray operator^ (const ndarray<U>& other) const {
-        using result_type = std::conditional_t<std::is_same_v<T, bool> && std::is_same_v<U, bool>, bool_, std::common_type_t<T, U>>;
+        using result_type = std::common_type_t<T, U>;
         xt::xarray<result_type> result = xt::cast<result_type>(_array) ^ xt::cast<result_type>(other.get_array());
         return ndarray(result);
     }
 
     template <typename U, typename = std::enable_if_t<!is_ndarray_v<U>>>
     ndarray operator^ (const U& other) const {
-        using result_type = std::conditional_t<std::is_same_v<T, bool> && std::is_same_v<U, bool>, bool, T>;
-        xt::xarray<result_type> result = _array ^ static_cast<result_type>(other);
+        xt::xarray<T> result = _array ^ static_cast<T>(other);
         return ndarray(result);
     }
 
