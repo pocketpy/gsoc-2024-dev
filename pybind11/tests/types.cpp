@@ -41,10 +41,23 @@ TEST_F(PYBIND11_TEST, tuple) {
     tuple[0] = py::int_(3);
     tuple[2] = py::int_(1);
     EXPECT_EQ(tuple, py::eval("(3, '123', 1)"));
+
+    // test iterators.
+    int index = 0;
+    for(auto item: tuple) {
+        if(index == 0) {
+            EXPECT_EQ(item, py::int_(3));
+        } else if(index == 1) {
+            EXPECT_EQ(item, py::str("123"));
+        } else if(index == 2) {
+            EXPECT_EQ(item, py::int_(1));
+        }
+        index++;
+    }
 }
 
 TEST_F(PYBIND11_TEST, list) {
-    // test constructors
+    // constructors
     py::list list = py::list();
     EXPECT_EQ(list, py::eval("[]"));
     EXPECT_EQ(list.size(), 0);
@@ -55,12 +68,25 @@ TEST_F(PYBIND11_TEST, list) {
     EXPECT_EQ(list.size(), 3);
     EXPECT_FALSE(list.empty());
 
-    // test accessor
+    // accessor
     list[0] = py::int_(3);
     list[2] = py::int_(1);
     EXPECT_EQ(list, py::eval("[3, 2, 1]"));
 
-    // test other apis
+    // iterators
+    int index = 0;
+    for(auto item: list) {
+        if(index == 0) {
+            EXPECT_EQ(item, py::int_(3));
+        } else if(index == 1) {
+            EXPECT_EQ(item, py::int_(2));
+        } else if(index == 2) {
+            EXPECT_EQ(item, py::int_(1));
+        }
+        index++;
+    }
+
+    // others
     list.append(py::int_(4));
     EXPECT_EQ(list, py::eval("[3, 2, 1, 4]"));
 
@@ -69,22 +95,39 @@ TEST_F(PYBIND11_TEST, list) {
 }
 
 TEST_F(PYBIND11_TEST, dict) {
-    // test constructors
+    // constructors
     py::dict dict = py::dict();
     EXPECT_EQ(dict, py::eval("{}"));
     EXPECT_EQ(dict.size(), 0);
     EXPECT_TRUE(dict.empty());
 
-    // test accessor
+    // accessor
     dict["a"] = py::int_(1);
     dict["b"] = py::int_(2);
     dict["c"] = py::int_(3);
     EXPECT_EQ(dict, py::eval("{'a': 1, 'b': 2, 'c': 3}"));
+    EXPECT_EQ(dict,
+              py::dict({
+                  {"a", py::int_(1)},
+                  {"b", py::int_(2)},
+                  {"c", py::int_(3)}
+    }));
 
-    // FIXME:
-    // test other apis
-    // dict.clear();
-    // EXPECT_EQ(dict, py::eval("{}"));
+    // iterators
+    int index = 0;
+    for(auto item: dict) {
+        if(index == 0) {
+            EXPECT_EQ(item.first.cast<std::string>(), "a");
+            EXPECT_EQ(item.second, py::int_(1));
+        } else if(index == 1) {
+            EXPECT_EQ(item.first.cast<std::string>(), "b");
+            EXPECT_EQ(item.second, py::int_(2));
+        } else if(index == 2) {
+            EXPECT_EQ(item.first.cast<std::string>(), "c");
+            EXPECT_EQ(item.second, py::int_(3));
+        }
+        index++;
+    }
 }
 
 TEST_F(PYBIND11_TEST, capsule) {

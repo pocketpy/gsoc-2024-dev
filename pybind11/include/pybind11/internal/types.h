@@ -106,7 +106,7 @@ public:
         return *this;
     }
 
-    handle operator* () const { return m_value; }
+    object operator* () const { return m_value; }
 
     friend bool operator== (const iterator& lhs, const iterator& rhs) { return lhs.m_value.ptr() == rhs.m_value.ptr(); }
 
@@ -172,7 +172,7 @@ class tuple : public object {
             return *this;
         }
 
-        handle operator* () const { return py_tuple_getitem(ptr, index); }
+        object operator* () const { return borrow(py_tuple_getitem(ptr, index)); }
 
     private:
         py_Ref ptr;
@@ -231,7 +231,7 @@ class list : public object {
             return *this;
         }
 
-        handle operator* () const { return py_list_getitem(ptr, index); }
+        object operator* () const { return borrow(py_list_getitem(ptr, index)); }
 
     private:
         py_Ref ptr;
@@ -295,7 +295,7 @@ class dict : public object {
             return *this;
         }
 
-        std::pair<handle, handle> operator* () const;
+        std::pair<object, object> operator* () const;
 
     private:
         object items;

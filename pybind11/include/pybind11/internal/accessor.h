@@ -18,7 +18,9 @@ class accessor : public interface<accessor<policy>> {
 
 public:
     auto ptr() const {
-        if(!m_value) { m_value = policy::get(m_obj, m_key); }
+        if(!m_value) {
+            m_value = policy::get(m_obj, m_key);
+        }
         return m_value.ptr();
     }
 
@@ -148,9 +150,9 @@ inline dict_accessor<handle> dict::operator[] (handle key) const { return {m_ptr
 
 inline dict::iterator::iterator(handle h) : items(h.attr("items")()), iter(items.begin()) {}
 
-inline std::pair<handle, handle> dict::iterator::operator* () const {
-    tuple pair = tuple(*iter, object::ref_t{});
-    return {pair[0], pair[1]};
+inline std::pair<object, object> dict::iterator::operator* () const {
+    tuple pair = *iter;
+    return {borrow(pair[0]), borrow(pair[1])};
 }
 
 }  // namespace pkbind
