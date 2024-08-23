@@ -558,9 +558,9 @@ xt::xarray<std::common_type_t<T, U>> matrix_mul(const xt::xarray<T>& a, const xt
         b_copy = xt::reshape_view(b_copy, {3, 1});
     }
     if (a_copy.dimension() == 2 && b_copy.dimension() == 2) {
-        int m = a_copy.shape()[0];
-        int n = a_copy.shape()[1];
-        int p = b_copy.shape()[1];
+        int m = static_cast<int>(a_copy.shape()[0]);
+        int n = static_cast<int>(a_copy.shape()[1]);
+        int p = static_cast<int>(b_copy.shape()[1]);
 
         Mat result = xt::zeros<result_type>({m, p});
 
