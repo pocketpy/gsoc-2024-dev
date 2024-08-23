@@ -296,11 +296,11 @@ public:
 
     ndarray(const int32 value) : data(value) {}
 
-    ndarray(const int_ value) : data(value) {}
+    ndarray(const int_ value) : data(static_cast<T>(value)) {}
 
     ndarray(const float32 value) : data(value) {}
 
-    ndarray(const float64 value) : data(value) {}
+    ndarray(const float64 value) : data(static_cast<T>(value)) {}
 
     ndarray(const pkpy::numpy::ndarray<T>& _arr) : data(_arr) {}
 
