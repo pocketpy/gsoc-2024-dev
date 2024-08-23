@@ -552,7 +552,7 @@ public:
                       std::is_same_v<T, int32> || std::is_same_v<T, int64>) {
             return py::int_(data.argmin());
         } else if constexpr(std::is_same_v<T, float32> || std::is_same_v<T, float64>) {
-            return py::float_(data.argmin());
+            return py::int_(data.argmin());
         } else {
             throw std::runtime_error("Unsupported type");
         }
@@ -565,7 +565,7 @@ public:
                       std::is_same_v<T, int32> || std::is_same_v<T, int64>) {
             return py::int_(data.argmax());
         } else if constexpr(std::is_same_v<T, float32> || std::is_same_v<T, float64>) {
-            return py::float_(data.argmax());
+            return py::int_(data.argmax());
         } else {
             throw std::runtime_error("Unsupported type");
         }
