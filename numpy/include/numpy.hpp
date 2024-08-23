@@ -395,14 +395,14 @@ public:
     }
 
     // Searching and Sorting Functions
-    T argmin() const { return (xt::argmin(_array))[0]; }
+    pkpy::int64 argmin() const { return (xt::argmin(_array))[0]; }
 
     ndarray<T> argmin(int axis) const {
         xt::xarray<T> result = xt::argmin(_array, {axis});
         return ndarray<T>(result);
     }
 
-    T argmax() const { return (xt::argmax(_array))[0]; }
+    pkpy::int64 argmax() const { return (xt::argmax(_array))[0]; }
 
     ndarray<T> argmax(int axis) const {
         xt::xarray<T> result = xt::argmax(_array, {axis});
