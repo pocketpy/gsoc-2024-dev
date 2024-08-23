@@ -493,7 +493,7 @@ class random {
 public:
     random() {
         auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-        xt::random::seed(seed);
+        xt::random::seed(static_cast<xt::random::seed_type>(seed));
     }
 
     template <typename T>
