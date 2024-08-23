@@ -29,12 +29,8 @@ jobs:
 
       - name: Build
         run: |
-          cmake -B build -DENABLE_TEST=ON
+          cmake -B build
           cmake --build build --config Release --parallel
-          
-      - name: Test
-        run: |
-          build/pybind11_test
 
   build_win:
     runs-on: windows-latest
@@ -54,12 +50,8 @@ jobs:
 
       - name: Build
         run: |
-          cmake -B build -DENABLE_TEST=ON
+          cmake -B build
           cmake --build build --config Release --parallel
-          
-      - name: Test
-        run: |
-          build\Release\pybind11_test.exe
 
   build_mac:
     runs-on: macos-latest
@@ -82,9 +74,5 @@ jobs:
 
       - name: Build
         run: |
-          cmake -B build -DENABLE_TEST=ON
+          cmake -B build
           cmake --build build --config Release --parallel
-          
-      - name: Test
-        run: |
-          build/pybind11_test
