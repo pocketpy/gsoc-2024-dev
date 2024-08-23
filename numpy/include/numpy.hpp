@@ -108,9 +108,9 @@ public:
     // Properties
     _Dtype dtype() const { return dtype_traits<T>::name; }
 
-    int ndim() const { return _array.dimension(); }
+    int ndim() const { return static_cast<int>(_array.dimension()); }
 
-    int size() const { return _array.size(); }
+    int size() const { return static_cast<int>(_array.size()); }
 
     _ShapeLike shape() const { return _ShapeLike(_array.shape().begin(), _array.shape().end()); }
 
