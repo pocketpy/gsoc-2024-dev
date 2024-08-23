@@ -296,11 +296,11 @@ public:
 
     ndarray(const int32 value) : data(value) {}
 
-    ndarray(const int_ value) : data(value) {}
+    ndarray(const int_ value) : data(static_cast<T>(value)) {}
 
     ndarray(const float32 value) : data(value) {}
 
-    ndarray(const float64 value) : data(value) {}
+    ndarray(const float64 value) : data(static_cast<T>(value)) {}
 
     ndarray(const pkpy::numpy::ndarray<T>& _arr) : data(_arr) {}
 
@@ -394,7 +394,9 @@ public:
     }
 
     py::object min() const override {
-        if constexpr (std::is_same_v<T, bool_> || std::is_same_v<T, int8> || std::is_same_v<T, int16> ||
+        if constexpr (std::is_same_v<T, bool_>) {
+            return py::bool_(data.min());
+        } else if constexpr (std::is_same_v<T, int8> || std::is_same_v<T, int16> ||
                       std::is_same_v<T, int32> || std::is_same_v<T, int64>) {
             return py::int_(data.min());
         } else if constexpr(std::is_same_v<T, float32> || std::is_same_v<T, float64>) {
@@ -426,8 +428,10 @@ public:
     }
 
     py::object max() const override {
-        if constexpr (std::is_same_v<T, bool_> || std::is_same_v<T, int8> || std::is_same_v<T, int16> ||
-                      std::is_same_v<T, int32> || std::is_same_v<T, int64>) {
+        if constexpr (std::is_same_v<T, bool_>) {
+            return py::bool_(data.max());
+        } else if constexpr (std::is_same_v<T, int8> || std::is_same_v<T, int16> ||
+                             std::is_same_v<T, int32> || std::is_same_v<T, int64>) {
             return py::int_(data.max());
         } else if constexpr(std::is_same_v<T, float32> || std::is_same_v<T, float64>) {
             return py::float_(data.max());
@@ -548,7 +552,7 @@ public:
                       std::is_same_v<T, int32> || std::is_same_v<T, int64>) {
             return py::int_(data.argmin());
         } else if constexpr(std::is_same_v<T, float32> || std::is_same_v<T, float64>) {
-            return py::float_(data.argmin());
+            return py::int_(data.argmin());
         } else {
             throw std::runtime_error("Unsupported type");
         }
@@ -561,7 +565,7 @@ public:
                       std::is_same_v<T, int32> || std::is_same_v<T, int64>) {
             return py::int_(data.argmax());
         } else if constexpr(std::is_same_v<T, float32> || std::is_same_v<T, float64>) {
-            return py::float_(data.argmax());
+            return py::int_(data.argmax());
         } else {
             throw std::runtime_error("Unsupported type");
         }
@@ -1910,7 +1914,7 @@ public:
             }
         } else if constexpr(std::is_same_v<T, float64>) {
             if (data.ndim() == 1) {
-                data.set_item(index, value);
+                data.set_item(index, static_cast<T>(value));
             } else {
                 data.set_item(index, (pkpy::numpy::adapt<int_>(std::vector{value})).astype<float64>());
             }
@@ -1958,7 +1962,7 @@ public:
             }
         } else if constexpr(std::is_same_v<T, int_>) {
             if (data.ndim() == 1) {
-                data.set_item(index, value);
+                data.set_item(index, static_cast<T>(value));
             } else {
                 data.set_item(index, (pkpy::numpy::adapt<float64>(std::vector{value})).astype<int_>());
             }
@@ -2010,13 +2014,13 @@ public:
                 data.set_item(index, (pkpy::numpy::adapt<int_>(std::vector{value})).astype<float64>());
             }
         } else if(indices.size() == 2 && indices.size() <= data.ndim())
-            data.set_item_2d(indices[0], indices[1], value);
+            data.set_item_2d(indices[0], indices[1], static_cast<T>(value));
         else if(indices.size() == 3 && indices.size() <= data.ndim())
-            data.set_item_3d(indices[0], indices[1], indices[2], value);
+            data.set_item_3d(indices[0], indices[1], indices[2], static_cast<T>(value));
         else if(indices.size() == 4 && indices.size() <= data.ndim())
-            data.set_item_4d(indices[0], indices[1], indices[2], indices[3], value);
+            data.set_item_4d(indices[0], indices[1], indices[2], indices[3], static_cast<T>(value));
         else if(indices.size() == 5 && indices.size() <= data.ndim())
-            data.set_item_5d(indices[0], indices[1], indices[2], indices[3], indices[4], value);
+            data.set_item_5d(indices[0], indices[1], indices[2], indices[3], indices[4], static_cast<T>(value));
     }
 
     void set_item_tuple_float(py::tuple args, float64 value) override {
@@ -2032,13 +2036,13 @@ public:
                 data.set_item(index, (pkpy::numpy::adapt<float64>(std::vector{value})).astype<int_>());
             }
         } else if(indices.size() == 2 && indices.size() <= data.ndim())
-            data.set_item_2d(indices[0], indices[1], value);
+            data.set_item_2d(indices[0], indices[1], static_cast<T>(value));
         else if(indices.size() == 3 && indices.size() <= data.ndim())
-            data.set_item_3d(indices[0], indices[1], indices[2], value);
+            data.set_item_3d(indices[0], indices[1], indices[2], static_cast<T>(value));
         else if(indices.size() == 4 && indices.size() <= data.ndim())
-            data.set_item_4d(indices[0], indices[1], indices[2], indices[3], value);
+            data.set_item_4d(indices[0], indices[1], indices[2], indices[3], static_cast<T>(value));
         else if(indices.size() == 5 && indices.size() <= data.ndim())
-            data.set_item_5d(indices[0], indices[1], indices[2], indices[3], indices[4], value);
+            data.set_item_5d(indices[0], indices[1], indices[2], indices[3], indices[4], static_cast<T>(value));
     }
 
     void set_item_vector_int1(const std::vector<int>& indices, int_ value) override {

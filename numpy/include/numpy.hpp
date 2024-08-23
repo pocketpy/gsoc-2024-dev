@@ -108,9 +108,9 @@ public:
     // Properties
     _Dtype dtype() const { return dtype_traits<T>::name; }
 
-    int ndim() const { return _array.dimension(); }
+    int ndim() const { return static_cast<int>(_array.dimension()); }
 
-    int size() const { return _array.size(); }
+    int size() const { return static_cast<int>(_array.size()); }
 
     _ShapeLike shape() const { return _ShapeLike(_array.shape().begin(), _array.shape().end()); }
 
@@ -395,14 +395,14 @@ public:
     }
 
     // Searching and Sorting Functions
-    T argmin() const { return (xt::argmin(_array))[0]; }
+    pkpy::int64 argmin() const { return (xt::argmin(_array))[0]; }
 
     ndarray<T> argmin(int axis) const {
         xt::xarray<T> result = xt::argmin(_array, {axis});
         return ndarray<T>(result);
     }
 
-    T argmax() const { return (xt::argmax(_array))[0]; }
+    pkpy::int64 argmax() const { return (xt::argmax(_array))[0]; }
 
     ndarray<T> argmax(int axis) const {
         xt::xarray<T> result = xt::argmax(_array, {axis});
@@ -493,7 +493,7 @@ class random {
 public:
     random() {
         auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-        xt::random::seed(seed);
+        xt::random::seed(static_cast<xt::random::seed_type>(seed));
     }
 
     template <typename T>
@@ -558,9 +558,9 @@ xt::xarray<std::common_type_t<T, U>> matrix_mul(const xt::xarray<T>& a, const xt
         b_copy = xt::reshape_view(b_copy, {3, 1});
     }
     if (a_copy.dimension() == 2 && b_copy.dimension() == 2) {
-        int m = a_copy.shape()[0];
-        int n = a_copy.shape()[1];
-        int p = b_copy.shape()[1];
+        int m = static_cast<int>(a_copy.shape()[0]);
+        int n = static_cast<int>(a_copy.shape()[1]);
+        int p = static_cast<int>(b_copy.shape()[1]);
 
         Mat result = xt::zeros<result_type>({m, p});
 
