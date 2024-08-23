@@ -1910,7 +1910,7 @@ public:
             }
         } else if constexpr(std::is_same_v<T, float64>) {
             if (data.ndim() == 1) {
-                data.set_item(index, value);
+                data.set_item(index, static_cast<T>(value));
             } else {
                 data.set_item(index, (pkpy::numpy::adapt<int_>(std::vector{value})).astype<float64>());
             }
@@ -1958,7 +1958,7 @@ public:
             }
         } else if constexpr(std::is_same_v<T, int_>) {
             if (data.ndim() == 1) {
-                data.set_item(index, value);
+                data.set_item(index, static_cast<T>(value));
             } else {
                 data.set_item(index, (pkpy::numpy::adapt<float64>(std::vector{value})).astype<int_>());
             }
