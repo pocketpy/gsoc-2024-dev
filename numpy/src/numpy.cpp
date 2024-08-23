@@ -2010,13 +2010,13 @@ public:
                 data.set_item(index, (pkpy::numpy::adapt<int_>(std::vector{value})).astype<float64>());
             }
         } else if(indices.size() == 2 && indices.size() <= data.ndim())
-            data.set_item_2d(indices[0], indices[1], value);
+            data.set_item_2d(indices[0], indices[1], static_cast<T>(value));
         else if(indices.size() == 3 && indices.size() <= data.ndim())
-            data.set_item_3d(indices[0], indices[1], indices[2], value);
+            data.set_item_3d(indices[0], indices[1], indices[2], static_cast<T>(value));
         else if(indices.size() == 4 && indices.size() <= data.ndim())
-            data.set_item_4d(indices[0], indices[1], indices[2], indices[3], value);
+            data.set_item_4d(indices[0], indices[1], indices[2], indices[3], static_cast<T>(value));
         else if(indices.size() == 5 && indices.size() <= data.ndim())
-            data.set_item_5d(indices[0], indices[1], indices[2], indices[3], indices[4], value);
+            data.set_item_5d(indices[0], indices[1], indices[2], indices[3], indices[4], static_cast<T>(value));
     }
 
     void set_item_tuple_float(py::tuple args, float64 value) override {
