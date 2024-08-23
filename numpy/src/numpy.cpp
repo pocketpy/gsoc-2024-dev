@@ -2034,27 +2034,23 @@ public:
         } else if(indices.size() == 2 && indices.size() <= data.ndim()){
             if constexpr (std::is_same_v<T, float32>) {
                 data.set_item_2d(indices[0], indices[1], static_cast<float32>(value));
-            } else {
-                data.set_item_2d(indices[0], indices[1], value);
-            }
+            } 
+            data.set_item_2d(indices[0], indices[1], value);
         } else if(indices.size() == 3 && indices.size() <= data.ndim()) {
             if constexpr (std::is_same_v<T, float32>) {
                 data.set_item_3d(indices[0], indices[1], indices[2], static_cast<float32>(value));
-            } else {
-                data.set_item_3d(indices[0], indices[1], indices[2], value);
-            }
+            } 
+            data.set_item_3d(indices[0], indices[1], indices[2], value);
         } else if(indices.size() == 4 && indices.size() <= data.ndim()) {
             if constexpr (std::is_same_v<T, float32>) {
                 data.set_item_4d(indices[0], indices[1], indices[2], indices[3], static_cast<float32>(value));
-            } else {
-                data.set_item_4d(indices[0], indices[1], indices[2], indices[3], value);
-            }
+            } 
+            data.set_item_4d(indices[0], indices[1], indices[2], indices[3], value);
         } else if(indices.size() == 5 && indices.size() <= data.ndim()) {
             if constexpr (std::is_same_v<T, float32>) {
                 data.set_item_5d(indices[0], indices[1], indices[2], indices[3], indices[4], static_cast<float32>(value));
-            } else {
-                data.set_item_5d(indices[0], indices[1], indices[2], indices[3], indices[4], value);
-            }
+            } 
+            data.set_item_5d(indices[0], indices[1], indices[2], indices[3], indices[4], value);
         }
     }
 
