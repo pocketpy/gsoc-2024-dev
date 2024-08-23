@@ -394,7 +394,9 @@ public:
     }
 
     py::object min() const override {
-        if constexpr (std::is_same_v<T, bool_> || std::is_same_v<T, int8> || std::is_same_v<T, int16> ||
+        if constexpr (std::is_same_v<T, bool_>) {
+            return py::bool_(data.min());
+        } else if constexpr (std::is_same_v<T, int8> || std::is_same_v<T, int16> ||
                       std::is_same_v<T, int32> || std::is_same_v<T, int64>) {
             return py::int_(data.min());
         } else if constexpr(std::is_same_v<T, float32> || std::is_same_v<T, float64>) {
@@ -426,8 +428,10 @@ public:
     }
 
     py::object max() const override {
-        if constexpr (std::is_same_v<T, bool_> || std::is_same_v<T, int8> || std::is_same_v<T, int16> ||
-                      std::is_same_v<T, int32> || std::is_same_v<T, int64>) {
+        if constexpr (std::is_same_v<T, bool_>) {
+            return py::bool_(data.max());
+        } else if constexpr (std::is_same_v<T, int8> || std::is_same_v<T, int16> ||
+                             std::is_same_v<T, int32> || std::is_same_v<T, int64>) {
             return py::int_(data.max());
         } else if constexpr(std::is_same_v<T, float32> || std::is_same_v<T, float64>) {
             return py::float_(data.max());
