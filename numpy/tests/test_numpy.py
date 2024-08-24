@@ -196,16 +196,16 @@ def test_array_std():
     arr = np.array([[[1.5, 2.5, 3.5], [3.5, 4.5, 5.5], [5.5, 6.5, 7.5]]])
     assert arr.std() == 1.8257418583505538
     assert arr.std(0) == np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]])
-    assert np.allclose(arr.std(1), np.array([[1.632993, 1.632993, 1.632993]])) == 1
-    assert np.allclose(arr.std(2), np.array([[0.81649658, 0.81649658, 0.81649658]])) == 1
+    assert np.allclose(arr.std(1), np.array([[1.632993, 1.632993, 1.632993]]))
+    assert np.allclose(arr.std(2), np.array([[0.81649658, 0.81649658, 0.81649658]]))
 
 
 def test_array_var():
     arr = np.array([[[1.5, 2.5, 3.5], [3.5, 4.5, 5.5], [5.5, 6.5, 7.5]]])
     assert arr.var() == 3.3333333333333335
     assert arr.var(0) == np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]])
-    assert np.allclose(arr.var(1), np.array([[2.66666667, 2.66666667, 2.66666667]])) == 1
-    assert np.allclose(arr.var(2), np.array([[0.66666667, 0.66666667, 0.66666667]])) == 1
+    assert np.allclose(arr.var(1), np.array([[2.66666667, 2.66666667, 2.66666667]]))
+    assert np.allclose(arr.var(2), np.array([[0.66666667, 0.66666667, 0.66666667]]))
 
 
 def test_array_argmin():
@@ -409,7 +409,7 @@ def test_array_add():
     assert 1.66 + arr2 == np.array([[2.99, 4.32], [5.65, 6.99]])
     assert arr2 + arr2 == np.array([[2.66, 5.32], [7.98, 10.66]])
 
-    array1 = np.ones((2, 2, 2, 2, 2))
+    array1 = np.ones([2, 2, 2, 2, 2])
     array2 = np.array([[[[[1.1, 1.2], [1.3, 1.4]], [[1.5, 1.6], [1.7, 1.8]]],
                         [[[2.1, 2.2], [2.3, 2.4]], [[2.5, 2.6], [2.7, 2.8]]]],
                        [[[[3.1, 3.2], [3.3, 3.4]], [[3.5, 3.6], [3.7, 3.8]]],
@@ -442,7 +442,7 @@ def test_array_sub():
     assert np.allclose(1.66 - arr2, np.array([[0.33, -1.], [-2.33, -3.67]]))
     assert arr2 - arr2 == np.array([[0, 0], [0, 0]])
 
-    array1 = np.ones((2, 2, 2, 2, 2))
+    array1 = np.ones([2, 2, 2, 2, 2])
     array2 = np.array([[[[[1.1, 1.2], [1.3, 1.4]], [[1.5, 1.6], [1.7, 1.8]]],
                         [[[2.1, 2.2], [2.3, 2.4]], [[2.5, 2.6], [2.7, 2.8]]]],
                        [[[[3.1, 3.2], [3.3, 3.4]], [[3.5, 3.6], [3.7, 3.8]]],
@@ -637,6 +637,7 @@ def test_array_getitem():
                                       [15, 16, 17, 18, 19]],
                                      [[20, 21, 22, 23, 24],
                                       [25, 26, 27, 28, 29]]])
+    assert arr1[3:2:-1].shape == np.array([]).reshape([0, 2, 5]).shape
     assert arr1[3::-2] == np.array([[[20, 21, 22, 23, 24],
                                      [25, 26, 27, 28, 29]],
                                     [[0, 1, 2, 3, 4],
