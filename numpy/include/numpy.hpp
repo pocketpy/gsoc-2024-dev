@@ -59,6 +59,7 @@ REGISTER_DTYPE(uint8_t, "uint8");
 REGISTER_DTYPE(uint16_t, "uint16");
 REGISTER_DTYPE(uint32_t, "uint32");
 REGISTER_DTYPE(uint64_t, "uint64");
+REGISTER_DTYPE(float, "float32");
 REGISTER_DTYPE(float_, "float64");
 REGISTER_DTYPE(bool_, "bool");
 REGISTER_DTYPE(std::complex<float32>, "complex64");
