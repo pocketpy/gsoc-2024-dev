@@ -295,6 +295,14 @@ public:
 
     void set_item(int index, const ndarray<T>& value) { xt::view(_array, index, xt::all()) = value.get_array(); }
 
+    void set_item(int i1, int i2, const ndarray<T>& value) { xt::view(_array, i1, i2, xt::all()) = value.get_array(); }
+
+    void set_item(int i1, int i2, int i3, const ndarray<T>& value) { xt::view(_array, i1, i2, i3, xt::all()) = value.get_array(); }
+
+    void set_item(int i1, int i2, int i3, int i4, const ndarray<T>& value) { xt::view(_array, i1, i2, i3, i4, xt::all()) = value.get_array(); }
+
+    void set_item(int i1, int i2, int i3, int i4, int i5, const ndarray<T>& value) { xt::view(_array, i1, i2, i3, i4, i5, xt::all()) = value.get_array(); }
+
     void set_item(const std::vector<int>& indices, const ndarray<T>& value) {
         xt::view(_array, xt::keep(indices)) = value.get_array();
     }
@@ -303,13 +311,13 @@ public:
         xt::view(_array, xt::range(std::get<0>(slice), std::get<1>(slice), std::get<2>(slice))) = value.get_array();
     }
 
-    void set_item_2d(int i1, int i2, T value) { xt::view(_array, i1, i2) = value; }
+    void set_item(int i1, int i2, T value) { xt::view(_array, i1, i2) = value; }
 
-    void set_item_3d(int i1, int i2, int i3, T value) { xt::view(_array, i1, i2, i3) = value; }
+    void set_item(int i1, int i2, int i3, T value) { xt::view(_array, i1, i2, i3) = value; }
 
-    void set_item_4d(int i1, int i2, int i3, int i4, T value) { xt::view(_array, i1, i2, i3, i4) = value; }
+    void set_item(int i1, int i2, int i3, int i4, T value) { xt::view(_array, i1, i2, i3, i4) = value; }
 
-    void set_item_5d(int i1, int i2, int i3, int i4, int i5, T value) { xt::view(_array, i1, i2, i3, i4, i5) = value; }
+    void set_item(int i1, int i2, int i3, int i4, int i5, T value) { xt::view(_array, i1, i2, i3, i4, i5) = value; }
 
     // Boolean Functions
     bool all() const { return xt::all(_array); }
