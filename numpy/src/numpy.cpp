@@ -232,9 +232,25 @@ public:
 
     virtual void set_item_index_float_4d(int index, const std::vector<std::vector<std::vector<std::vector<float64>>>>& value) = 0;
 
-    virtual void set_item_tuple_int(py::tuple args, int_ value) = 0;
+    virtual void set_item_tuple_int1(py::tuple args, int_ value) = 0;
 
-    virtual void set_item_tuple_float(py::tuple args, float64 value) = 0;
+    virtual void set_item_tuple_int2(py::tuple args, const std::vector<int_>& value) = 0;
+
+    virtual void set_item_tuple_int3(py::tuple args, const std::vector<std::vector<int_>>& value) = 0;
+
+    virtual void set_item_tuple_int4(py::tuple args, const std::vector<std::vector<std::vector<int_>>>& value) = 0;
+
+    virtual void set_item_tuple_int5(py::tuple args, const std::vector<std::vector<std::vector<std::vector<int_>>>>& value) = 0;
+
+    virtual void set_item_tuple_float1(py::tuple args, float64 value) = 0;
+
+    virtual void set_item_tuple_float2(py::tuple args, const std::vector<float64>& value) = 0;
+
+    virtual void set_item_tuple_float3(py::tuple args, const std::vector<std::vector<float64>>& value) = 0;
+
+    virtual void set_item_tuple_float4(py::tuple args, const std::vector<std::vector<std::vector<float64>>>& value) = 0;
+
+    virtual void set_item_tuple_float5(py::tuple args, const std::vector<std::vector<std::vector<std::vector<float64>>>>& value) = 0;
 
     virtual void set_item_vector_int1(const std::vector<int>& indices, int_ value) = 0;
 
@@ -2001,7 +2017,7 @@ public:
         }
     }
 
-    void set_item_tuple_int(py::tuple args, int_ value) override {
+    void set_item_tuple_int1(py::tuple args, int_ value) override {
         std::vector<int> indices;
         for(auto item: args) {
             indices.push_back(py::cast<int>(item));
@@ -2014,16 +2030,172 @@ public:
                 data.set_item(index, (pkpy::numpy::adapt<int_>(std::vector{value})).astype<float64>());
             }
         } else if(indices.size() == 2 && indices.size() <= data.ndim())
-            data.set_item_2d(indices[0], indices[1], static_cast<T>(value));
+            data.set_item(indices[0], indices[1], static_cast<T>(value));
         else if(indices.size() == 3 && indices.size() <= data.ndim())
-            data.set_item_3d(indices[0], indices[1], indices[2], static_cast<T>(value));
+            data.set_item(indices[0], indices[1], indices[2], static_cast<T>(value));
         else if(indices.size() == 4 && indices.size() <= data.ndim())
-            data.set_item_4d(indices[0], indices[1], indices[2], indices[3], static_cast<T>(value));
+            data.set_item(indices[0], indices[1], indices[2], indices[3], static_cast<T>(value));
         else if(indices.size() == 5 && indices.size() <= data.ndim())
-            data.set_item_5d(indices[0], indices[1], indices[2], indices[3], indices[4], static_cast<T>(value));
+            data.set_item(indices[0], indices[1], indices[2], indices[3], indices[4], static_cast<T>(value));
     }
 
-    void set_item_tuple_float(py::tuple args, float64 value) override {
+    void set_item_tuple_int2(py::tuple args, const std::vector<int_>& value) override {
+        std::vector<int> indices;
+        for(auto item: args) {
+            indices.push_back(py::cast<int>(item));
+        }
+        if(indices.size() == 1) {
+            int index = indices[0];
+            if constexpr(std::is_same_v<T, int_>) {
+                data.set_item(index, pkpy::numpy::adapt<int_>(value));
+            } else if constexpr(std::is_same_v<T, float64>) {
+                data.set_item(index, (pkpy::numpy::adapt<int_>(value)).astype<float64>());
+            }
+        } else if(indices.size() == 2 && indices.size() <= data.ndim()) {
+            if constexpr(std::is_same_v<T, int_>) {
+                data.set_item(indices[0], indices[1], pkpy::numpy::adapt<int_>(value));
+            } else if constexpr(std::is_same_v<T, float64>) {
+                data.set_item(indices[0], indices[1], (pkpy::numpy::adapt<int_>(value)).astype<float64>());
+            }
+        } else if(indices.size() == 3 && indices.size() <= data.ndim()) {
+            if constexpr(std::is_same_v<T, int_>) {
+                data.set_item(indices[0], indices[1], indices[2], pkpy::numpy::adapt<int_>(value));
+            } else if constexpr(std::is_same_v<T, float64>) {
+                data.set_item(indices[0], indices[1], indices[2], (pkpy::numpy::adapt<int_>(value)).astype<float64>());
+            }
+        } else if(indices.size() == 4 && indices.size() <= data.ndim()) {
+            if constexpr(std::is_same_v<T, int_>) {
+                data.set_item(indices[0], indices[1], indices[2], indices[3], pkpy::numpy::adapt<int_>(value));
+            } else if constexpr(std::is_same_v<T, float64>) {
+                data.set_item(indices[0], indices[1], indices[2], indices[3], (pkpy::numpy::adapt<int_>(value)).astype<float64>());
+            }
+        } else if(indices.size() == 5 && indices.size() <= data.ndim()) {
+            if constexpr(std::is_same_v<T, int_>) {
+                data.set_item(indices[0], indices[1], indices[2], indices[3], indices[4], pkpy::numpy::adapt<int_>(value));
+            } else if constexpr(std::is_same_v<T, float64>) {
+                data.set_item(indices[0], indices[1], indices[2], indices[3], indices[4], (pkpy::numpy::adapt<int_>(value)).astype<float64>());
+            }
+        }
+    }
+
+    void set_item_tuple_int3(py::tuple args, const std::vector<std::vector<int_>>& value) override {
+        std::vector<int> indices;
+        for(auto item: args) {
+            indices.push_back(py::cast<int>(item));
+        }
+        if(indices.size() == 1) {
+            int index = indices[0];
+            if constexpr(std::is_same_v<T, int_>) {
+                data.set_item(index, pkpy::numpy::adapt<int_>(value));
+            } else if constexpr(std::is_same_v<T, float64>) {
+                data.set_item(index, (pkpy::numpy::adapt<int_>(value)).astype<float64>());
+            }
+        } else if(indices.size() == 2 && indices.size() <= data.ndim()) {
+            if constexpr(std::is_same_v<T, int_>) {
+                data.set_item(indices[0], indices[1], pkpy::numpy::adapt<int_>(value));
+            } else if constexpr(std::is_same_v<T, float64>) {
+                data.set_item(indices[0], indices[1], (pkpy::numpy::adapt<int_>(value)).astype<float64>());
+            }
+        } else if(indices.size() == 3 && indices.size() <= data.ndim()) {
+            if constexpr(std::is_same_v<T, int_>) {
+                data.set_item(indices[0], indices[1], indices[2], pkpy::numpy::adapt<int_>(value));
+            } else if constexpr(std::is_same_v<T, float64>) {
+                data.set_item(indices[0], indices[1], indices[2], (pkpy::numpy::adapt<int_>(value)).astype<float64>());
+            }
+        } else if(indices.size() == 4 && indices.size() <= data.ndim()) {
+            if constexpr(std::is_same_v<T, int_>) {
+                data.set_item(indices[0], indices[1], indices[2], indices[3], pkpy::numpy::adapt<int_>(value));
+            } else if constexpr(std::is_same_v<T, float64>) {
+                data.set_item(indices[0], indices[1], indices[2], indices[3], (pkpy::numpy::adapt<int_>(value)).astype<float64>());
+            }
+        } else if(indices.size() == 5 && indices.size() <= data.ndim()) {
+            if constexpr(std::is_same_v<T, int_>) {
+                data.set_item(indices[0], indices[1], indices[2], indices[3], indices[4], pkpy::numpy::adapt<int_>(value));
+            } else if constexpr(std::is_same_v<T, float64>) {
+                data.set_item(indices[0], indices[1], indices[2], indices[3], indices[4], (pkpy::numpy::adapt<int_>(value)).astype<float64>());
+            }
+        }
+    }
+
+    void set_item_tuple_int4(py::tuple args, const std::vector<std::vector<std::vector<int_>>>& value) override {
+        std::vector<int> indices;
+        for(auto item: args) {
+            indices.push_back(py::cast<int>(item));
+        }
+        if(indices.size() == 1) {
+            int index = indices[0];
+            if constexpr(std::is_same_v<T, int_>) {
+                data.set_item(index, pkpy::numpy::adapt<int_>(value));
+            } else if constexpr(std::is_same_v<T, float64>) {
+                data.set_item(index, (pkpy::numpy::adapt<int_>(value)).astype<float64>());
+            }
+        } else if(indices.size() == 2 && indices.size() <= data.ndim()) {
+            if constexpr(std::is_same_v<T, int_>) {
+                data.set_item(indices[0], indices[1], pkpy::numpy::adapt<int_>(value));
+            } else if constexpr(std::is_same_v<T, float64>) {
+                data.set_item(indices[0], indices[1], (pkpy::numpy::adapt<int_>(value)).astype<float64>());
+            }
+        } else if(indices.size() == 3 && indices.size() <= data.ndim()) {
+            if constexpr(std::is_same_v<T, int_>) {
+                data.set_item(indices[0], indices[1], indices[2], pkpy::numpy::adapt<int_>(value));
+            } else if constexpr(std::is_same_v<T, float64>) {
+                data.set_item(indices[0], indices[1], indices[2], (pkpy::numpy::adapt<int_>(value)).astype<float64>());
+            }
+        } else if(indices.size() == 4 && indices.size() <= data.ndim()) {
+            if constexpr(std::is_same_v<T, int_>) {
+                data.set_item(indices[0], indices[1], indices[2], indices[3], pkpy::numpy::adapt<int_>(value));
+            } else if constexpr(std::is_same_v<T, float64>) {
+                data.set_item(indices[0], indices[1], indices[2], indices[3], (pkpy::numpy::adapt<int_>(value)).astype<float64>());
+            }
+        } else if(indices.size() == 5 && indices.size() <= data.ndim()) {
+            if constexpr(std::is_same_v<T, int_>) {
+                data.set_item(indices[0], indices[1], indices[2], indices[3], indices[4], pkpy::numpy::adapt<int_>(value));
+            } else if constexpr(std::is_same_v<T, float64>) {
+                data.set_item(indices[0], indices[1], indices[2], indices[3], indices[4], (pkpy::numpy::adapt<int_>(value)).astype<float64>());
+            }
+        }
+    }
+
+    void set_item_tuple_int5(py::tuple args, const std::vector<std::vector<std::vector<std::vector<int_>>>>& value) override {
+        std::vector<int> indices;
+        for(auto item: args) {
+            indices.push_back(py::cast<int>(item));
+        }
+        if(indices.size() == 1) {
+            int index = indices[0];
+            if constexpr(std::is_same_v<T, int_>) {
+                data.set_item(index, pkpy::numpy::adapt<int_>(value));
+            } else if constexpr(std::is_same_v<T, float64>) {
+                data.set_item(index, (pkpy::numpy::adapt<int_>(value)).astype<float64>());
+            }
+        } else if(indices.size() == 2 && indices.size() <= data.ndim()) {
+            if constexpr(std::is_same_v<T, int_>) {
+                data.set_item(indices[0], indices[1], pkpy::numpy::adapt<int_>(value));
+            } else if constexpr(std::is_same_v<T, float64>) {
+                data.set_item(indices[0], indices[1], (pkpy::numpy::adapt<int_>(value)).astype<float64>());
+            }
+        } else if(indices.size() == 3 && indices.size() <= data.ndim()) {
+            if constexpr(std::is_same_v<T, int_>) {
+                data.set_item(indices[0], indices[1], indices[2], pkpy::numpy::adapt<int_>(value));
+            } else if constexpr(std::is_same_v<T, float64>) {
+                data.set_item(indices[0], indices[1], indices[2], (pkpy::numpy::adapt<int_>(value)).astype<float64>());
+            }
+        } else if(indices.size() == 4 && indices.size() <= data.ndim()) {
+            if constexpr(std::is_same_v<T, int_>) {
+                data.set_item(indices[0], indices[1], indices[2], indices[3], pkpy::numpy::adapt<int_>(value));
+            } else if constexpr(std::is_same_v<T, float64>) {
+                data.set_item(indices[0], indices[1], indices[2], indices[3], (pkpy::numpy::adapt<int_>(value)).astype<float64>());
+            }
+        } else if(indices.size() == 5 && indices.size() <= data.ndim()) {
+            if constexpr(std::is_same_v<T, int_>) {
+                data.set_item(indices[0], indices[1], indices[2], indices[3], indices[4], pkpy::numpy::adapt<int_>(value));
+            } else if constexpr(std::is_same_v<T, float64>) {
+                data.set_item(indices[0], indices[1], indices[2], indices[3], indices[4], (pkpy::numpy::adapt<int_>(value)).astype<float64>());
+            }
+        }
+    }
+
+    void set_item_tuple_float1(py::tuple args, float64 value) override {
         std::vector<int> indices;
         for(auto item: args) {
             indices.push_back(py::cast<int>(item));
@@ -2036,13 +2208,181 @@ public:
                 data.set_item(index, (pkpy::numpy::adapt<float64>(std::vector{value})).astype<int_>());
             }
         } else if(indices.size() == 2 && indices.size() <= data.ndim())
-            data.set_item_2d(indices[0], indices[1], static_cast<T>(value));
+            data.set_item(indices[0], indices[1], static_cast<T>(value));
         else if(indices.size() == 3 && indices.size() <= data.ndim())
-            data.set_item_3d(indices[0], indices[1], indices[2], static_cast<T>(value));
+            data.set_item(indices[0], indices[1], indices[2], static_cast<T>(value));
         else if(indices.size() == 4 && indices.size() <= data.ndim())
-            data.set_item_4d(indices[0], indices[1], indices[2], indices[3], static_cast<T>(value));
+            data.set_item(indices[0], indices[1], indices[2], indices[3], static_cast<T>(value));
         else if(indices.size() == 5 && indices.size() <= data.ndim())
-            data.set_item_5d(indices[0], indices[1], indices[2], indices[3], indices[4], static_cast<T>(value));
+            data.set_item(indices[0], indices[1], indices[2], indices[3], indices[4], static_cast<T>(value));
+    }
+
+    void set_item_tuple_float2(py::tuple args, const std::vector<float64>& value) override {
+        std::vector<int> indices;
+        for(auto item: args) {
+            indices.push_back(py::cast<int>(item));
+        }
+        if(indices.size() == 1) {
+            int index = indices[0];
+            if constexpr(std::is_same_v<T, float64>) {
+                data.set_item(index, pkpy::numpy::adapt<float64>(value));
+            } else if constexpr(std::is_same_v<T, int_>) {
+                data.set_item(index, (pkpy::numpy::adapt<float64>(value)).astype<int_>());
+            }
+        } else if(indices.size() == 2 && indices.size() <= data.ndim()) {
+            if constexpr (std::is_same_v<T, float64>) {
+                data.set_item(indices[0], indices[1], pkpy::numpy::adapt<float64>(value));
+            } else if constexpr (std::is_same_v<T, int_>) {
+                data.set_item(indices[0], indices[1], (pkpy::numpy::adapt<float64>(value)).astype<int_>());
+            }
+        }
+        else if(indices.size() == 3 && indices.size() <= data.ndim()) {
+            if constexpr (std::is_same_v<T, float64>) {
+                data.set_item(indices[0], indices[1], indices[2], pkpy::numpy::adapt<float64>(value));
+            } else if constexpr (std::is_same_v<T, int_>) {
+                data.set_item(indices[0], indices[1], indices[2], (pkpy::numpy::adapt<float64>(value)).astype<int_>());
+            }
+        }
+        else if(indices.size() == 4 && indices.size() <= data.ndim()) {
+            if constexpr (std::is_same_v<T, float64>) {
+                data.set_item(indices[0], indices[1], indices[2], indices[3], pkpy::numpy::adapt<float64>(value));
+            } else if constexpr (std::is_same_v<T, int_>) {
+                data.set_item(indices[0], indices[1], indices[2], indices[3], (pkpy::numpy::adapt<float64>(value)).astype<int_>());
+            }
+        }
+        else if(indices.size() == 5 && indices.size() <= data.ndim()) {
+            if constexpr (std::is_same_v<T, float64>) {
+                data.set_item(indices[0], indices[1], indices[2], indices[3], indices[4], pkpy::numpy::adapt<float64>(value));
+            } else if constexpr (std::is_same_v<T, int_>) {
+                data.set_item(indices[0], indices[1], indices[2], indices[3], indices[4], (pkpy::numpy::adapt<float64>(value)).astype<int_>());
+            }
+        }
+    }
+
+    void set_item_tuple_float3(py::tuple args, const std::vector<std::vector<float64>>& value) override {
+        std::vector<int> indices;
+        for(auto item: args) {
+            indices.push_back(py::cast<int>(item));
+        }
+        if(indices.size() == 1) {
+            int index = indices[0];
+            if constexpr(std::is_same_v<T, float64>) {
+                data.set_item(index, pkpy::numpy::adapt<float64>(value));
+            } else if constexpr(std::is_same_v<T, int_>) {
+                data.set_item(index, (pkpy::numpy::adapt<float64>(value)).astype<int_>());
+            }
+        } else if(indices.size() == 2 && indices.size() <= data.ndim()) {
+            if constexpr (std::is_same_v<T, float64>) {
+                data.set_item(indices[0], indices[1], pkpy::numpy::adapt<float64>(value));
+            } else if constexpr (std::is_same_v<T, int_>) {
+                data.set_item(indices[0], indices[1], (pkpy::numpy::adapt<float64>(value)).astype<int_>());
+            }
+        }
+        else if(indices.size() == 3 && indices.size() <= data.ndim()) {
+            if constexpr (std::is_same_v<T, float64>) {
+                data.set_item(indices[0], indices[1], indices[2], pkpy::numpy::adapt<float64>(value));
+            } else if constexpr (std::is_same_v<T, int_>) {
+                data.set_item(indices[0], indices[1], indices[2], (pkpy::numpy::adapt<float64>(value)).astype<int_>());
+            }
+        }
+        else if(indices.size() == 4 && indices.size() <= data.ndim()) {
+            if constexpr (std::is_same_v<T, float64>) {
+                data.set_item(indices[0], indices[1], indices[2], indices[3], pkpy::numpy::adapt<float64>(value));
+            } else if constexpr (std::is_same_v<T, int_>) {
+                data.set_item(indices[0], indices[1], indices[2], indices[3], (pkpy::numpy::adapt<float64>(value)).astype<int_>());
+            }
+        }
+        else if(indices.size() == 5 && indices.size() <= data.ndim()) {
+            if constexpr (std::is_same_v<T, float64>) {
+                data.set_item(indices[0], indices[1], indices[2], indices[3], indices[4], pkpy::numpy::adapt<float64>(value));
+            } else if constexpr (std::is_same_v<T, int_>) {
+                data.set_item(indices[0], indices[1], indices[2], indices[3], indices[4], (pkpy::numpy::adapt<float64>(value)).astype<int_>());
+            }
+        }
+    }
+
+    void set_item_tuple_float4(py::tuple args, const std::vector<std::vector<std::vector<float64>>>& value) override {
+        std::vector<int> indices;
+        for(auto item: args) {
+            indices.push_back(py::cast<int>(item));
+        }
+        if(indices.size() == 1) {
+            int index = indices[0];
+            if constexpr(std::is_same_v<T, float64>) {
+                data.set_item(index, pkpy::numpy::adapt<float64>(value));
+            } else if constexpr(std::is_same_v<T, int_>) {
+                data.set_item(index, (pkpy::numpy::adapt<float64>(value)).astype<int_>());
+            }
+        } else if(indices.size() == 2 && indices.size() <= data.ndim()) {
+            if constexpr (std::is_same_v<T, float64>) {
+                data.set_item(indices[0], indices[1], pkpy::numpy::adapt<float64>(value));
+            } else if constexpr (std::is_same_v<T, int_>) {
+                data.set_item(indices[0], indices[1], (pkpy::numpy::adapt<float64>(value)).astype<int_>());
+            }
+        }
+        else if(indices.size() == 3 && indices.size() <= data.ndim()) {
+            if constexpr (std::is_same_v<T, float64>) {
+                data.set_item(indices[0], indices[1], indices[2], pkpy::numpy::adapt<float64>(value));
+            } else if constexpr (std::is_same_v<T, int_>) {
+                data.set_item(indices[0], indices[1], indices[2], (pkpy::numpy::adapt<float64>(value)).astype<int_>());
+            }
+        }
+        else if(indices.size() == 4 && indices.size() <= data.ndim()) {
+            if constexpr (std::is_same_v<T, float64>) {
+                data.set_item(indices[0], indices[1], indices[2], indices[3], pkpy::numpy::adapt<float64>(value));
+            } else if constexpr (std::is_same_v<T, int_>) {
+                data.set_item(indices[0], indices[1], indices[2], indices[3], (pkpy::numpy::adapt<float64>(value)).astype<int_>());
+            }
+        }
+        else if(indices.size() == 5 && indices.size() <= data.ndim()) {
+            if constexpr (std::is_same_v<T, float64>) {
+                data.set_item(indices[0], indices[1], indices[2], indices[3], indices[4], pkpy::numpy::adapt<float64>(value));
+            } else if constexpr (std::is_same_v<T, int_>) {
+                data.set_item(indices[0], indices[1], indices[2], indices[3], indices[4], (pkpy::numpy::adapt<float64>(value)).astype<int_>());
+            }
+        }
+    }
+
+    void set_item_tuple_float5(py::tuple args, const std::vector<std::vector<std::vector<std::vector<float64>>>>& value) override {
+        std::vector<int> indices;
+        for(auto item: args) {
+            indices.push_back(py::cast<int>(item));
+        }
+        if(indices.size() == 1) {
+            int index = indices[0];
+            if constexpr(std::is_same_v<T, float64>) {
+                data.set_item(index, pkpy::numpy::adapt<float64>(value));
+            } else if constexpr(std::is_same_v<T, int_>) {
+                data.set_item(index, (pkpy::numpy::adapt<float64>(value)).astype<int_>());
+            }
+        } else if(indices.size() == 2 && indices.size() <= data.ndim()) {
+            if constexpr (std::is_same_v<T, float64>) {
+                data.set_item(indices[0], indices[1], pkpy::numpy::adapt<float64>(value));
+            } else if constexpr (std::is_same_v<T, int_>) {
+                data.set_item(indices[0], indices[1], (pkpy::numpy::adapt<float64>(value)).astype<int_>());
+            }
+        }
+        else if(indices.size() == 3 && indices.size() <= data.ndim()) {
+            if constexpr (std::is_same_v<T, float64>) {
+                data.set_item(indices[0], indices[1], indices[2], pkpy::numpy::adapt<float64>(value));
+            } else if constexpr (std::is_same_v<T, int_>) {
+                data.set_item(indices[0], indices[1], indices[2], (pkpy::numpy::adapt<float64>(value)).astype<int_>());
+            }
+        }
+        else if(indices.size() == 4 && indices.size() <= data.ndim()) {
+            if constexpr (std::is_same_v<T, float64>) {
+                data.set_item(indices[0], indices[1], indices[2], indices[3], pkpy::numpy::adapt<float64>(value));
+            } else if constexpr (std::is_same_v<T, int_>) {
+                data.set_item(indices[0], indices[1], indices[2], indices[3], (pkpy::numpy::adapt<float64>(value)).astype<int_>());
+            }
+        }
+        else if(indices.size() == 5 && indices.size() <= data.ndim()) {
+            if constexpr (std::is_same_v<T, float64>) {
+                data.set_item(indices[0], indices[1], indices[2], indices[3], indices[4], pkpy::numpy::adapt<float64>(value));
+            } else if constexpr (std::is_same_v<T, int_>) {
+                data.set_item(indices[0], indices[1], indices[2], indices[3], indices[4], (pkpy::numpy::adapt<float64>(value)).astype<int_>());
+            }
+        }
     }
 
     void set_item_vector_int1(const std::vector<int>& indices, int_ value) override {
@@ -2657,8 +2997,16 @@ PYBIND11_EMBEDDED_MODULE(numpy_bindings, m) {
         .def("__setitem__", &ndarray_base::set_item_index_float_2d)
         .def("__setitem__", &ndarray_base::set_item_index_float_3d)
         .def("__setitem__", &ndarray_base::set_item_index_float_4d)
-        .def("__setitem__", &ndarray_base::set_item_tuple_int)
-        .def("__setitem__", &ndarray_base::set_item_tuple_float)
+        .def("__setitem__", &ndarray_base::set_item_tuple_int1)
+        .def("__setitem__", &ndarray_base::set_item_tuple_int2)
+        .def("__setitem__", &ndarray_base::set_item_tuple_int3)
+        .def("__setitem__", &ndarray_base::set_item_tuple_int4)
+        .def("__setitem__", &ndarray_base::set_item_tuple_int5)
+        .def("__setitem__", &ndarray_base::set_item_tuple_float1)
+        .def("__setitem__", &ndarray_base::set_item_tuple_float2)
+        .def("__setitem__", &ndarray_base::set_item_tuple_float3)
+        .def("__setitem__", &ndarray_base::set_item_tuple_float4)
+        .def("__setitem__", &ndarray_base::set_item_tuple_float5)
         .def("__setitem__", &ndarray_base::set_item_vector_int1)
         .def("__setitem__", &ndarray_base::set_item_vector_int2)
         .def("__setitem__", &ndarray_base::set_item_vector_int3)
