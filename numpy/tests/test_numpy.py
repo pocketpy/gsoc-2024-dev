@@ -671,3 +671,221 @@ assert_equal(a & True, np.array([[1, 0], [0, 1]], dtype=np.bool_))
 assert_equal(a | True, np.array([[1, 1], [1, 1]], dtype=np.bool_))
 assert_equal(a ^ True, np.array([[0, 1], [1, 0]], dtype=np.bool_))
 assert_equal(~a, np.array([[False,  True], [ True, False]]))
+
+
+# test array trigonometry
+arr1 = np.array([np.pi / 6, np.pi / 4, np.pi / 3, np.pi / 2, np.pi])
+assert np.allclose(np.sin(arr1), np.array([0.5, 0.707107, 0.866025, 1.0, 0.0]))
+assert np.allclose(np.cos(arr1), np.array([0.866025, 0.707107, 0.5, 0.0, -1.0]))
+assert np.allclose(np.tan(arr1), np.array([0.57735, 1.0, 1.73205, np.inf, 0.0]))
+
+arr2 = np.array([0.5, 0.707107, 0.866025, 1.0, 0.0])
+assert np.allclose(np.arcsin(arr2), np.array([np.pi / 6, np.pi / 4, np.pi / 3, np.pi / 2, 0.0]))
+assert np.allclose(np.arccos(arr2), np.array([np.pi / 3, np.pi / 4, np.pi / 6, 0.0, np.pi / 2]))
+assert np.allclose(np.arctan(arr2), np.array([0.463648, 0.61548, 0.713724, 0.785398, 0.0]))
+
+
+# test array exponential
+arr1 = np.array([0.0, 1.0, 2.0, 3.0, 4.0])
+
+assert np.allclose(np.exp(arr1), np.array([1.0, 2.718282, 7.389056, 20.085537, 54.598150]))
+assert np.allclose(np.log(arr1), np.array([-np.inf, 0.0, 0.693147, 1.098612, 1.386294]))
+assert np.allclose(np.log2(arr1), np.array([-np.inf, 0.0, 1.0, 1.584963, 2.0]))
+assert np.allclose(np.log10(arr1), np.array([-np.inf, 0.0, 0.30103, 0.477121, 0.60206]))
+
+
+# test array getitem
+arr1 = np.arange(30).reshape([3, 2, 5])
+
+assert_equal(arr1[0], np.array([[0, 1, 2, 3, 4],
+                                [5, 6, 7, 8, 9]]))
+assert_equal(arr1[1], np.array([[10, 11, 12, 13, 14],
+                                [15, 16, 17, 18, 19]]))
+assert_equal(arr1[2], np.array([[20, 21, 22, 23, 24],
+                                [25, 26, 27, 28, 29]]))
+assert_equal(arr1[-1], np.array([[20, 21, 22, 23, 24],
+                                 [25, 26, 27, 28, 29]]))
+assert_equal(arr1[-2], np.array([[10, 11, 12, 13, 14],
+                                 [15, 16, 17, 18, 19]]))
+
+assert_equal(arr1[0, 0], np.array([0, 1, 2, 3, 4]))
+assert_equal(arr1[1, 1], np.array([15, 16, 17, 18, 19]))
+assert_equal(arr1[2, 0], np.array([20, 21, 22, 23, 24]))
+
+assert_equal(arr1[(0,)], np.array([[0, 1, 2, 3, 4],
+                                   [5, 6, 7, 8, 9]]))
+assert_equal(arr1[(0, 1)], np.array([5, 6, 7, 8, 9]))
+assert_equal(arr1[(1, 0)], np.array([10, 11, 12, 13, 14]))
+assert_equal(arr1[(-1,)], np.array([[20, 21, 22, 23, 24],
+                                    [25, 26, 27, 28, 29]]))
+assert_equal(arr1[(-3, -1)], np.array([5, 6, 7, 8, 9]))
+assert arr1[(0, 1, 2)] == 7
+assert arr1[(2, 1, 0)] == 25
+assert arr1[(-3, -2, -1)] == 4
+assert arr1[(-1, -2, -3)] == 22
+
+assert_equal(arr1[[0, ]], np.array([[[0, 1, 2, 3, 4],
+                                     [5, 6, 7, 8, 9]]]))
+assert_equal(arr1[[0, 1]], np.array([[[0, 1, 2, 3, 4],
+                                      [5, 6, 7, 8, 9]],
+                                     [[10, 11, 12, 13, 14],
+                                      [15, 16, 17, 18, 19]]]))
+assert_equal(arr1[[1, 2]], np.array([[[10, 11, 12, 13, 14],
+                                      [15, 16, 17, 18, 19]],
+                                     [[20, 21, 22, 23, 24],
+                                      [25, 26, 27, 28, 29]]]))
+assert_equal(arr1[[2, 1]], np.array([[[20, 21, 22, 23, 24],
+                                      [25, 26, 27, 28, 29]],
+                                     [[10, 11, 12, 13, 14],
+                                      [15, 16, 17, 18, 19]]]))
+assert_equal(arr1[[2, 2]], np.array([[[20, 21, 22, 23, 24],
+                                      [25, 26, 27, 28, 29]],
+                                     [[20, 21, 22, 23, 24],
+                                      [25, 26, 27, 28, 29]]]))
+assert_equal(arr1[[0, 1, 2]], np.array([[[0, 1, 2, 3, 4],
+                                         [5, 6, 7, 8, 9]],
+                                        [[10, 11, 12, 13, 14],
+                                         [15, 16, 17, 18, 19]],
+                                        [[20, 21, 22, 23, 24],
+                                         [25, 26, 27, 28, 29]]]))
+assert_equal(arr1[[2, 1, 0]], np.array([[[20, 21, 22, 23, 24],
+                                         [25, 26, 27, 28, 29]],
+                                        [[10, 11, 12, 13, 14],
+                                         [15, 16, 17, 18, 19]],
+                                        [[0, 1, 2, 3, 4],
+                                         [5, 6, 7, 8, 9]]]))
+
+assert_equal(arr1[0:1], np.array([[[0, 1, 2, 3, 4],
+                                   [5, 6, 7, 8, 9]]]))
+assert_equal(arr1[2:3], np.array([[[20, 21, 22, 23, 24],
+                                   [25, 26, 27, 28, 29]]]))
+assert_equal(arr1[0:2], np.array([[[0, 1, 2, 3, 4],
+                                   [5, 6, 7, 8, 9]],
+                                  [[10, 11, 12, 13, 14],
+                                   [15, 16, 17, 18, 19]]]))
+assert_equal(arr1[1:3], np.array([[[10, 11, 12, 13, 14],
+                                   [15, 16, 17, 18, 19]],
+                                  [[20, 21, 22, 23, 24],
+                                   [25, 26, 27, 28, 29]]]))
+assert_equal(arr1[1:3:3], np.array([[[10, 11, 12, 13, 14],
+                                     [15, 16, 17, 18, 19]]]))
+assert_equal(arr1[0:3:2], np.array([[[0, 1, 2, 3, 4],
+                                     [5, 6, 7, 8, 9]],
+                                    [[20, 21, 22, 23, 24],
+                                     [25, 26, 27, 28, 29]]]))
+
+""" https://github.com/pocketpy/gsoc-2024-dev/issues/74
+assert_equal(arr1[1::], np.array([[[10, 11, 12, 13, 14],
+                                   [15, 16, 17, 18, 19]],
+                                  [[20, 21, 22, 23, 24],
+                                   [25, 26, 27, 28, 29]]]))
+assert_equal(arr1[:2:], np.array([[[0, 1, 2, 3, 4],
+                                   [5, 6, 7, 8, 9]],
+                                  [[10, 11, 12, 13, 14],
+                                   [15, 16, 17, 18, 19]]]))
+"""
+assert_equal(arr1[::2], np.array([[[0, 1, 2, 3, 4],
+                                   [5, 6, 7, 8, 9]],
+                                  [[20, 21, 22, 23, 24],
+                                   [25, 26, 27, 28, 29]]]))
+assert_equal(arr1[-2:3:1], np.array([[[10, 11, 12, 13, 14],
+                                      [15, 16, 17, 18, 19]],
+                                     [[20, 21, 22, 23, 24],
+                                      [25, 26, 27, 28, 29]]]))
+assert_equal(arr1[3::-2], np.array([[[20, 21, 22, 23, 24],
+                                     [25, 26, 27, 28, 29]],
+                                    [[0, 1, 2, 3, 4],
+                                     [5, 6, 7, 8, 9]]]))
+assert_equal(arr1[::-1], np.array([[[20, 21, 22, 23, 24],
+                                    [25, 26, 27, 28, 29]],
+                                   [[10, 11, 12, 13, 14],
+                                    [15, 16, 17, 18, 19]],
+                                   [[0, 1, 2, 3, 4],
+                                    [5, 6, 7, 8, 9]]]))
+assert_equal(arr1[::], np.array([[[0, 1, 2, 3, 4],
+                                  [5, 6, 7, 8, 9]],
+                                 [[10, 11, 12, 13, 14],
+                                  [15, 16, 17, 18, 19]],
+                                 [[20, 21, 22, 23, 24],
+                                  [25, 26, 27, 28, 29]]]))
+
+
+# test array setitem
+arr1 = np.arange(30).reshape([3, 2, 5])
+
+arr1[0] = 10
+assert_equal(arr1[0], np.array([[10, 10, 10, 10, 10],
+                                [10, 10, 10, 10, 10]]))
+
+arr1[1] = [1, 2, 3, 4, 5]
+assert_equal(arr1[1], np.array([[1, 2, 3, 4, 5],
+                                [1, 2, 3, 4, 5]]))
+
+arr1[2] = [[1, 2, 3, 4, 5], [6, 7, 8, 9, 10]]
+assert_equal(arr1[2], np.array([[1, 2, 3, 4, 5],
+                                [6, 7, 8, 9, 10]]))
+
+arr1[-1] = 0
+assert_equal(arr1[-1], np.array([[0, 0, 0, 0, 0],
+                                 [0, 0, 0, 0, 0]]))
+
+arr1[0, 0] = 5
+assert_equal(arr1[0, 0], np.array([5, 5, 5, 5, 5]))
+
+arr1[1, 1] = [1, 2, 3, 4, 5]
+assert_equal(arr1[1, 1], np.array([1, 2, 3, 4, 5]))
+
+arr1[2, 0] = [2.5]
+assert_equal(arr1[2, 0], np.array([2, 2, 2, 2, 2]))
+
+arr1[(0,)] = 10.5
+assert_equal(arr1[(0,)], np.array([[10, 10, 10, 10, 10],
+                                   [10, 10, 10, 10, 10]]))
+
+arr1[(0, 1)] = 0
+assert_equal(arr1[(0, 1)], np.array([0, 0, 0, 0, 0]))
+
+arr1[(-3, -1)] = 1
+assert_equal(arr1[(-3, -1)], np.array([1, 1, 1, 1, 1]))
+
+arr1[(-1, -2, -3)] = 3.14159
+assert arr1[(-1, -2, -3)] == 3
+
+arr1[[0, ]] = 0
+assert_equal(arr1[[0, ]], np.array([[[0, 0, 0, 0, 0],
+                                     [0, 0, 0, 0, 0]]]))
+
+arr1[[0, 1]] = 1
+assert_equal(arr1[[0, 1]], np.array([[[1, 1, 1, 1, 1],
+                                      [1, 1, 1, 1, 1]],
+                                     [[1, 1, 1, 1, 1],
+                                      [1, 1, 1, 1, 1]]]))
+
+arr1[[2, 2]] = [[1, 2, 3, 4, 5], [6, 7, 8, 9, 10]]
+assert_equal(arr1[[2, 2]], np.array([[[1, 2, 3, 4, 5],
+                                      [6, 7, 8, 9, 10]],
+                                     [[1, 2, 3, 4, 5],
+                                      [6, 7, 8, 9, 10]]]))
+
+arr1[0:1] = 0
+assert_equal(arr1[0:1], np.array([[[0, 0, 0, 0, 0],
+                                   [0, 0, 0, 0, 0]]]))
+
+arr1[2:3] = 1
+assert_equal(arr1[2:3], np.array([[[1, 1, 1, 1, 1],
+                                   [1, 1, 1, 1, 1]]]))
+
+arr1[::2] = [[1, 2, 3, 4, 5], [6, 7, 8, 9, 10]]
+assert_equal(arr1[::2], np.array([[[1, 2, 3, 4, 5],
+                                   [6, 7, 8, 9, 10]],
+                                  [[1, 2, 3, 4, 5],
+                                   [6, 7, 8, 9, 10]]]))
+
+arr1[-2:3:1] = [[[1, 2, 3, 4, 5],
+                 [6, 7, 8, 9, 10]],
+                [[11, 12, 13, 14, 15],
+                 [16, 17, 18, 19, 20]]]
+assert_equal(arr1[-2:3:1], np.array([[[1, 2, 3, 4, 5],
+                                      [6, 7, 8, 9, 10]],
+                                     [[11, 12, 13, 14, 15],
+                                      [16, 17, 18, 19, 20]]]))
