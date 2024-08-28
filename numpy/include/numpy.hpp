@@ -12,6 +12,17 @@
 #include <utility>
 #include <vector>
 
+// Suppress xtensor warnings if SUPPRESS_XTENSOR_WARNINGS is defined
+#ifdef SUPPRESS_XTENSOR_WARNINGS
+    #ifdef _MSC_VER
+        #pragma warning(push, 0)
+    #else
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wall"
+        #pragma GCC diagnostic ignored "-Wextra"
+    #endif
+#endif
+
 #include <xtensor/xarray.hpp>
 #include <xtensor/xio.hpp>
 #include <xtensor/xmath.hpp>
@@ -1015,3 +1026,12 @@ std::ostream& operator<< (std::ostream& os, const ndarray<T>& arr) {
 
 }  // namespace numpy
 }  // namespace pkpy
+
+#ifdef SUPPRESS_XTENSOR_WARNINGS
+    #ifdef _MSC_VER
+        #pragma warning(pop)
+    #else
+        #pragma GCC diagnostic pop
+    #endif
+#endif
+
