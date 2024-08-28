@@ -12,7 +12,7 @@
 #include <utility>
 #include <vector>
 
-// Suppress xtensor warnings if SUPPRESS_XTENSOR_WARNINGS is defined
+// Suppress xtensor warnings if SUPPRESS_XTENSOR_WARNINGS is set
 #ifdef SUPPRESS_XTENSOR_WARNINGS
     #ifdef _MSC_VER
         #pragma warning(push, 0)
