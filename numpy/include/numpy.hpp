@@ -30,6 +30,14 @@
 #include <xtensor/xsort.hpp>
 #include <xtensor/xview.hpp>
 
+#ifdef SUPPRESS_XTENSOR_WARNINGS
+    #ifdef _MSC_VER
+        #pragma warning(pop)
+    #else
+        #pragma GCC diagnostic pop
+    #endif
+#endif
+
 namespace pkpy {
 
 // Type aliases
@@ -1026,12 +1034,3 @@ std::ostream& operator<< (std::ostream& os, const ndarray<T>& arr) {
 
 }  // namespace numpy
 }  // namespace pkpy
-
-#ifdef SUPPRESS_XTENSOR_WARNINGS
-    #ifdef _MSC_VER
-        #pragma warning(pop)
-    #else
-        #pragma GCC diagnostic pop
-    #endif
-#endif
-
