@@ -12,12 +12,32 @@
 #include <utility>
 #include <vector>
 
+// Suppress xtensor warnings if SUPPRESS_XTENSOR_WARNINGS is set
+#ifdef SUPPRESS_XTENSOR_WARNINGS
+    #ifdef _MSC_VER
+        #pragma warning(push, 0)
+    #else
+        #pragma GCC diagnostic push
+        #pragma GCC diagnostic ignored "-Wall"
+        #pragma GCC diagnostic ignored "-Wextra"
+        #pragma GCC system_header
+    #endif
+#endif
+
 #include <xtensor/xarray.hpp>
 #include <xtensor/xio.hpp>
 #include <xtensor/xmath.hpp>
 #include <xtensor/xrandom.hpp>
 #include <xtensor/xsort.hpp>
 #include <xtensor/xview.hpp>
+
+#ifdef SUPPRESS_XTENSOR_WARNINGS
+    #ifdef _MSC_VER
+        #pragma warning(pop)
+    #else
+        #pragma GCC diagnostic pop
+    #endif
+#endif
 
 namespace pkpy {
 
