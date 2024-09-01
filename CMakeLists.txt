@@ -27,7 +27,7 @@ if(NOT SHOW_XTENSOR_WARNINGS)
     endif()
 endif()
 
-add_executable(${PROJECT_NAME} test_main.cpp numpy/src/numpy.cpp)
+add_executable(${PROJECT_NAME} numpy/tests/test_numpy.cpp numpy/src/numpy.cpp)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY VS_DEBUGGER_WORKING_DIRECTORY CMAKE_CURRENT_LIST_DIR)
 

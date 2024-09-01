@@ -15,7 +15,7 @@
   test_arange(100)
   ```
 
-2. Read the script and execute it in `test_main.cpp`. 
+2. Read the script and execute it in `test_numpy.cpp`. 
 ```cpp
   #include <pybind11/embed.h>
   #include <fstream>
