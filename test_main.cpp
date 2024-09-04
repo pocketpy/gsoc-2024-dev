@@ -2,6 +2,7 @@
 #include <pybind11/embed.h>
 #include <sstream>
 #include <string>
+#include <iostream>
 
 namespace py = pybind11;
 using namespace pybind11;
